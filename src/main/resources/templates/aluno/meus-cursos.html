@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Meus Cursos | OdontoPro</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+</head>
+<body class="bg-gray-50 font-sans antialiased min-h-screen">
+
+<nav class="bg-white shadow-sm border-b border-gray-200">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="flex justify-between h-20">
+            <div class="flex items-center">
+                <div class="inline-flex items-center justify-center w-10 h-10 rounded-full bg-blue-50 mr-3">
+                    <i class="fas fa-tooth text-blue-600 text-xl"></i>
+                </div>
+                <span class="font-bold text-xl text-gray-900">OdontoPro</span>
+            </div>
+
+            <div class="flex items-center gap-4">
+                <div class="text-right hidden sm:block">
+                    <p class="text-sm font-medium text-gray-900">Dr. João Silva</p>
+                    <p class="text-xs text-gray-500">Aluno</p>
+                </div>
+                <div class="h-10 w-10 rounded-full bg-blue-100 flex items-center justify-center text-blue-600 border border-blue-200 font-bold">
+                    JS
+                </div>
+                <a href="/" class="text-gray-400 hover:text-red-600 transition ml-2">
+                    <i class="fas fa-sign-out-alt text-lg"></i>
+                </a>
+            </div>
+        </div>
+    </div>
+</nav>
+
+<main class="max-w-7xl mx-auto py-10 px-4 sm:px-6 lg:px-8">
+
+    <div class="mb-8">
+        <h1 class="text-2xl font-bold text-gray-900">Meus Cursos</h1>
+        <p class="text-gray-600 mt-1">Continue sua jornada de especialização.</p>
+    </div>
+
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+
+        <div class="bg-white rounded-2xl shadow-xl overflow-hidden hover:-translate-y-1 transition-transform duration-300 border border-gray-100">
+            <div class="h-48 bg-gradient-to-br from-blue-500 to-blue-700 flex items-center justify-center relative">
+                <i class="fas fa-teeth-open text-white text-6xl opacity-30"></i>
+                <span class="absolute top-4 right-4 bg-white/20 backdrop-blur-sm text-white text-xs font-bold px-3 py-1 rounded-full">Implantodontia</span>
+            </div>
+
+            <div class="p-6">
+                <h3 class="text-xl font-bold text-gray-900 mb-2">Implantes Totais: Técnica All-on-4</h3>
+                <p class="text-gray-500 text-sm mb-6 line-clamp-2">Aprofunde-se no planejamento reverso e execução cirúrgica de casos complexos.</p>
+
+                <div class="mb-5">
+                    <div class="flex justify-between text-xs text-gray-600 mb-2">
+                        <span class="font-medium">Progresso do curso</span>
+                        <span class="font-bold text-blue-600">45%</span>
+                    </div>
+                    <div class="w-full bg-gray-100 rounded-full h-2.5">
+                        <div class="bg-blue-600 h-2.5 rounded-full" style="width: 45%"></div>
+                    </div>
+                </div>
+
+                <a href="/aluno/player.html" class="w-full flex justify-center py-3 px-4 border border-transparent rounded-lg shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 transition-colors">
+                    <i class="fas fa-play mr-2 mt-0.5"></i> Continuar Estudando
+                </a>
+            </div>
+        </div>
+
+        <div class="bg-white rounded-2xl shadow-xl overflow-hidden hover:-translate-y-1 transition-transform duration-300 border border-gray-100">
+            <div class="h-48 bg-gradient-to-br from-teal-500 to-teal-700 flex items-center justify-center relative">
+                <i class="fas fa-smile-beam text-white text-6xl opacity-30"></i>
+                <span class="absolute top-4 right-4 bg-white/20 backdrop-blur-sm text-white text-xs font-bold px-3 py-1 rounded-full">Estética</span>
+            </div>
+
+            <div class="p-6">
+                <h3 class="text-xl font-bold text-gray-900 mb-2">Facetas em Resina Composta</h3>
+                <p class="text-gray-500 text-sm mb-6 line-clamp-2">Técnicas de estratificação e polimento para resultados naturais.</p>
+
+                <div class="mb-5">
+                    <div class="flex justify-between text-xs text-gray-600 mb-2">
+                        <span class="font-medium">Progresso do curso</span>
+                        <span class="font-bold text-gray-400">0%</span>
+                    </div>
+                    <div class="w-full bg-gray-100 rounded-full h-2.5">
+                        <div class="bg-blue-600 h-2.5 rounded-full" style="width: 0%"></div>
+                    </div>
+                </div>
+
+                <a href="/aluno/player.html" class="w-full flex justify-center py-3 px-4 border border-blue-600 rounded-lg shadow-sm text-sm font-medium text-blue-600 bg-white hover:bg-blue-50 transition-colors">
+                    Começar Curso
+                </a>
+            </div>
+        </div>
+
+    </div>
+</main>
+</body>
+</html>
