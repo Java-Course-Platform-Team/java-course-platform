@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Painel Admin | OdontoPro</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+</head>
+<body class="bg-gray-50 font-sans antialiased min-h-screen">
+
+<div id="navbar-container"></div>
+
+<main class="max-w-7xl mx-auto py-10 px-4 sm:px-6 lg:px-8">
+
+    <div class="flex flex-col sm:flex-row justify-between items-center mb-8 gap-4">
+        <h1 class="text-2xl font-bold text-gray-900">Painel de Controle</h1>
+        <a href="/admin/form-curso.html" class="flex items-center justify-center py-2.5 px-5 border border-transparent rounded-lg shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 transition-colors">
+            <i class="fas fa-plus mr-2"></i> Adicionar Novo Curso
+        </a>
+    </div>
+
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-10">
+        <div class="bg-white rounded-2xl shadow-xl p-6 border border-gray-100 flex items-center">
+            <div class="w-14 h-14 rounded-xl bg-blue-50 flex items-center justify-center text-blue-600 text-2xl mr-4">
+                <i class="fas fa-users"></i>
+            </div>
+            <div>
+                <p class="text-sm text-gray-500 font-medium">Total de Alunos</p>
+                <p id="total-students" class="text-2xl font-bold text-gray-900">-</p>
+            </div>
+        </div>
+        <div class="bg-white rounded-2xl shadow-xl p-6 border border-gray-100 flex items-center">
+            <div class="w-14 h-14 rounded-xl bg-green-50 flex items-center justify-center text-green-600 text-2xl mr-4">
+                <i class="fas fa-graduation-cap"></i>
+            </div>
+            <div>
+                <p class="text-sm text-gray-500 font-medium">Cursos Ativos</p>
+                <p id="total-courses" class="text-2xl font-bold text-gray-900">-</p>
+            </div>
+        </div>
+        <div class="bg-white rounded-2xl shadow-xl p-6 border border-gray-100 flex items-center">
+            <div class="w-14 h-14 rounded-xl bg-purple-50 flex items-center justify-center text-purple-600 text-2xl mr-4">
+                <i class="fas fa-chart-line"></i>
+            </div>
+            <div>
+                <p class="text-sm text-gray-500 font-medium">Vendas (Mês)</p>
+                <p class="text-2xl font-bold text-gray-900">R$ 0,00</p>
+            </div>
+        </div>
+    </div>
+
+    <div class="bg-white rounded-2xl shadow-xl overflow-hidden border border-gray-100">
+        <div class="px-6 py-4 border-b border-gray-200 bg-gray-50/50 flex justify-between items-center">
+            <h3 class="font-bold text-gray-800">Cursos Cadastrados</h3>
+        </div>
+
+        <table class="min-w-full divide-y divide-gray-200">
+            <thead class="bg-gray-50">
+            <tr>
+                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Curso</th>
+                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Categoria</th>
+                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Preço</th>
+                <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Ações</th>
+            </tr>
+            </thead>
+
+            <tbody class="bg-white divide-y divide-gray-200">
+            <tr>
+                <td colspan="4" class="text-center py-10 text-gray-500">
+                    <i class="fas fa-spinner fa-spin"></i> Carregando lista...
+                </td>
+            </tr>
+            </tbody>
+        </table>
+    </div>
+
+</main>
+
+<script src="/js/main.js"></script>    <script src="/js/admin.js"></script>   </body>
+</html>

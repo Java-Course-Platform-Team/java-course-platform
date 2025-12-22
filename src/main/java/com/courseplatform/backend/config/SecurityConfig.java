@@ -1,4 +1,5 @@
 package com.courseplatform.backend.config;
+
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
@@ -16,27 +17,43 @@ import java.util.List;
 
 @Configuration
 @EnableWebSecurity
-public class SecurityConfig{
+public class SecurityConfig {
+
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
+                // 1. Desabilita CSRF (Padrão para APIs Stateless/JWT)
                 .csrf(AbstractHttpConfigurer::disable)
+                // 2. Configura CORS (Para aceitar conexões do Front)
                 .cors(org.springframework.security.config.Customizer.withDefaults())
+
                 .authorizeHttpRequests(auth -> auth
-                        // 1. Libera o uso da API (POST) para Login e Cadastro
+                        // 3. Libera Login e Cadastro (Essenciais - POST)
                         .requestMatchers(HttpMethod.POST, "/users", "/auth/login").permitAll()
 
-                        // 2. NOVA REGRA: Libera os arquivos do site (HTML, JS, Imagens) 🟢
-                        // Deixa ver qualquer coisa na pasta auth, js, css ou arquivos html soltos
-                        .requestMatchers("/auth/**", "/js/**", "/css/**", "/img/**", "/*.html").permitAll()
+                        // 4. LIBERA AS TELAS, ARQUIVOS ESTÁTICOS E PÁGINA DE ERRO 🚨
+                        .requestMatchers(
+                                "/",
+                                "/index.html",
+                                "/favicon.ico",
+                                "/js/**",
+                                "/css/**",
+                                "/img/**",
+                                "/auth/**",        // Tela de Login
+                                "/admin/**",       // Tela de Admin (Dashboard HTML)
+                                "/aluno/**",       // Tela de Aluno (Meus Cursos HTML)
+                                "/components/**",
+                                "/fragments/**",
+                                "/error"           // <--- ADIÇÃO CRÍTICA: Permite ver mensagens de erro (404/500) sem tomar 403
+                        ).permitAll()
 
-                        // 3. O resto continua trancado
+                        // 5. BLOQUEIA O RESTO (Endpoints de dados, como /courses)
+                        // Isso garante que os dados JSON exijam autenticação
                         .anyRequest().authenticated()
                 );
 
         return http.build();
     }
-
 
     @Bean
     public PasswordEncoder passwordEncoder() {
@@ -46,14 +63,9 @@ public class SecurityConfig{
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
-
-        // 1. Quem pode acessar? (React, Vite, etc)
-        configuration.setAllowedOrigins(List.of("http://localhost:3000", "http://localhost:5173", "http://localhost:8081"));
-
-        // 2. Quais métodos?
+        // Libera geral para desenvolvimento local
+        configuration.setAllowedOrigins(List.of("*"));
         configuration.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS"));
-
-        // 3. Quais cabeçalhos?
         configuration.setAllowedHeaders(List.of("*"));
 
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
