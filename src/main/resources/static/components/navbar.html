@@ -1,0 +1,25 @@
+<nav class="bg-white shadow-sm border-b border-gray-200 w-full z-50">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="flex justify-between h-16">
+            <div class="flex items-center cursor-pointer" onclick="window.location.href='/admin/dashboard.html'">
+                <i class="fas fa-tooth text-blue-600 text-2xl mr-2"></i>
+                <span class="font-bold text-xl text-gray-900">OdontoPro</span>
+            </div>
+
+            <div class="flex items-center gap-4">
+                <div class="text-right hidden sm:block">
+                    <span id="user-name-display" class="block text-sm font-medium text-gray-900">Usuário</span>
+                    <span class="block text-xs text-gray-500">Logado</span>
+                </div>
+
+                <div class="h-10 w-10 rounded-full bg-blue-100 flex items-center justify-center text-blue-600 font-bold border border-blue-200">
+                    <i class="fas fa-user"></i>
+                </div>
+
+                <button id="btn-logout" class="ml-2 text-gray-400 hover:text-red-600 transition" title="Sair">
+                    <i class="fas fa-sign-out-alt text-lg"></i>
+                </button>
+            </div>
+        </div>
+    </div>
+</nav>

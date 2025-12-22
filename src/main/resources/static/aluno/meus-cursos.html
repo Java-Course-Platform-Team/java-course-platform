@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Meus Cursos | OdontoPro</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+</head>
+<body class="bg-gray-50 font-sans antialiased min-h-screen">
+
+<nav class="bg-white shadow-sm border-b border-gray-200">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="flex justify-between h-20">
+            <div class="flex items-center">
+                <div class="inline-flex items-center justify-center w-10 h-10 rounded-full bg-blue-50 mr-3">
+                    <i class="fas fa-tooth text-blue-600 text-xl"></i>
+                </div>
+                <span class="font-bold text-xl text-gray-900">OdontoPro</span>
+            </div>
+
+            <div class="flex items-center gap-4">
+                <div class="text-right hidden sm:block">
+                    <p id="user-name-display" class="text-sm font-medium text-gray-900">Carregando...</p>
+                    <p class="text-xs text-gray-500">Aluno</p>
+                </div>
+                <div class="h-10 w-10 rounded-full bg-blue-100 flex items-center justify-center text-blue-600 border border-blue-200 font-bold">
+                    <i class="fas fa-user"></i>
+                </div>
+
+                <a href="#" id="btn-logout" class="text-gray-400 hover:text-red-600 transition ml-2" title="Sair">
+                    <i class="fas fa-sign-out-alt text-lg"></i>
+                </a>
+            </div>
+        </div>
+    </div>
+</nav>
+
+<main class="max-w-7xl mx-auto py-10 px-4 sm:px-6 lg:px-8">
+
+    <div class="mb-8">
+        <h1 class="text-2xl font-bold text-gray-900">Meus Cursos</h1>
+        <p class="text-gray-600 mt-1">Continue sua jornada de especialização.</p>
+    </div>
+
+    <div id="courses-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+        <div class="col-span-full text-center py-10 text-gray-500">
+            <i class="fas fa-spinner fa-spin mr-2"></i> Carregando seus cursos...
+        </div>
+    </div>
+
+</main>
+
+<script src="/js/main.js"></script>      <script src="/js/dashboard.js"></script> </body>
+</html>

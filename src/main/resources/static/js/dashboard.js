@@ -1,24 +1,26 @@
+// ==========================================
+// CONFIGURAÇÃO DA PORTA 8081
+// ==========================================
+// Se você estiver rodando localmente, use localhost.
+// Se estiver num servidor real (IP), troque "localhost" pelo IP do servidor.
+const BASE_URL = "http://localhost:8081";
+
 document.addEventListener("DOMContentLoaded", () => {
     fetchDashboardStats();
     fetchAdminCourses();
 });
 
-// CONFIGURAÇÃO
-// Se o seu backend roda sob um prefixo (ex: /api), altere aqui.
-// Deixe vazio '' se a rota for direta na raiz (ex: site.com/courses)
-const API_PREFIX = '';
-
 // ==========================================
 // 1. BUSCAR ESTATÍSTICAS (MOCK)
 // ==========================================
 async function fetchDashboardStats() {
-    console.log("Iniciando dashboard...");
-    // Apenas para evitar erros se os elementos não existirem na tela de login
+    console.log("Carregando estatísticas...");
+    // Apenas garante que os elementos existem antes de tentar alterar
     const elStudents = document.getElementById("total-students");
     const elCourses = document.getElementById("total-courses");
 
-    if(elStudents) elStudents.textContent = "1.240";
-    if(elCourses) elCourses.textContent = "8";
+    if (elStudents) elStudents.textContent = "1.240";
+    if (elCourses) elCourses.textContent = "8";
 }
 
 // ==========================================
@@ -26,22 +28,25 @@ async function fetchDashboardStats() {
 // ==========================================
 async function fetchAdminCourses() {
     const tableBody = document.querySelector("tbody");
-    // Se não tiver tabela (estamos em outra página), para por aqui
-    if (!tableBody) return;
-
     const token = localStorage.getItem("token");
 
+    // DEBUG: Verificação inicial
     if (!token) {
-        console.warn("Nenhum token encontrado. Redirecionando...");
+        console.error("ERRO: Nenhum token encontrado no LocalStorage!");
         alert("Você não está logado.");
-        window.location.href = "/auth/login.html"; // Descomentei para forçar o login
+        // window.location.href = "/auth/login.html"; // Descomente se quiser redirecionar
         return;
     }
 
-    console.log(`[DEBUG] Tentando buscar cursos em: ${window.location.origin}${API_PREFIX}/courses`);
+    if (!tableBody) return; // Se não houver tabela na página, para aqui.
 
     try {
-        const response = await fetch(`${API_PREFIX}/courses`, {
+        console.log(`Buscando cursos em: ${BASE_URL}/courses`);
+
+        // ============================================================
+        // AQUI ESTÁ A CORREÇÃO: Usando BASE_URL (porta 8081)
+        // ============================================================
+        const response = await fetch(`${BASE_URL}/courses`, {
             method: "GET",
             headers: {
                 "Authorization": `Bearer ${token}`,
@@ -49,44 +54,31 @@ async function fetchAdminCourses() {
             }
         });
 
-        console.log(`[DEBUG] Status da resposta: ${response.status}`);
-
-        // 1. Erro de Autenticação
+        // Tratamento de erros de permissão
         if (response.status === 401 || response.status === 403) {
-            console.error("Token inválido ou expirado.");
-            localStorage.removeItem("token"); // Limpa token ruim
+            console.error("Backend rejeitou o token. Status:", response.status);
             alert("Sessão expirada. Faça login novamente.");
             window.location.href = "/auth/login.html";
             return;
         }
 
-        // 2. Verifica se a resposta é OK antes de tentar ler JSON
+        // Verifica se deu erro no servidor (ex: 404, 500)
         if (!response.ok) {
-            const errorText = await response.text();
-            throw new Error(`Erro do servidor (${response.status}): ${errorText}`);
+            throw new Error(`Erro na requisição: ${response.status}`);
         }
 
-        // 3. Tenta fazer o parse do JSON com segurança
-        // (Se o Nginx retornar uma página de erro HTML 404, aqui que falhava antes)
-        let courses;
-        try {
-            courses = await response.json();
-        } catch (jsonError) {
-            const rawText = await response.text(); // Tenta ler o texto original se falhar
-            console.error("O servidor não retornou um JSON válido. Retornou:", rawText);
-            throw new Error("A resposta do servidor não é um JSON válido. Verifique se a URL está correta.");
-        }
-
-        // Renderização
+        const courses = await response.json();
         tableBody.innerHTML = "";
 
-        if (!Array.isArray(courses) || courses.length === 0) {
+        if (courses.length === 0) {
             tableBody.innerHTML = `<tr><td colspan="4" class="text-center py-4 text-gray-500">Nenhum curso encontrado.</td></tr>`;
             return;
         }
 
         courses.forEach(course => {
+            // Garante que o preço seja um número para evitar erro no toFixed
             const price = parseFloat(course.price);
+
             const row = `
                 <tr class="hover:bg-gray-50 transition border-b border-gray-100">
                     <td class="px-6 py-4 whitespace-nowrap">
@@ -117,14 +109,8 @@ async function fetchAdminCourses() {
         });
 
     } catch (error) {
-        console.error("ERRO FATAL:", error);
-        tableBody.innerHTML = `
-            <tr>
-                <td colspan="4" class="text-center py-4 text-red-500">
-                    <strong>Erro ao carregar dados:</strong><br>
-                    ${error.message}
-                </td>
-            </tr>`;
+        console.error("Erro fatal ao buscar cursos:", error);
+        tableBody.innerHTML = `<tr><td colspan="4" class="text-center py-4 text-red-500">Erro de conexão com a porta 8081.</td></tr>`;
     }
 }
 
@@ -132,24 +118,25 @@ async function fetchAdminCourses() {
 // 3. DELETAR CURSO
 // ==========================================
 async function deleteCourse(id) {
-    if (!confirm("Tem certeza que deseja excluir este curso?")) return;
+    if (!confirm("Tem certeza?")) return;
     const token = localStorage.getItem("token");
 
     try {
-        const response = await fetch(`${API_PREFIX}/courses/${id}`, {
+        // ============================================================
+        // CORREÇÃO AQUI TAMBÉM: Usando BASE_URL (porta 8081)
+        // ============================================================
+        const response = await fetch(`${BASE_URL}/courses/${id}`, {
             method: "DELETE",
             headers: { "Authorization": `Bearer ${token}` }
         });
 
         if (response.ok) {
-            alert("Curso excluído com sucesso!");
-            fetchAdminCourses(); // Recarrega a lista
+            fetchAdminCourses();
         } else {
-            const err = await response.text();
-            alert("Erro ao excluir: " + err);
+            alert("Erro ao excluir.");
         }
     } catch (e) {
-        console.error("Erro de rede ao excluir:", e);
-        alert("Erro de conexão.");
+        console.error("Erro ao deletar:", e);
+        alert("Erro de conexão ao tentar deletar.");
     }
 }
