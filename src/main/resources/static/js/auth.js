@@ -1,6 +1,3 @@
-// ==========================================
-// CONFIGURAÇÃO CENTRAL
-// ==========================================
 const BASE_URL = "http://localhost:8081";
 
 document.addEventListener("DOMContentLoaded", () => {
@@ -12,62 +9,54 @@ document.addEventListener("DOMContentLoaded", () => {
 
     if (loginForm) {
         loginForm.addEventListener("submit", async (e) => {
-            e.preventDefault(); // Impede o reload da página
+            e.preventDefault();
+            const submitBtn = loginForm.querySelector("button[type='submit']");
+
+            // UX: Loading
+            UI.buttonLoading(submitBtn, true, "Autenticando...");
 
             const email = document.getElementById("email").value.trim();
             const password = document.getElementById("password").value.trim();
-
             const errorContainer = document.getElementById("error-container");
-            const errorMessage = document.getElementById("error-message");
 
-            // Limpa erros visuais anteriores
             if (errorContainer) errorContainer.classList.add("hidden");
 
             try {
-                console.log(`Tentando login em: ${BASE_URL}/auth/login`);
-
                 const response = await fetch(`${BASE_URL}/auth/login`, {
                     method: "POST",
                     headers: { "Content-Type": "application/json" },
                     body: JSON.stringify({ email, password })
                 });
 
-                if (!response.ok) {
-                    throw new Error("Credenciais inválidas");
-                }
+                if (!response.ok) throw new Error("Credenciais inválidas");
 
                 const data = await response.json();
 
-                // --- 🕵️‍♂️ ÁREA DE INVESTIGAÇÃO (DEBUG) ---
-                console.log("====================================");
-                console.log("1. O QUE O JAVA RESPONDEU (JSON COMPLETO):", data);
-                console.log("2. CAMPO 'ROLE' VEIO COMO:", data.role);
-                // ------------------------------------------------
-
-                // Salva Token e Dados no Navegador
                 localStorage.setItem("token", data.token);
-                // Se a role vier nula, salva string vazia para não quebrar
                 localStorage.setItem("userRole", data.role || "");
                 localStorage.setItem("userName", data.name);
 
-                // Lógica de Redirecionamento (Aceita ADMIN ou ROLE_ADMIN)
-                const role = data.role ? data.role.toUpperCase().trim() : "";
+                // UX: Sucesso
+                UI.toast.info(`Bem-vindo, Dr(a). ${data.name}!`);
 
-                console.log("3. ROLE PROCESSADA PELO JS:", `"${role}"`); // Aspas para ver se tem espaço
-
-                if (role === 'ADMIN' || role === 'ROLE_ADMIN') {
-                    console.log("👉 DECISÃO: Indo para ADMIN");
-                    window.location.href = "/admin/dashboard.html";
-                } else {
-                    console.log("👉 DECISÃO: Indo para ALUNO (Caiu no else)");
-                    window.location.href = "/aluno/meus-cursos.html";
-                }
-                console.log("====================================");
+                setTimeout(() => {
+                    const role = data.role ? data.role.toUpperCase().trim() : "";
+                    if (role === 'ADMIN' || role === 'ROLE_ADMIN') {
+                        window.location.href = "/admin/dashboard.html";
+                    } else {
+                        window.location.href = "/aluno/meus-cursos.html";
+                    }
+                }, 1500);
 
             } catch (error) {
-                console.error("Erro no login:", error);
-                if (errorMessage) errorMessage.textContent = "Email ou senha incorretos.";
-                if (errorContainer) errorContainer.classList.remove("hidden");
+                console.error("Erro:", error);
+                UI.toast.error("E-mail ou senha incorretos.");
+                if (errorContainer) {
+                    errorContainer.classList.remove("hidden");
+                    document.getElementById("error-message").textContent = "Credenciais inválidas.";
+                }
+            } finally {
+                UI.buttonLoading(submitBtn, false);
             }
         });
     }
@@ -80,6 +69,10 @@ document.addEventListener("DOMContentLoaded", () => {
     if (cadastroForm) {
         cadastroForm.addEventListener("submit", async (e) => {
             e.preventDefault();
+            const submitBtn = cadastroForm.querySelector("button[type='submit']");
+
+            // UX: Loading
+            UI.buttonLoading(submitBtn, true, "Criando conta...");
 
             const nomeInput = document.getElementById("nome").value.trim();
             const emailInput = document.getElementById("email").value.trim();
@@ -87,7 +80,8 @@ document.addEventListener("DOMContentLoaded", () => {
             const confirmaSenhaInput = document.getElementById("confirma_senha").value;
 
             if (senhaInput !== confirmaSenhaInput) {
-                alert("As senhas não coincidem!");
+                UI.toast.error("As senhas não coincidem!");
+                UI.buttonLoading(submitBtn, false);
                 return;
             }
 
@@ -99,8 +93,6 @@ document.addEventListener("DOMContentLoaded", () => {
             };
 
             try {
-                console.log("Enviando cadastro para:", `${BASE_URL}/users`);
-
                 const response = await fetch(`${BASE_URL}/users`, {
                     method: "POST",
                     headers: { "Content-Type": "application/json" },
@@ -108,17 +100,17 @@ document.addEventListener("DOMContentLoaded", () => {
                 });
 
                 if (response.ok) {
-                    alert("Conta criada com sucesso! 🎉\nVocê será redirecionado para o login.");
-                    window.location.href = "/auth/login.html";
+                    UI.toast.success("Conta criada com sucesso!");
+                    setTimeout(() => window.location.href = "/auth/login.html", 2000);
                 } else {
                     const errorText = await response.text();
-                    console.error("Erro do servidor:", errorText);
-                    alert("Erro ao cadastrar: " + errorText);
+                    UI.toast.error("Erro: " + errorText);
                 }
 
             } catch (error) {
-                console.error("Erro de conexão:", error);
-                alert("Não foi possível conectar ao servidor.");
+                UI.toast.error("Erro de conexão com o servidor.");
+            } finally {
+                UI.buttonLoading(submitBtn, false);
             }
         });
     }
