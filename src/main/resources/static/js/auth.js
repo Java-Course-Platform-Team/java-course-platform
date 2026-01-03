@@ -1,102 +1,112 @@
+// ==========================================
+// AUTENTICAÇÃO E VALIDAÇÃO FRONTEND (CORRIGIDO)
+// ==========================================
 const BASE_URL = "http://localhost:8081";
 
 document.addEventListener("DOMContentLoaded", () => {
 
-    // ==========================================
-    // 1. LÓGICA DE LOGIN
-    // ==========================================
+    // --- 1. LÓGICA DE LOGIN ---
     const loginForm = document.getElementById("login-form");
-
     if (loginForm) {
         loginForm.addEventListener("submit", async (e) => {
             e.preventDefault();
-            const submitBtn = loginForm.querySelector("button[type='submit']");
-
-            // UX: Loading
-            UI.buttonLoading(submitBtn, true, "Autenticando...");
-
-            const email = document.getElementById("email").value.trim();
-            const password = document.getElementById("password").value.trim();
-            const errorContainer = document.getElementById("error-container");
-
-            if (errorContainer) errorContainer.classList.add("hidden");
+            const btn = loginForm.querySelector("button[type='submit']");
+            UI.buttonLoading(btn, true, "Autenticando...");
 
             try {
                 const response = await fetch(`${BASE_URL}/auth/login`, {
-                    method: "POST",
-                    headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify({ email, password })
+                    method: "POST", headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ email: document.getElementById("email").value.trim(), password: document.getElementById("password").value })
                 });
 
                 if (!response.ok) throw new Error("Credenciais inválidas");
-
                 const data = await response.json();
 
                 localStorage.setItem("token", data.token);
-                localStorage.setItem("userRole", data.role || "");
+                localStorage.setItem("userRole", data.role);
                 localStorage.setItem("userName", data.name);
 
-                // UX: Sucesso
                 UI.toast.info(`Bem-vindo, Dr(a). ${data.name}!`);
 
+                // ============================================================
+                // CORREÇÃO AQUI: Mudamos de 'meus-cursos.html' para 'catalogo.html'
+                // ============================================================
                 setTimeout(() => {
-                    const role = data.role ? data.role.toUpperCase().trim() : "";
-                    if (role === 'ADMIN' || role === 'ROLE_ADMIN') {
+                    if (data.role === 'ADMIN' || data.role === 'ROLE_ADMIN') {
                         window.location.href = "/admin/dashboard.html";
                     } else {
-                        window.location.href = "/aluno/meus-cursos.html";
+                        // O aluno agora vai para a LOJA primeiro
+                        window.location.href = "/aluno/catalogo.html";
                     }
                 }, 1500);
 
             } catch (error) {
-                console.error("Erro:", error);
                 UI.toast.error("E-mail ou senha incorretos.");
-                if (errorContainer) {
-                    errorContainer.classList.remove("hidden");
-                    document.getElementById("error-message").textContent = "Credenciais inválidas.";
-                }
-            } finally {
-                UI.buttonLoading(submitBtn, false);
-            }
+            } finally { UI.buttonLoading(btn, false); }
         });
     }
 
-    // ==========================================
-    // 2. LÓGICA DE CADASTRO
-    // ==========================================
+    // --- 2. LÓGICA DE CADASTRO (Inalterada) ---
     const cadastroForm = document.getElementById("cadastro-form");
-
     if (cadastroForm) {
+        const cpfInput = document.getElementById("cpf");
+        if (cpfInput) {
+            cpfInput.addEventListener("input", (e) => {
+                let v = e.target.value.replace(/\D/g, "");
+                if (v.length > 11) v = v.slice(0, 11);
+                v = v.replace(/(\d{3})(\d)/, "$1.$2");
+                v = v.replace(/(\d{3})(\d)/, "$1.$2");
+                v = v.replace(/(\d{3})(\d{1,2})$/, "$1-$2");
+                e.target.value = v;
+            });
+        }
+
         cadastroForm.addEventListener("submit", async (e) => {
             e.preventDefault();
             const submitBtn = cadastroForm.querySelector("button[type='submit']");
 
-            // UX: Loading
-            UI.buttonLoading(submitBtn, true, "Criando conta...");
+            const nome = document.getElementById("nome").value.trim();
+            const cpfVisual = document.getElementById("cpf").value;
+            const cpfLimpo = cpfVisual.replace(/\D/g, "");
+            const email = document.getElementById("email").value.trim();
+            const confirmaEmail = document.getElementById("confirma_email").value.trim();
+            const senha = document.getElementById("senha").value;
+            const confirmaSenha = document.getElementById("confirma_senha").value;
 
-            const nomeInput = document.getElementById("nome").value.trim();
-            const emailInput = document.getElementById("email").value.trim();
-            const senhaInput = document.getElementById("senha").value;
-            const confirmaSenhaInput = document.getElementById("confirma_senha").value;
-
-            if (senhaInput !== confirmaSenhaInput) {
-                UI.toast.error("As senhas não coincidem!");
-                UI.buttonLoading(submitBtn, false);
+            if (cpfLimpo.length !== 11) {
+                UI.toast.error("CPF inválido. Digite os 11 números.");
+                document.getElementById("cpf").focus();
+                return;
+            }
+            if (email !== confirmaEmail) {
+                UI.toast.error("Os e-mails não coincidem!");
+                document.getElementById("confirma_email").classList.add("border-red-500");
+                return;
+            } else {
+                document.getElementById("confirma_email").classList.remove("border-red-500");
+            }
+            if (!email.includes("@") || !email.includes(".")) {
+                UI.toast.error("Digite um e-mail válido.");
+                return;
+            }
+            if (senha.length < 6) {
+                UI.toast.error("A senha deve ter no mínimo 6 caracteres.");
+                return;
+            }
+            if (senha !== confirmaSenha) {
+                UI.toast.error("As senhas não conferem.");
                 return;
             }
 
-            const payload = {
-                name: nomeInput,
-                email: emailInput,
-                password: senhaInput,
-                role: "USER"
-            };
+            UI.buttonLoading(submitBtn, true, "Criando conta...");
 
             try {
                 const response = await fetch(`${BASE_URL}/users`, {
                     method: "POST",
                     headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify(payload)
+                    body: JSON.stringify({
+                        name: nome, email: email, password: senha, role: "USER"
+                    })
                 });
 
                 if (response.ok) {
@@ -104,11 +114,10 @@ document.addEventListener("DOMContentLoaded", () => {
                     setTimeout(() => window.location.href = "/auth/login.html", 2000);
                 } else {
                     const errorText = await response.text();
-                    UI.toast.error("Erro: " + errorText);
+                    UI.toast.error(errorText || "Erro ao criar conta.");
                 }
-
             } catch (error) {
-                UI.toast.error("Erro de conexão com o servidor.");
+                UI.toast.error("Erro de conexão. Servidor offline?");
             } finally {
                 UI.buttonLoading(submitBtn, false);
             }
