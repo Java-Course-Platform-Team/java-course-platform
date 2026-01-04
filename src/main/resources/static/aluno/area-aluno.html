@@ -7,49 +7,102 @@
     <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700&family=Manrope:wght@300;400;600;700&display=swap" rel="stylesheet">
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
-    <link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/toastify-js/src/toastify.min.css">
     <script>
         tailwind.config = { theme: { extend: { colors: { gold: '#D4AF37', dark: { 900: '#050505', 800: '#121212' } }, fontFamily: { sans: ['Manrope', 'sans-serif'], serif: ['Playfair Display', 'serif'] } } } }
     </script>
     <style>
         body { background-color: #050505; color: #eee; }
-        .skeleton { background: linear-gradient(90deg, #1f1f1f 25%, #2a2a2a 50%, #1f1f1f 75%); background-size: 200% 100%; animation: shimmer 1.5s infinite; }
-        @keyframes shimmer { 0% { background-position: 200% 0; } 100% { background-position: -200% 0; } }
+        /* Efeito de Vidro no Header */
+        .glass-header {
+            background: linear-gradient(to bottom, rgba(20,20,20,0.9), rgba(20,20,20,0.4));
+            backdrop-filter: blur(10px);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+        }
+        .hero-pattern {
+            background-image: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23D4AF37' fill-opacity='0.05'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+        }
     </style>
 </head>
-<body class="min-h-screen flex flex-col">
+<body class="min-h-screen flex flex-col font-sans">
 
-<nav class="sticky top-0 z-50 bg-dark-900/90 backdrop-blur-md border-b border-white/10">
+<nav class="sticky top-0 z-50 glass-header">
     <div class="max-w-7xl mx-auto px-6 h-20 flex justify-between items-center">
         <div class="flex items-center gap-3">
-            <i class="fas fa-tooth text-gold text-2xl"></i>
-            <span class="font-serif text-xl text-white tracking-widest">ODONTO<span class="text-gold">PRO</span></span>
+            <i class="fas fa-tooth text-gold text-xl"></i>
+            <span class="font-serif text-lg text-white tracking-widest font-bold">ODONTO<span class="text-gold">PRO</span></span>
         </div>
-        <div class="hidden md:flex gap-8 text-xs font-bold uppercase tracking-widest">
-            <a href="/aluno/catalogo.html" class="text-gray-400 hover:text-white transition">Loja de Cursos</a>
-            <a href="/aluno/area-aluno.html" class="text-gold border-b-2 border-gold pb-1">Minha Área</a>
-        </div>
-        <div class="flex items-center gap-4">
-            <span id="user-name-display" class="text-sm font-bold hidden sm:block">...</span>
-            <a href="#" id="btn-logout" class="text-gray-500 hover:text-red-500"><i class="fas fa-power-off"></i></a>
+
+        <div class="flex items-center gap-6">
+            <a href="/aluno/catalogo.html" class="text-[10px] font-bold uppercase tracking-widest text-gray-400 hover:text-white transition">Loja</a>
+
+            <div class="flex items-center gap-3 pl-6 border-l border-white/10">
+                <div class="text-right hidden sm:block">
+                    <p id="user-greeting" class="text-[10px] text-gold uppercase tracking-widest">Bem-vindo</p>
+                    <p id="user-name-display" class="text-sm font-bold text-white leading-none">Doutor</p>
+                </div>
+                <div class="h-8 w-8 rounded-full bg-gold text-black flex items-center justify-center font-bold text-xs">
+                    <i class="fas fa-user"></i>
+                </div>
+                <button id="btn-logout" class="text-gray-500 hover:text-red-500 ml-2 transition"><i class="fas fa-power-off"></i></button>
+            </div>
         </div>
     </div>
 </nav>
 
-<main class="max-w-7xl mx-auto py-12 px-6 flex-1">
+<main class="flex-1 pb-12">
 
-    <div class="flex items-end justify-between mb-10 border-b border-white/10 pb-6">
-        <div>
-            <h1 class="text-3xl font-serif text-white">Meus Cursos</h1>
-            <p class="text-gray-500 text-sm mt-1">Continue os seus estudos.</p>
+    <section class="relative bg-dark-800 border-b border-white/5 hero-pattern py-12 mb-12">
+        <div class="max-w-7xl mx-auto px-6">
+            <div id="continue-watching-area" class="hidden animate-fade-in-down">
+                <p class="text-gold text-[10px] uppercase tracking-[0.3em] mb-2 flex items-center gap-2">
+                    <i class="fas fa-history"></i> Continue de onde parou
+                </p>
+
+                <div class="relative bg-[#1a1a1a] rounded overflow-hidden border border-white/10 shadow-2xl flex flex-col md:flex-row h-auto md:h-64 group">
+                    <div class="w-full md:w-2/5 relative overflow-hidden">
+                        <img id="hero-img" src="" class="w-full h-full object-cover opacity-60 group-hover:opacity-100 transition duration-700">
+                        <div class="absolute inset-0 bg-gradient-to-r from-black/80 to-transparent"></div>
+                        <div class="absolute inset-0 flex items-center justify-center">
+                            <a id="hero-play-btn" href="#" class="w-16 h-16 rounded-full bg-gold/20 backdrop-blur border border-gold text-gold flex items-center justify-center hover:bg-gold hover:text-black hover:scale-110 transition duration-300 shadow-[0_0_30px_rgba(212,175,55,0.3)]">
+                                <i class="fas fa-play text-xl ml-1"></i>
+                            </a>
+                        </div>
+                    </div>
+
+                    <div class="w-full md:w-3/5 p-8 flex flex-col justify-center">
+                        <span id="hero-category" class="text-[10px] uppercase tracking-widest text-gray-500 mb-1">Curso em Andamento</span>
+                        <h2 id="hero-title" class="text-2xl md:text-3xl font-serif text-white mb-4">...</h2>
+
+                        <div class="w-full bg-gray-800 h-1.5 rounded-full mb-2 overflow-hidden">
+                            <div class="bg-gold h-full w-[35%] shadow-[0_0_10px_#D4AF37]"></div>
+                        </div>
+                        <p class="text-[10px] text-gray-400 mb-6">Progresso: <span class="text-white font-bold">35%</span></p>
+
+                        <a id="hero-link" href="#" class="inline-block self-start px-6 py-3 bg-white/5 hover:bg-white/10 border border-white/10 text-xs font-bold uppercase tracking-widest text-white transition rounded-sm">
+                            Continuar Assistindo
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+            <div id="welcome-empty" class="hidden text-center py-10">
+                <h1 class="text-3xl font-serif text-white mb-2">Sua Jornada Começa Agora</h1>
+                <p class="text-gray-500 text-sm mb-6">Você ainda não iniciou nenhum curso.</p>
+                <a href="/aluno/catalogo.html" class="text-gold border-b border-gold pb-1 text-xs font-bold uppercase tracking-widest hover:text-white hover:border-white transition">Ir para a Loja</a>
+            </div>
         </div>
-    </div>
+    </section>
 
-    <div id="my-courses-grid" class="grid grid-cols-1 md:grid-cols-3 gap-6">
-    </div>
+    <section class="max-w-7xl mx-auto px-6">
+        <h3 class="text-lg font-serif text-white mb-6 border-l-2 border-gold pl-4">Minha Biblioteca</h3>
+
+        <div id="my-courses-grid" class="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-6">
+        </div>
+    </section>
 </main>
 
 <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/toastify-js"></script>
 <script src="/js/utils.js"></script>
-<script src="/js/student.js"></script> </body>
+<script src="/js/student.js"></script>
+</body>
 </html>

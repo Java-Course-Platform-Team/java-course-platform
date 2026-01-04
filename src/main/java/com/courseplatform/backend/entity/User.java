@@ -21,14 +21,20 @@ import java.util.UUID;
 @NoArgsConstructor
 @AllArgsConstructor
 @Table(name = "tb_users")
-public class User implements UserDetails { // <--- 1. AQUI: Assinamos o contrato!
+public class User implements UserDetails {
 
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
     private UUID id;
 
     private String name;
+
+    @Column(unique = true) // Garante que não repete email
     private String email;
+
+    // --- ADICIONADO: O CAMPO QUE FALTAVA ---
+    private String cpf;
+    // ---------------------------------------
 
     @Column(name = "password_hash")
     private String passwordHash;
@@ -39,8 +45,9 @@ public class User implements UserDetails { // <--- 1. AQUI: Assinamos o contrato
     @Column(name = "avatar_url")
     private String avatarUrl;
 
+    // O campo isActive JÁ EXISTE, perfeito para o banimento!
     @Column(name = "is_active")
-    private Boolean isActive;
+    private Boolean isActive = true; // Inicia como true por padrão para evitar NullPointerException
 
     @Column(name = "created_at")
     private LocalDateTime createdAt;
@@ -51,6 +58,7 @@ public class User implements UserDetails { // <--- 1. AQUI: Assinamos o contrato
     @PrePersist
     public void prePersist() {
         createdAt = LocalDateTime.now();
+        if (isActive == null) isActive = true; // Garante que nunca seja nulo ao criar
     }
 
     @PreUpdate
@@ -58,37 +66,38 @@ public class User implements UserDetails { // <--- 1. AQUI: Assinamos o contrato
         updatedAt = LocalDateTime.now();
     }
 
-    // --- 2. O QUE O SPRING OBRIGA A GENTE A COLOCAR  ---
-    // Isso aqui é só pro Spring saber ler seus dados
+    // --- OVERRIDES DO SPRING SECURITY (MANTIDOS) ---
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
-        // Traduz o seu ENUM para o que o Spring entende
         if (this.role == Role.ADMIN) return List.of(new SimpleGrantedAuthority("ROLE_ADMIN"), new SimpleGrantedAuthority("ROLE_USER"));
         else return List.of(new SimpleGrantedAuthority("ROLE_USER"));
     }
 
     @Override
     public String getPassword() {
-        return passwordHash; // Ensina pro Spring que a senha tá nesse campo
+        return passwordHash;
     }
 
     @Override
     public String getUsername() {
-        return email; // Ensina pro Spring que o login é o email
+        return email;
     }
 
     @Override
-    public boolean isAccountNonExpired() { return true; } // Conta nunca expira
+    public boolean isAccountNonExpired() { return true; }
+
+    // DICA: Vinculamos o bloqueio ao isActive também. Se banido, a conta trava.
+    @Override
+    public boolean isAccountNonLocked() {
+        return isActive != null ? isActive : true;
+    }
 
     @Override
-    public boolean isAccountNonLocked() { return true; } // Conta nunca bloqueia
-
-    @Override
-    public boolean isCredentialsNonExpired() { return true; } // Senha nunca vence
+    public boolean isCredentialsNonExpired() { return true; }
 
     @Override
     public boolean isEnabled() {
-        return isActive != null ? isActive : true; // Usa o seu campo isActive!
+        return isActive != null ? isActive : true;
     }
 }

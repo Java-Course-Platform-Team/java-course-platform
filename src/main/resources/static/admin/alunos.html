@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <title>Gerenciar Alunos | OdontoPro</title>
+
+    <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/toastify-js/src/toastify.min.css">
+
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: { gold: '#D4AF37', dark: '#0a0a0a', panel: '#151515' },
+                    fontFamily: { sans: ['Manrope', 'sans-serif'] }
+                }
+            }
+        }
+    </script>
+</head>
+<body class="bg-black text-gray-300 font-sans flex h-screen overflow-hidden">
+
+<aside class="w-64 bg-panel border-r border-white/10 hidden md:flex flex-col shrink-0">
+    <div class="h-20 flex items-center px-8 border-b border-white/10">
+        <i class="fas fa-tooth text-gold text-2xl mr-3"></i>
+        <span class="font-bold text-white tracking-widest">ODONTO<span class="text-gold">PRO</span></span>
+    </div>
+
+    <nav class="flex-1 py-8 space-y-2 px-4">
+        <a href="/admin/dashboard.html" class="flex items-center px-4 py-3 text-gray-500 hover:text-white hover:bg-white/5 rounded transition">
+            <i class="fas fa-chart-line w-6"></i> <span class="text-sm font-bold uppercase tracking-wider">Visão Geral</span>
+        </a>
+
+        <a href="#" class="flex items-center px-4 py-3 bg-gold/10 text-gold rounded border border-gold/20">
+            <i class="fas fa-users w-6"></i> <span class="text-sm font-bold uppercase tracking-wider">Alunos</span>
+        </a>
+
+        <a href="/admin/dashboard.html#courses-table-section" class="flex items-center px-4 py-3 text-gray-500 hover:text-white hover:bg-white/5 rounded transition">
+            <i class="fas fa-film w-6"></i> <span class="text-sm font-bold uppercase tracking-wider">Cursos</span>
+        </a>
+    </nav>
+
+    <div class="p-4 border-t border-white/10">
+        <button id="btn-logout" class="w-full py-2 border border-white/20 text-xs uppercase font-bold hover:bg-white/10 transition text-gray-400 hover:text-white">
+            Sair
+        </button>
+    </div>
+</aside>
+
+<main class="flex-1 flex flex-col overflow-hidden relative">
+
+    <header class="h-20 bg-dark/95 border-b border-white/10 flex items-center justify-between px-8 shrink-0">
+        <div>
+            <h2 class="text-xl text-white font-light">Gestão de <span class="font-bold text-gold">Alunos</span></h2>
+            <p class="text-[10px] text-gray-500 uppercase tracking-widest">Lista de Matriculados</p>
+        </div>
+
+        <div class="flex items-center gap-4">
+            <div class="relative group">
+                <i class="fas fa-search absolute left-3 top-2.5 text-gray-600 group-focus-within:text-gold transition"></i>
+                <input type="text" id="search-student" placeholder="Buscar por nome ou email..."
+                       class="bg-panel border border-white/10 rounded-full py-2 pl-10 pr-4 text-sm focus:border-gold outline-none w-64 text-white transition-all focus:w-80">
+            </div>
+        </div>
+    </header>
+
+    <div class="flex-1 overflow-y-auto p-8">
+        <div class="bg-panel border border-white/5 rounded overflow-hidden shadow-2xl">
+            <div class="overflow-x-auto">
+                <table class="w-full text-left">
+                    <thead class="bg-black/50 text-xs uppercase text-gray-500 font-bold border-b border-white/10">
+                    <tr>
+                        <th class="px-8 py-4">Nome</th>
+                        <th class="px-8 py-4">Email</th>
+                        <th class="px-8 py-4">CPF</th>
+                        <th class="px-8 py-4">Status</th>
+                        <th class="px-8 py-4 text-right">Ações</th>
+                    </tr>
+                    </thead>
+
+                    <tbody id="students-table-body" class="divide-y divide-gray-800">
+                    <tr>
+                        <td colspan="5" class="text-center py-10">
+                            <div class="animate-pulse flex flex-col items-center">
+                                <div class="h-4 w-4 bg-gold rounded-full mb-2"></div>
+                                <p class="text-gray-600 text-xs">Carregando lista de alunos...</p>
+                            </div>
+                        </td>
+                    </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</main>
+
+<script type="text/javascript" src="https://cdn.jsdelivr.net/npm/toastify-js"></script>
+<script src="/js/utils.js"></script>
+
+<script src="/js/admin-students.js"></script>
+</body>
+</html>
