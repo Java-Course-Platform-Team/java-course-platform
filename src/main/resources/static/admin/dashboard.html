@@ -3,97 +3,125 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Admin Luxury | OdontoPro</title>
+    <title>Dashboard Admin | OdontoPro</title>
     <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@300;400;600;700&display=swap" rel="stylesheet">
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
 
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
     <script>
-        tailwind.config = {
-            theme: {
-                extend: {
-                    colors: {
-                        gold: '#D4AF37',
-                        dark: '#111111',
-                        panel: '#1A1A1A'
-                    },
-                    fontFamily: { sans: ['Manrope', 'sans-serif'] }
-                }
-            }
-        }
+        tailwind.config = { theme: { extend: { colors: { gold: '#D4AF37', dark: '#0a0a0a', panel: '#151515' }, fontFamily: { sans: ['Manrope', 'sans-serif'] } } } }
     </script>
+
+    <style>
+        html { scroll-behavior: smooth; }
+    </style>
 </head>
-<body class="bg-black text-gray-300 font-sans min-h-screen">
+<body class="bg-black text-gray-300 font-sans">
 
-<div id="navbar-container"></div>
+<div class="flex h-screen overflow-hidden">
 
-<main class="max-w-7xl mx-auto py-12 px-6">
-
-    <div class="flex flex-col md:flex-row justify-between items-center mb-12 border-b border-gray-800 pb-8">
-        <div>
-            <h1 class="text-3xl font-bold text-white tracking-tight">Painel Executivo</h1>
-            <p class="text-gray-500 mt-1">Gestão de Alta Performance</p>
+    <aside class="w-64 bg-panel border-r border-white/10 hidden md:flex flex-col">
+        <div class="h-20 flex items-center px-8 border-b border-white/10">
+            <i class="fas fa-tooth text-gold text-2xl mr-3"></i>
+            <span class="font-bold text-white tracking-widest">ODONTO<span class="text-gold">PRO</span></span>
         </div>
-        <a href="/admin/form-curso.html" class="bg-gold hover:bg-yellow-600 text-black font-bold py-3 px-8 rounded-none uppercase tracking-wider text-xs transition-all hover:scale-105">
-            <i class="fas fa-plus mr-2"></i> Novo Curso
-        </a>
-    </div>
 
-    <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-12">
-        <div class="bg-panel p-8 border-l-2 border-gold relative overflow-hidden group">
-            <div class="absolute right-0 top-0 opacity-5 group-hover:opacity-10 transition-opacity transform scale-150">
-                <i class="fas fa-users text-8xl text-gold"></i>
+        <nav class="flex-1 py-8 space-y-2 px-4">
+            <a href="#" class="flex items-center px-4 py-3 bg-gold/10 text-gold rounded border border-gold/20">
+                <i class="fas fa-chart-line w-6"></i> <span class="text-sm font-bold uppercase tracking-wider">Visão Geral</span>
+            </a>
+
+            <a href="/admin/alunos.html" class="flex items-center px-4 py-3 text-gray-500 hover:text-white hover:bg-white/5 rounded transition">
+                <i class="fas fa-users w-6"></i> <span class="text-sm font-bold uppercase tracking-wider">Alunos</span>
+            </a>
+
+            <a href="#courses-table-section" class="flex items-center px-4 py-3 text-gray-500 hover:text-white hover:bg-white/5 rounded transition">
+                <i class="fas fa-film w-6"></i> <span class="text-sm font-bold uppercase tracking-wider">Cursos</span>
+            </a>
+        </nav>
+
+        <div class="p-4 border-t border-white/10">
+            <button id="btn-logout" class="w-full py-2 border border-white/20 text-xs uppercase font-bold hover:bg-white/10 transition text-gray-400 hover:text-white">
+                Sair
+            </button>
+        </div>
+    </aside>
+
+    <main class="flex-1 flex flex-col overflow-y-auto relative">
+
+        <header class="h-20 bg-dark/95 backdrop-blur border-b border-white/10 flex items-center justify-between px-8 sticky top-0 z-20">
+            <h2 class="text-xl text-white font-light">Bem-vindo, <span class="font-bold text-gold">Admin</span></h2>
+            <div class="h-10 w-10 rounded-full bg-gold flex items-center justify-center text-black font-bold shadow-[0_0_15px_rgba(212,175,55,0.4)]">A</div>
+        </header>
+
+        <div class="p-8 space-y-8">
+
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-6">
+                <div class="bg-panel p-6 border-l-4 border-gold shadow-lg">
+                    <p class="text-[10px] uppercase tracking-widest text-gray-500 mb-1">Total de Alunos</p>
+                    <h3 id="total-students" class="text-3xl font-bold text-white">...</h3>
+                </div>
+                <div class="bg-panel p-6 border-l-4 border-blue-500 shadow-lg">
+                    <p class="text-[10px] uppercase tracking-widest text-gray-500 mb-1">Cursos Ativos</p>
+                    <h3 id="total-courses" class="text-3xl font-bold text-white">...</h3>
+                </div>
+                <div class="bg-panel p-6 border-l-4 border-green-500 shadow-lg">
+                    <p class="text-[10px] uppercase tracking-widest text-gray-500 mb-1">Valor em Cursos</p>
+                    <h3 id="total-revenue" class="text-3xl font-bold text-white">R$ ...</h3>
+                </div>
+                <div class="bg-panel p-6 border-l-4 border-purple-500 shadow-lg">
+                    <p class="text-[10px] uppercase tracking-widest text-gray-500 mb-1">Admin Users</p>
+                    <h3 id="total-admins" class="text-3xl font-bold text-white">...</h3>
+                </div>
             </div>
-            <p class="text-xs font-bold text-gold uppercase tracking-widest mb-2">Total de Alunos</p>
-            <h3 id="total-students" class="text-4xl font-light text-white">-</h3>
-        </div>
 
-        <div class="bg-panel p-8 border-l-2 border-gray-700 relative overflow-hidden group hover:border-gold transition-colors">
-            <div class="absolute right-0 top-0 opacity-5 group-hover:opacity-10 transition-opacity transform scale-150">
-                <i class="fas fa-graduation-cap text-8xl text-white"></i>
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                <div class="bg-panel p-6 border border-white/5 rounded">
+                    <h4 class="text-sm font-bold text-white uppercase tracking-widest mb-6 border-b border-white/10 pb-2">Base de Usuários</h4>
+                    <div class="relative h-64">
+                        <canvas id="usersChart"></canvas>
+                    </div>
+                </div>
+                <div class="bg-panel p-6 border border-white/5 rounded">
+                    <h4 class="text-sm font-bold text-white uppercase tracking-widest mb-6 border-b border-white/10 pb-2">Valor de Mercado dos Cursos</h4>
+                    <div class="relative h-64">
+                        <canvas id="revenueChart"></canvas>
+                    </div>
+                </div>
             </div>
-            <p class="text-xs font-bold text-gray-500 uppercase tracking-widest mb-2 group-hover:text-gold transition-colors">Cursos Ativos</p>
-            <h3 id="total-courses" class="text-4xl font-light text-white">-</h3>
-        </div>
 
-        <div class="bg-panel p-8 border-l-2 border-gray-700 relative overflow-hidden group hover:border-green-500 transition-colors">
-            <div class="absolute right-0 top-0 opacity-5 group-hover:opacity-10 transition-opacity transform scale-150">
-                <i class="fas fa-chart-line text-8xl text-white"></i>
+            <div id="courses-table-section" class="bg-panel border border-white/5 rounded overflow-hidden pt-4 mt-8">
+                <div class="p-6 border-b border-white/10 flex justify-between items-center bg-white/5">
+                    <h3 class="text-sm font-bold text-white uppercase tracking-widest">Catálogo de Cursos</h3>
+
+                    <button onclick="alert('Página Novo Curso: Próxima Sprint')" class="bg-gold hover:bg-yellow-500 text-black px-4 py-2 text-xs font-bold uppercase tracking-widest transition shadow-lg">
+                        + Novo Curso
+                    </button>
+                </div>
+                <div class="overflow-x-auto">
+                    <table class="w-full text-left">
+                        <thead class="bg-black/50 text-xs uppercase text-gray-500 font-bold">
+                        <tr>
+                            <th class="px-8 py-4">Curso</th>
+                            <th class="px-8 py-4">Categoria</th>
+                            <th class="px-8 py-4">Preço</th>
+                            <th class="px-8 py-4 text-right">Ações</th>
+                        </tr>
+                        </thead>
+                        <tbody id="courses-table-body" class="divide-y divide-gray-800">
+                        </tbody>
+                    </table>
+                </div>
             </div>
-            <p class="text-xs font-bold text-gray-500 uppercase tracking-widest mb-2 group-hover:text-green-500 transition-colors">Faturamento</p>
-            <h3 class="text-4xl font-light text-white">R$ 0,00</h3>
+
         </div>
-    </div>
+    </main>
+</div>
 
-    <div class="bg-panel rounded-lg overflow-hidden border border-gray-800">
-        <div class="px-8 py-6 border-b border-gray-800 flex justify-between items-center bg-zinc-900">
-            <h3 class="font-bold text-white uppercase tracking-wider text-sm">Catálogo de Cursos</h3>
-        </div>
-
-        <div class="overflow-x-auto">
-            <table class="w-full text-left">
-                <thead>
-                <tr class="text-gray-500 text-xs uppercase tracking-wider border-b border-gray-800">
-                    <th class="px-8 py-5 font-medium">Curso</th>
-                    <th class="px-8 py-5 font-medium">Categoria</th>
-                    <th class="px-8 py-5 font-medium">Preço</th>
-                    <th class="px-8 py-5 font-medium text-right">Ações</th>
-                </tr>
-                </thead>
-                <tbody id="courses-table-body" class="divide-y divide-gray-800 text-sm text-gray-300">
-                <tr>
-                    <td colspan="4" class="text-center py-12 text-gray-600">
-                        Carregando dados...
-                    </td>
-                </tr>
-                </tbody>
-            </table>
-        </div>
-    </div>
-
-</main>
-
-<script src="/js/main.js"></script>
+<script type="text/javascript" src="https://cdn.jsdelivr.net/npm/toastify-js"></script>
+<script src="/js/utils.js"></script>
 <script src="/js/admin.js"></script>
 </body>
 </html>
