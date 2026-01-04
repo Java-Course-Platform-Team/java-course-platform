@@ -19,7 +19,7 @@ public class Course {
     private Long id;
 
     private String title;
-    private String slug; // Ex: implanto-basica (bom para URL)
+    private String slug; //  (bom para URL)
     private BigDecimal price;
     private String category;
 
