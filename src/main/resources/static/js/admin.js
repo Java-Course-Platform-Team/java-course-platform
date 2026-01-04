@@ -1,153 +1,191 @@
+// ==========================================
+// ADMIN DASHBOARD (GRÁFICOS E KPIs)
+// ==========================================
+
+const API_URL = "http://localhost:8081";
+
 document.addEventListener("DOMContentLoaded", () => {
     fetchDashboardStats();
-    fetchAdminCourses();
+    setupLogout();
 });
 
-// CONFIGURAÇÃO
-const API_PREFIX = '';
-
-// ==========================================
-// 1. BUSCAR ESTATÍSTICAS (MOCK)
-// ==========================================
-async function fetchDashboardStats() {
-    console.log("Iniciando dashboard...");
-    const elStudents = document.getElementById("total-students");
-    const elCourses = document.getElementById("total-courses");
-
-    if(elStudents) elStudents.textContent = "1.240";
-    if(elCourses) elCourses.textContent = "8";
+function setupLogout() {
+    const btn = document.getElementById("btn-logout");
+    if(btn) {
+        btn.addEventListener("click", (e) => {
+            e.preventDefault();
+            localStorage.clear();
+            window.location.href = "/auth/login.html";
+        });
+    }
 }
 
-// ==========================================
-// 2. BUSCAR LISTA DE CURSOS
-// ==========================================
-async function fetchAdminCourses() {
-    // Agora buscamos pelo ID específico que coloquei no HTML novo
-    // Se não achar pelo ID, tenta pelo tbody genérico
-    const tableBody = document.getElementById("courses-table-body") || document.querySelector("tbody");
-
-    if (!tableBody) return;
-
+async function fetchDashboardStats() {
     const token = localStorage.getItem("token");
-
-    if (!token) {
-        console.warn("Nenhum token encontrado. Redirecionando...");
-        alert("Você não está logado.");
-        window.location.href = "/auth/login.html";
-        return;
-    }
-
-    console.log(`[DEBUG] Tentando buscar cursos em: ${window.location.origin}${API_PREFIX}/courses`);
+    if (!token) { window.location.href = "/auth/login.html"; return; }
 
     try {
-        const response = await fetch(`${API_PREFIX}/courses`, {
-            method: "GET",
-            headers: {
-                "Authorization": `Bearer ${token}`,
-                "Content-Type": "application/json"
-            }
-        });
+        // Busca Cursos e Usuários ao mesmo tempo
+        const [coursesRes, usersRes] = await Promise.all([
+            fetch(`${API_URL}/courses`, { headers: { "Authorization": `Bearer ${token}` } }),
+            fetch(`${API_URL}/users`, { headers: { "Authorization": `Bearer ${token}` } })
+        ]);
 
-        console.log(`[DEBUG] Status da resposta: ${response.status}`);
-
-        if (response.status === 401 || response.status === 403) {
-            console.error("Token inválido ou expirado.");
+        if (coursesRes.status === 403 || usersRes.status === 403) {
             localStorage.removeItem("token");
-            alert("Sessão expirada. Faça login novamente.");
             window.location.href = "/auth/login.html";
             return;
         }
 
-        if (!response.ok) {
-            const errorText = await response.text();
-            throw new Error(`Erro do servidor (${response.status}): ${errorText}`);
-        }
+        const courses = await coursesRes.json();
+        let users = [];
+        if(usersRes.ok) users = await usersRes.json();
 
-        let courses;
-        try {
-            courses = await response.json();
-        } catch (jsonError) {
-            const rawText = await response.text();
-            console.error("O servidor não retornou um JSON válido. Retornou:", rawText);
-            throw new Error("A resposta do servidor não é um JSON válido.");
-        }
+        // --- CÁLCULOS (CORRIGIDO PARA ROLE: STUDENT) ---
 
-        // Renderização
-        tableBody.innerHTML = "";
+        // 1. Conta quantos são ALUNOS (STUDENT)
+        const totalStudents = users.filter(u => u.role === 'STUDENT').length;
 
-        if (!Array.isArray(courses) || courses.length === 0) {
-            // Mudei aqui para texto claro
-            tableBody.innerHTML = `<tr><td colspan="4" class="text-center py-8 text-gray-500 uppercase tracking-widest text-xs">Nenhum curso encontrado.</td></tr>`;
-            return;
-        }
+        // 2. Conta quantos são ADMINS
+        const totalAdmins = users.filter(u => u.role === 'ADMIN' || u.role === 'ROLE_ADMIN').length;
 
-        courses.forEach(course => {
-            const price = parseFloat(course.price);
+        // 3. Soma o valor dos cursos
+        const totalCourses = courses.length;
+        const totalValue = courses.reduce((acc, c) => acc + (parseFloat(c.price) || 0), 0);
 
-            // --- AQUI ESTÁ A MUDANÇA VISUAL (Sua lógica continua igual) ---
-            const row = `
-                <tr class="border-b border-gray-800 hover:bg-white/5 transition-colors group">
-                    <td class="px-8 py-6 whitespace-nowrap">
-                        <div class="flex items-center">
-                            <div class="h-10 w-10 rounded-full bg-yellow-500/10 flex items-center justify-center text-yellow-500 font-bold border border-yellow-500/30">
-                                ${course.title ? course.title.charAt(0).toUpperCase() : '?'}
-                            </div>
-                            <div class="ml-4">
-                                <div class="text-sm font-bold text-yellow-500 group-hover:text-yellow-400 transition-colors">${course.title}</div>
-                                <div class="text-[10px] text-green-500 uppercase tracking-wider mt-1 font-bold">Ativo</div>
-                            </div>
-                        </div>
-                    </td>
-                    <td class="px-8 py-6 whitespace-nowrap text-sm text-gray-400">
-                        ${course.category || 'Geral'}
-                    </td>
-                    <td class="px-8 py-6 whitespace-nowrap text-sm font-medium text-white">
-                        R$ ${isNaN(price) ? '0.00' : price.toFixed(2)}
-                    </td>
-                    <td class="px-8 py-6 whitespace-nowrap text-right text-sm font-medium">
-                        <button onclick="deleteCourse(${course.id})" class="text-red-500 hover:text-red-400 transition-colors p-2 rounded-full hover:bg-red-500/10" title="Excluir">
-                            <i class="fas fa-trash"></i>
-                        </button>
-                    </td>
-                </tr>
-            `;
-            tableBody.innerHTML += row;
-        });
+        // Atualiza os Números na Tela
+        animateValue("total-students", 0, totalStudents, 1000);
+        animateValue("total-courses", 0, totalCourses, 1000);
+        animateValue("total-admins", 0, totalAdmins, 1000);
 
-    } catch (error) {
-        console.error("ERRO FATAL:", error);
-        tableBody.innerHTML = `
-            <tr>
-                <td colspan="4" class="text-center py-4 text-red-500">
-                    <strong>Erro ao carregar dados:</strong><br>
-                    ${error.message}
-                </td>
-            </tr>`;
+        const elRev = document.getElementById("total-revenue");
+        if(elRev) elRev.textContent = `R$ ${totalValue.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}`;
+
+        // Renderiza Tabela de Cursos e Gráficos
+        renderCoursesTable(courses);
+        renderCharts(totalStudents, totalAdmins, courses);
+
+    } catch (e) {
+        console.error("Erro ao carregar dashboard:", e);
     }
 }
 
-// ==========================================
-// 3. DELETAR CURSO (LÓGICA ORIGINAL)
-// ==========================================
-async function deleteCourse(id) {
-    if (!confirm("Tem certeza que deseja excluir este curso?")) return;
-    const token = localStorage.getItem("token");
-
-    try {
-        const response = await fetch(`${API_PREFIX}/courses/${id}`, {
-            method: "DELETE",
-            headers: { "Authorization": `Bearer ${token}` }
-        });
-
-        if (response.ok) {
-            alert("Curso excluído com sucesso!");
-            fetchAdminCourses(); // Recarrega a lista
-        } else {
-            const err = await response.text();
-            alert("Erro ao excluir: " + err);
+function animateValue(id, start, end, duration) {
+    const obj = document.getElementById(id);
+    if(!obj) return;
+    let startTimestamp = null;
+    const step = (timestamp) => {
+        if (!startTimestamp) startTimestamp = timestamp;
+        const progress = Math.min((timestamp - startTimestamp) / duration, 1);
+        obj.innerHTML = Math.floor(progress * (end - start) + start);
+        if (progress < 1) {
+            window.requestAnimationFrame(step);
         }
-    } catch (e) {
-        console.error("Erro de rede ao excluir:", e);
-        alert("Erro de conexão.");
+    };
+    window.requestAnimationFrame(step);
+}
+
+function renderCoursesTable(courses) {
+    const tbody = document.getElementById("courses-table-body");
+    if (!tbody) return;
+    tbody.innerHTML = "";
+
+    if (!courses.length) {
+        tbody.innerHTML = `<tr><td colspan="4" class="text-center py-8 text-gray-500 text-xs uppercase">Nenhum curso cadastrado.</td></tr>`;
+        return;
     }
+
+    courses.forEach(c => {
+        tbody.innerHTML += `
+            <tr class="border-b border-gray-800 hover:bg-white/5 transition-colors group">
+                <td class="px-8 py-6 whitespace-nowrap">
+                    <div class="flex items-center">
+                        <div class="h-10 w-10 rounded-full bg-yellow-500/10 flex items-center justify-center text-yellow-500 font-bold border border-yellow-500/30">
+                            ${c.title.charAt(0)}
+                        </div>
+                        <div class="ml-4">
+                            <div class="text-sm font-bold text-yellow-500">${c.title}</div>
+                            <div class="text-[10px] text-green-500 uppercase font-bold mt-1">Ativo</div>
+                        </div>
+                    </div>
+                </td>
+                <td class="px-8 py-6 whitespace-nowrap text-sm text-gray-400">${c.category || 'Geral'}</td>
+                <td class="px-8 py-6 whitespace-nowrap text-sm font-medium text-white">R$ ${(c.price || 0).toFixed(2)}</td>
+                <td class="px-8 py-6 whitespace-nowrap text-right text-sm font-medium">
+                    <a href="/admin/gerenciar-aulas.html?id=${c.id}&title=${encodeURIComponent(c.title)}" 
+                       class="text-gold hover:text-white mr-4 transition-colors inline-flex items-center gap-2 border border-gold/30 px-3 py-1 rounded hover:bg-gold hover:text-black" 
+                       title="Adicionar Aulas">
+                       <i class="fas fa-layer-group"></i> Aulas
+                    </a>
+                    <button onclick="deleteCourse(${c.id})" class="text-red-500 hover:text-red-400 p-2 rounded-full hover:bg-red-500/10 transition-colors">
+                        <i class="fas fa-trash"></i>
+                    </button>
+                </td>
+            </tr>`;
+    });
+}
+
+function renderCharts(students, admins, courses) {
+    const ctxUsers = document.getElementById('usersChart');
+    if(ctxUsers) {
+        if (Chart.getChart("usersChart")) Chart.getChart("usersChart").destroy();
+
+        new Chart(ctxUsers, {
+            type: 'doughnut',
+            data: {
+                labels: ['Alunos', 'Administradores'],
+                datasets: [{
+                    data: [students, admins], // Aqui ele usa o número de STUDENTs que calculamos lá em cima
+                    backgroundColor: ['#D4AF37', '#333'],
+                    borderColor: '#151515',
+                    borderWidth: 2
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: { legend: { position: 'bottom', labels: { color: 'rgba(255, 255, 255, 0.5)' } } },
+                cutout: '70%'
+            }
+        });
+    }
+
+    const ctxRev = document.getElementById('revenueChart');
+    if(ctxRev) {
+        if (Chart.getChart("revenueChart")) Chart.getChart("revenueChart").destroy();
+        const topCourses = [...courses].sort((a,b) => b.price - a.price).slice(0, 5);
+
+        new Chart(ctxRev, {
+            type: 'bar',
+            data: {
+                labels: topCourses.map(c => c.title.substring(0, 15) + '...'),
+                datasets: [{
+                    label: 'Preço (R$)',
+                    data: topCourses.map(c => c.price),
+                    backgroundColor: '#D4AF37',
+                    borderRadius: 4
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: {
+                    y: { beginAtZero: true, grid: { color: 'rgba(255,255,255,0.05)' }, ticks: { color: 'rgba(255, 255, 255, 0.5)' } },
+                    x: { grid: { display: false }, ticks: { color: 'rgba(255, 255, 255, 0.5)' } }
+                },
+                plugins: { legend: { display: false } }
+            }
+        });
+    }
+}
+
+async function deleteCourse(id) {
+    if (!confirm("Tem certeza que deseja excluir este curso permanentemente?")) return;
+    const token = localStorage.getItem("token");
+    try {
+        const res = await fetch(`${API_URL}/courses/${id}`, {
+            method: "DELETE", headers: { "Authorization": `Bearer ${token}` }
+        });
+        if (res.ok) { fetchDashboardStats(); } else { alert("Erro ao excluir."); }
+    } catch (e) { alert("Erro de conexão."); }
 }
