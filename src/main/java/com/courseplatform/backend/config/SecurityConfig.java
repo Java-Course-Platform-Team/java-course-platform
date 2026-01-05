@@ -31,37 +31,20 @@ public class SecurityConfig {
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
                 .csrf(AbstractHttpConfigurer::disable)
-                .cors(cors -> cors.configurationSource(corsConfigurationSource())) // Habilita o CORS configurado abaixo
+                .cors(cors -> cors.configurationSource(corsConfigurationSource()))
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(authorize -> authorize
-                        // ====================================================
-                        // 1. ZONA VERDE (ARQUIVOS PÚBLICOS & FRONTEND)
-                        // ====================================================
-                        // Libera geral para arquivos estáticos e páginas HTML
+                        // 1. ARQUIVOS PÚBLICOS (HTML, CSS, JS, Imagens)
                         .requestMatchers(
-                                "/",
-                                "/index.html",
-                                "/error",         // IMPORTANTE: Libera a página de erro do Spring
-                                "/favicon.ico",
-                                "/auth/**",       // Páginas de Login/Cadastro
-                                "/aluno/**",      // Páginas do Aluno (HTML)
-                                "/admin/**",      // Páginas do Admin (HTML)
-                                "/js/**",         // Scripts
-                                "/css/**",        // Estilos
-                                "/images/**",     // Imagens
-                                "/assets/**"
+                                "/", "/index.html", "/error", "/favicon.ico",
+                                "/auth/**", "/aluno/**", "/admin/**",
+                                "/js/**", "/css/**", "/images/**", "/assets/**"
                         ).permitAll()
 
-                        // ====================================================
-                        // 2. API PÚBLICA (ENDPOINTS DE AÇÃO)
-                        // ====================================================
-                        // Permite Login e Cadastro sem token
+                        // 2. API PÚBLICA (LOGIN/CADASTRO)
                         .requestMatchers(HttpMethod.POST, "/auth/login", "/auth/register", "/users").permitAll()
 
-                        // ====================================================
-                        // 3. ZONA RESTRITA (DADOS DO SISTEMA)
-                        // ====================================================
-                        // Todo o resto (ex: GET /courses, POST /courses) exige Token
+                        // 3. TODO O RESTO EXIGE LOGIN (Token obrigatório)
                         .anyRequest().authenticated()
                 )
                 .addFilterBefore(securityFilter, UsernamePasswordAuthenticationFilter.class);
