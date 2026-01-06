@@ -1,5 +1,5 @@
 // ==========================================
-// AUTENTICAÇÃO E VALIDAÇÃO FRONTEND (CORRIGIDO)
+// AUTENTICAÇÃO E VALIDAÇÃO FRONTEND (CORRIGIDO COM CPF)
 // ==========================================
 const BASE_URL = "http://localhost:8081";
 
@@ -28,14 +28,10 @@ document.addEventListener("DOMContentLoaded", () => {
 
                 UI.toast.info(`Bem-vindo, Dr(a). ${data.name}!`);
 
-                // ============================================================
-                // CORREÇÃO AQUI: Mudamos de 'meus-cursos.html' para 'catalogo.html'
-                // ============================================================
                 setTimeout(() => {
                     if (data.role === 'ADMIN' || data.role === 'ROLE_ADMIN') {
                         window.location.href = "/admin/dashboard.html";
                     } else {
-                        // O aluno agora vai para a LOJA primeiro
                         window.location.href = "/aluno/catalogo.html";
                     }
                 }, 1500);
@@ -46,10 +42,11 @@ document.addEventListener("DOMContentLoaded", () => {
         });
     }
 
-    // --- 2. LÓGICA DE CADASTRO (Inalterada) ---
+    // --- 2. LÓGICA DE CADASTRO ---
     const cadastroForm = document.getElementById("cadastro-form");
     if (cadastroForm) {
         const cpfInput = document.getElementById("cpf");
+        // Máscara visual do CPF
         if (cpfInput) {
             cpfInput.addEventListener("input", (e) => {
                 let v = e.target.value.replace(/\D/g, "");
@@ -66,13 +63,14 @@ document.addEventListener("DOMContentLoaded", () => {
             const submitBtn = cadastroForm.querySelector("button[type='submit']");
 
             const nome = document.getElementById("nome").value.trim();
-            const cpfVisual = document.getElementById("cpf").value;
-            const cpfLimpo = cpfVisual.replace(/\D/g, "");
+            const cpfVisual = document.getElementById("cpf").value; // O valor com pontos e traço
+            const cpfLimpo = cpfVisual.replace(/\D/g, ""); // Só números para validar tamanho
             const email = document.getElementById("email").value.trim();
             const confirmaEmail = document.getElementById("confirma_email").value.trim();
             const senha = document.getElementById("senha").value;
             const confirmaSenha = document.getElementById("confirma_senha").value;
 
+            // --- Validações ---
             if (cpfLimpo.length !== 11) {
                 UI.toast.error("CPF inválido. Digite os 11 números.");
                 document.getElementById("cpf").focus();
@@ -80,10 +78,7 @@ document.addEventListener("DOMContentLoaded", () => {
             }
             if (email !== confirmaEmail) {
                 UI.toast.error("Os e-mails não coincidem!");
-                document.getElementById("confirma_email").classList.add("border-red-500");
                 return;
-            } else {
-                document.getElementById("confirma_email").classList.remove("border-red-500");
             }
             if (!email.includes("@") || !email.includes(".")) {
                 UI.toast.error("Digite um e-mail válido.");
@@ -105,19 +100,32 @@ document.addEventListener("DOMContentLoaded", () => {
                     method: "POST",
                     headers: { "Content-Type": "application/json" },
                     body: JSON.stringify({
-                        name: nome, email: email, password: senha, role: "USER"
+                        name: nome,
+                        email: email,
+                        password: senha,
+                        cpf: cpfVisual,
+
+                        role: "STUDENT"
                     })
                 });
 
                 if (response.ok) {
-                    UI.toast.success("Conta criada com sucesso!");
+                    UI.toast.success("Conta criada com sucesso! Redirecionando...");
                     setTimeout(() => window.location.href = "/auth/login.html", 2000);
                 } else {
+                    // Tenta ler o erro que o Backend mandou (ex: "Email já existe")
                     const errorText = await response.text();
-                    UI.toast.error(errorText || "Erro ao criar conta.");
+                    // Tenta ver se é JSON ou texto puro
+                    try {
+                         const errJson = JSON.parse(errorText);
+                         UI.toast.error(errJson.message || "Erro ao criar conta.");
+                    } catch(e) {
+                         UI.toast.error(errorText || "Erro ao criar conta.");
+                    }
                 }
             } catch (error) {
-                UI.toast.error("Erro de conexão. Servidor offline?");
+                console.error(error);
+                UI.toast.error("Erro de conexão. O servidor está rodando?");
             } finally {
                 UI.buttonLoading(submitBtn, false);
             }

@@ -8,7 +8,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
-import java.util.List; // <--- Importação necessária adicionada
+import java.util.List;
 
 @Service
 @RequiredArgsConstructor
@@ -16,8 +16,9 @@ public class UserService {
     private final UserRepository repository;
     private final PasswordEncoder passwordEncoder;
 
-    // --- SEU MÉTODO ORIGINAL (MANTIDO) ---
     public User registerUser(UserCreateDTO dto) {
+        // 👇 ADICIONE ESSA LINHA AQUI! ELA VAI SALVAR SUA VIDA.
+        System.out.println("O QUE CHEGOU DO FRONTEND: " + dto.toString());
         if (repository.existsByEmail(dto.getEmail())) {
             throw new RuntimeException("Erro: Email já cadastrado no sistema!");
         }
@@ -25,16 +26,17 @@ public class UserService {
         User newUser = new User();
         newUser.setName(dto.getName());
         newUser.setEmail(dto.getEmail());
+
+        // AQUI ESTÁ A CORREÇÃO 👇
+        newUser.setCpf(dto.getCpf()); // Agora pega o CPF do envelope e joga no usuário
+
         String senhaCriptografada = passwordEncoder.encode(dto.getPassword());
-
-        newUser.setPasswordHash(senhaCriptografada); // Mantido conforme seu código
-
-        newUser.setRole(Role.STUDENT); // Mantido conforme seu código
+        newUser.setPasswordHash(senhaCriptografada);
+        newUser.setRole(Role.STUDENT);
 
         return repository.save(newUser);
     }
 
-    // --- NOVO MÉTODO (ADICIONADO) ---
     // Este método permite que o UserController pegue a lista do banco
     public List<User> listAllUsers() {
         return repository.findAll();

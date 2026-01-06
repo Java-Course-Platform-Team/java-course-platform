@@ -32,9 +32,9 @@ public class User implements UserDetails {
     @Column(unique = true) // Garante que não repete email
     private String email;
 
-    // --- ADICIONADO: O CAMPO QUE FALTAVA ---
+
     private String cpf;
-    // ---------------------------------------
+
 
     @Column(name = "password_hash")
     private String passwordHash;
