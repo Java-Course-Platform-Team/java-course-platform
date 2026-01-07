@@ -44,6 +44,8 @@ public class SecurityConfig {
                         // 2. API PÚBLICA (LOGIN/CADASTRO)
                         .requestMatchers(HttpMethod.POST, "/auth/login", "/auth/register", "/users").permitAll()
 
+                        .requestMatchers("/payments/**").permitAll()
+
                         // 3. TODO O RESTO EXIGE LOGIN (Token obrigatório)
                         .anyRequest().authenticated()
                 )
