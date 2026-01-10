@@ -15,18 +15,6 @@ public class PaymentService {
 
     public String createPaymentLink(Course course, User user) {
         try {
-            // --- 🚨 MODO DE EMERGÊNCIA (MOCK) ---
-            // Como o site do Mercado Pago está OFF, vamos pular a chamada real
-            // para não dar erro 500.
-
-            System.out.println("⚠️ SIMULANDO PAGAMENTO PARA: " + course.getTitle());
-            System.out.println("⚠️ USUÁRIO: " + user.getName());
-
-            // Retornamos um link falso só para o Postman ficar feliz (200 OK)
-            return "https://sandbox.mercadopago.com.br/checkout/v1/redirect?pref_id=TEST-LINK-FAKE-123";
-
-            /* 🔴 CÓDIGO REAL (DESCOMENTAR QUANDO TIVER O TOKEN REAL)
-
             // 1. O QUE ESTÁ SENDO VENDIDO?
             PreferenceItemRequest itemRequest = PreferenceItemRequest.builder()
                     .id(course.getId().toString())
@@ -61,7 +49,7 @@ public class PaymentService {
                     .failure("http://localhost:8081/aluno/erro.html")
                     .build();
 
-            // 4. PREFERENCIA
+            // 4. PREFERÊNCIA FINAL
             PreferenceRequest preferenceRequest = PreferenceRequest.builder()
                     .items(items)
                     .payer(payerRequest)
@@ -71,11 +59,11 @@ public class PaymentService {
                     .statementDescriptor("ODONTOPRO")
                     .build();
 
+            // 5. CRIAÇÃO DO LINK REAL
             PreferenceClient client = new PreferenceClient();
             Preference preference = client.create(preferenceRequest);
 
-            return preference.getInitPoint();
-            */
+            return preference.getInitPoint(); // Retorna o link verdadeiro
 
         } catch (Exception e) {
             e.printStackTrace();
