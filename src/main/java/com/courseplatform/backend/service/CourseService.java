@@ -1,7 +1,9 @@
 package com.courseplatform.backend.service;
 
 import com.courseplatform.backend.dto.LessonCreateDTO;
+import com.courseplatform.backend.dto.LessonResponseDTO;
 import com.courseplatform.backend.dto.ModuleCreateDTO;
+import com.courseplatform.backend.dto.ModuleResponseDTO;
 import com.courseplatform.backend.entity.Course;
 import com.courseplatform.backend.entity.Lesson;
 import com.courseplatform.backend.entity.Module;
@@ -60,5 +62,33 @@ public class CourseService {
     // Lista as aulas de um módulo
     public List<Lesson> listLessonsByModule(UUID moduleId) {
         return lessonRepository.findByModuleId(moduleId);
+    }
+
+    // === NOVO MÉTODO PARA O PLAYER (A ÁRVORE DE CONTEÚDO) ===
+    public List<ModuleResponseDTO> getCourseModules(Long courseId) {
+
+        // 1. Busca todos os módulos do curso
+        List<Module> modules = moduleRepository.findByCourseId(courseId);
+
+        // 2. Transforma cada Módulo (Entity) em um ModuleResponseDTO
+        return modules.stream().map(module -> {
+
+            // 2.1. Busca as aulas desse módulo específico
+            List<Lesson> lessons = lessonRepository.findByModuleId(module.getId());
+
+            // 2.2. Transforma as Aulas (Entity) em LessonResponseDTO
+            List<LessonResponseDTO> lessonDTOs = lessons.stream()
+                    .map(l -> new LessonResponseDTO(
+                            l.getId(),
+                            l.getTitle(),
+                            l.getVideoUrl(),
+                            l.getDurationSeconds()
+                    ))
+                    .toList();
+
+            // 2.3. Retorna o Módulo preenchido com suas aulas
+            return new ModuleResponseDTO(module.getId(), module.getTitle(), lessonDTOs);
+
+        }).toList();
     }
 }

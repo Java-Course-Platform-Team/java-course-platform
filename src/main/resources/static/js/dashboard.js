@@ -1,18 +1,18 @@
 // ==========================================
-// DASHBOARD ALUNO - ODONTOPRO LUXURY (COM MOCK DE PAGAMENTO)
+// STORE (LOJA DE CURSOS) - VERSÃO FINAL (REAL)
 // ==========================================
 
 const API_URL = "http://localhost:8081";
 let globalCourses = [];
 
 document.addEventListener("DOMContentLoaded", () => {
-    // 1. Mostra Skeletons
+    // 1. Mostra Skeletons (Carregamento)
     renderSkeletons();
 
-    // 2. Busca dados (com delay pequeno para ver a animação)
+    // 2. Busca dados reais
     setTimeout(() => {
         fetchStudentCourses();
-    }, 1000);
+    }, 500);
 
     updateUserInfo();
     setupSearch();
@@ -27,57 +27,91 @@ function updateUserInfo() {
     }
 }
 
-// --- SIMULAÇÃO DE CHECKOUT (MERCADO PAGO) ---
+// --- CHECKOUT REAL (INTEGRADO AO BACKEND) ---
 async function startCheckout(courseId, courseTitle, price) {
-    // 1. Feedback Visual (Loading)
-    if (typeof UI !== 'undefined') {
-        UI.toast.info("A conectar ao Mercado Pago...");
-    } else {
-        alert("A conectar ao Mercado Pago...");
+    const token = localStorage.getItem("token");
+
+    // 1. Verifica se está logado
+    if (!token) {
+        alert("Você precisa estar logado para comprar.");
+        window.location.href = "/auth/login.html";
+        return;
     }
 
-    // Simula o tempo de resposta do servidor (1.5s)
-    await new Promise(r => setTimeout(r, 1500));
+    // 2. Tenta pegar o ID do usuário (Salvo no login)
+    // Se o John não estiver salvando o objeto 'user' inteiro, isso pode ser null.
+    // Nesse caso, o Backend teria que pegar o ID pelo Token (mas vamos tentar mandar o JSON conforme combinado).
+    const userJson = localStorage.getItem("user");
+    let userId = null;
+    if (userJson) {
+        try {
+            const userObj = JSON.parse(userJson);
+            userId = userObj.id;
+        } catch (e) { console.error("Erro ao ler usuário", e); }
+    }
 
-    // 2. Aqui entraria o fetch real para o backend do Felipe no futuro:
-    /*
-    const response = await fetch(`${API_URL}/payments/checkout`, {
-        method: "POST",
-        headers: { "Authorization": `Bearer ${token}`, "Content-Type": "application/json" },
-        body: JSON.stringify({ courseId: courseId })
-    });
-    const data = await response.json();
-    window.location.href = data.paymentUrl; // Redireciona para o MP
-    */
+    // 3. Feedback Visual (Botão muda de estado)
+    if (typeof UI !== 'undefined') UI.toast.info("Conectando ao Mercado Pago...");
 
-    // 3. MOCK: Redireciona para a página de sucesso fake
-    console.log(`[MOCK] A iniciar pagamento para: ${courseTitle} (R$ ${price})`);
+    // Procura o botão que foi clicado para desativar
+    const btn = event.target.closest('button');
+    if(btn) {
+        btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Aguarde...';
+        btn.disabled = true;
+    }
 
-    // Redireciona passando o nome do curso na URL para exibir na tela de sucesso
-    window.location.href = `/aluno/pagamento-sucesso.html?course=${encodeURIComponent(courseTitle)}`;
+    try {
+        // 4. CHAMA O BACKEND REAL 🚀
+        const response = await fetch(`${API_URL}/payments/checkout`, {
+            method: "POST",
+            headers: {
+                "Authorization": `Bearer ${token}`,
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify({
+                userId: userId, // Se for null, o Backend pega do Token
+                courseId: courseId
+            })
+        });
+
+        if (!response.ok) {
+            throw new Error("Erro ao gerar link de pagamento");
+        }
+
+        const data = await response.json();
+
+        // 5. REDIRECIONA PRO MERCADO PAGO
+        if (data.url) {
+            console.log("Link gerado com sucesso:", data.url);
+            window.location.href = data.url;
+        } else {
+            alert("Erro: O servidor não retornou o link de pagamento.");
+        }
+
+    } catch (error) {
+        console.error(error);
+        alert("Não foi possível iniciar o pagamento. Tente novamente.");
+        if(btn) {
+            btn.innerHTML = 'COMPRAR';
+            btn.disabled = false;
+        }
+    }
 }
 
 function renderSkeletons() {
     const container = document.getElementById("courses-grid");
     if (!container) return;
-
     container.innerHTML = "";
 
+    // Skeleton visual simples
     const skeletonCard = `
-        <div class="bg-[#111] border border-gray-800 flex flex-col h-full rounded-sm overflow-hidden">
-            <div class="h-52 w-full skeleton border-b border-white/5"></div>
-            <div class="p-8 flex flex-col flex-1 gap-4">
-                <div class="h-8 w-3/4 skeleton rounded"></div>
-                <div class="h-1 w-12 skeleton rounded my-2"></div>
-                <div class="h-3 w-full skeleton rounded"></div>
-                <div class="h-3 w-5/6 skeleton rounded"></div>
-                <div class="mt-auto pt-6 border-t border-white/10 flex items-center justify-between">
-                    <div class="h-8 w-24 skeleton rounded"></div>
-                    <div class="h-10 w-28 skeleton rounded"></div>
-                </div>
+        <div class="bg-[#111] border border-gray-800 flex flex-col h-full rounded-sm overflow-hidden opacity-50">
+            <div class="h-52 w-full bg-gray-800 animate-pulse"></div>
+            <div class="p-8 space-y-4">
+                <div class="h-6 w-3/4 bg-gray-800 animate-pulse rounded"></div>
+                <div class="h-4 w-1/2 bg-gray-800 animate-pulse rounded"></div>
             </div>
         </div>`;
-
     container.innerHTML = skeletonCard.repeat(3);
 }
 
@@ -86,11 +120,8 @@ function setupLogout() {
     if (btnLogout) {
         btnLogout.addEventListener("click", (e) => {
             e.preventDefault();
-            if (typeof UI !== 'undefined') UI.toast.info("A sair do sistema...");
-            localStorage.removeItem("token");
-            localStorage.removeItem("userRole");
-            localStorage.removeItem("userName");
-            setTimeout(() => window.location.href = "/auth/login.html", 1000);
+            localStorage.clear();
+            window.location.href = "/auth/login.html";
         });
     }
 }
@@ -123,7 +154,7 @@ async function fetchStudentCourses() {
         });
 
         if (response.status === 403 || response.status === 401) {
-            localStorage.removeItem("token");
+            localStorage.clear();
             window.location.href = "/auth/login.html";
             return;
         }
@@ -133,7 +164,7 @@ async function fetchStudentCourses() {
 
     } catch (error) {
         console.error("Erro:", error);
-        container.innerHTML = '<p class="text-red-500 col-span-full text-center">Erro de conexão.</p>';
+        container.innerHTML = '<p class="text-red-500 col-span-full text-center">Erro de conexão com o servidor.</p>';
     }
 }
 
@@ -152,27 +183,20 @@ function renderCourses(coursesList) {
 
     coursesList.forEach(course => {
         const price = course.price ? parseFloat(course.price) : 0.00;
-
-        // --- LÓGICA DO BOTÃO ---
-        // Se já comprou (purchased=true), mostra "Assistir".
-        // Se não, mostra "Comprar" que chama o startCheckout.
         const playerLink = `/aluno/player.html?id=${course.id}&title=${encodeURIComponent(course.title)}`;
 
-        const actionButton = course.purchased
-            ? `<a href="${playerLink}" class="px-6 py-2 bg-green-600 hover:bg-green-500 text-white text-xs font-bold uppercase tracking-widest transition-colors rounded-sm">Assistir</a>`
-            : `<button onclick="startCheckout(${course.id}, '${course.title.replace(/'/g, "\\'")}', ${price})" class="px-6 py-2 bg-yellow-500 hover:bg-yellow-400 text-black text-xs font-bold uppercase tracking-widest transition-colors shadow-[0_0_15px_rgba(212,175,55,0.4)] rounded-sm">
+        // Se o Backend mandar um campo 'purchased: true', mudamos o botão para "Assistir"
+        // Por enquanto, assumimos que na Loja o foco é vender.
+        const actionButton = `<button onclick="startCheckout(${course.id}, '${course.title.replace(/'/g, "\\'")}', ${price})" class="px-6 py-2 bg-yellow-500 hover:bg-yellow-400 text-black text-xs font-bold uppercase tracking-widest transition-colors shadow-[0_0_15px_rgba(212,175,55,0.4)] rounded-sm">
                 Comprar
               </button>`;
 
-        const imgLink = course.imageUrl || course.image_url || course.imgUrl || "";
+        const imgLink = course.imageUrl || "";
         const hasValidImage = imgLink && imgLink.startsWith("http");
 
         const coverContent = hasValidImage
-            ? `<img src="${imgLink}" alt="${course.title}" 
-                   class="w-full h-full object-cover opacity-80 group-hover:opacity-100 transition-opacity duration-500 grayscale group-hover:grayscale-0"
-                   onerror="this.onerror=null; this.src='https://via.placeholder.com/400x200/333/fff?text=Imagem+Indispon%C3%ADvel';">`
-            : `<div class="absolute inset-0 opacity-20 bg-[url('https://www.transparenttextures.com/patterns/dark-matter.png')]"></div>
-               <i class="fas fa-tooth absolute -bottom-8 -left-8 text-9xl text-yellow-500 opacity-5 group-hover:opacity-10 group-hover:scale-110 transition duration-700"></i>`;
+            ? `<img src="${imgLink}" alt="${course.title}" class="w-full h-full object-cover opacity-80 group-hover:opacity-100 transition-opacity duration-500 grayscale group-hover:grayscale-0">`
+            : `<div class="absolute inset-0 opacity-20 bg-gray-800"></div><i class="fas fa-tooth absolute -bottom-8 -left-8 text-9xl text-yellow-500 opacity-5 group-hover:opacity-10 transition duration-700"></i>`;
 
         const card = `
             <div class="bg-[#111] border border-gray-800 hover:border-yellow-500/50 flex flex-col h-full transition-all duration-300 group relative hover:-translate-y-2 hover:shadow-[0_20px_50px_-12px_rgba(0,0,0,1)] animate-fade-in">
@@ -188,7 +212,7 @@ function renderCourses(coursesList) {
                     </h3>
                     <div class="w-12 h-0.5 bg-yellow-500/50 mb-4"></div>
                     <p class="text-gray-400 text-sm font-light leading-relaxed mb-8 flex-1 line-clamp-3">
-                       ${course.description || 'Conteúdo exclusivo OdontoPro.'}
+                       ${course.description || 'Domine as técnicas mais avançadas.'}
                     </p>
                     <div class="mt-auto pt-6 border-t border-white/10 flex items-center justify-between">
                         <div>

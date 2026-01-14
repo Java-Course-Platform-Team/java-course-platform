@@ -1,134 +1,175 @@
 // ==========================================
-// PLAYER DE VÍDEO (LADO DO ALUNO)
+// PLAYER DE VÍDEO (INTEGRADO AO BACKEND)
 // ==========================================
 
+const API_URL = "http://localhost:8081";
+
 document.addEventListener("DOMContentLoaded", () => {
-    // 1. Segurança Básica
-    const token = localStorage.getItem("token");
-    if (!token) { window.location.href = "/auth/login.html"; return; }
-
-    // 2. Captura dados da URL
-    const urlParams = new URLSearchParams(window.location.search);
-    const courseId = urlParams.get('id');
-    const courseTitle = urlParams.get('title');
-
-    // 3. Define Título da Página
-    if (courseTitle) {
-        const decodedTitle = decodeURIComponent(courseTitle);
-        const titleEl = document.getElementById("course-title");
-        if(titleEl) titleEl.textContent = decodedTitle;
-        document.title = `${decodedTitle} | Sala de Aula`;
-    }
-
-    // 4. Carrega o Conteúdo (Criado pelo Admin)
-    loadCourseContent(courseId);
+    checkAuth();
+    loadCourseContent();
+    setupLogout();
 });
 
-function loadCourseContent(courseId) {
-    // Tenta ler do LocalStorage (onde o Admin salvou)
-    const savedData = localStorage.getItem(`course_content_${courseId}`);
-
-    if (savedData) {
-        const data = JSON.parse(savedData);
-        if(data.modules && data.modules.length > 0) {
-            renderPlayerSidebar(data.modules);
-
-            // Auto-play na primeira aula do primeiro módulo
-            const firstLesson = data.modules[0].lessons[0];
-            if(firstLesson) {
-                playVideo(firstLesson.videoId, firstLesson.title);
-            }
-        } else {
-            showEmptyState();
-        }
-    } else {
-        showEmptyState();
+// 1. Verifica se tem Login
+function checkAuth() {
+    const token = localStorage.getItem("token");
+    if (!token) {
+        window.location.href = "/auth/login.html";
     }
 }
 
-function showEmptyState() {
-    const sidebar = document.querySelector("aside");
-    if(sidebar) {
-        // Mantém o header, limpa o resto
-        const header = sidebar.firstElementChild;
-        sidebar.innerHTML = "";
-        sidebar.appendChild(header);
-        sidebar.innerHTML += `
-            <div class="p-8 text-center opacity-50">
-                <i class="fas fa-clock text-2xl mb-2 text-gold"></i>
-                <p class="text-xs text-gray-400">Conteúdo em breve.</p>
-            </div>
-        `;
+// 2. Carrega Módulos e Aulas
+async function loadCourseContent() {
+    // Pega o ID do curso da URL (ex: player.html?id=1)
+    const params = new URLSearchParams(window.location.search);
+    const courseId = params.get("id");
+    const courseTitle = params.get("title");
+
+    if (!courseId) {
+        alert("Curso não identificado.");
+        window.location.href = "/aluno/area-aluno.html";
+        return;
     }
-}
 
-function renderPlayerSidebar(modules) {
-    const sidebar = document.querySelector("aside");
-    // Mantém o header (onde diz "Conteúdo")
-    const header = sidebar.firstElementChild;
-    sidebar.innerHTML = "";
-    if(header) sidebar.appendChild(header);
+    // Preenche o título na tela (se tiver elemento pra isso)
+    const titleEl = document.getElementById("course-title-display");
+    if(titleEl && courseTitle) titleEl.textContent = decodeURIComponent(courseTitle);
 
-    // Conta total de aulas para exibir no topo
-    let totalLessons = 0;
-    modules.forEach(m => totalLessons += m.lessons.length);
+    try {
+        const token = localStorage.getItem("token");
 
-    // Atualiza info do header se existir
-    const infoText = sidebar.querySelector("p");
-    if(infoText) infoText.textContent = `${modules.length} Módulos • ${totalLessons} Aulas`;
-
-    modules.forEach((mod, index) => {
-        let lessonsHtml = "";
-
-        mod.lessons.forEach(lesson => {
-            // Cria o item da aula
-            lessonsHtml += `
-                <div onclick="playVideo('${lesson.videoId}', '${lesson.title}', this)" 
-                     class="lesson-item p-4 flex gap-3 items-center cursor-pointer hover:bg-white/5 transition group opacity-70 hover:opacity-100 border-l-2 border-transparent hover:border-gold">
-                    <i class="fas fa-play-circle text-gray-500 text-sm group-hover:text-gold transition"></i>
-                    <div>
-                        <p class="text-sm text-gray-400 group-hover:text-white transition font-medium leading-tight">${lesson.title}</p>
-                        <p class="text-[10px] text-gray-600 mt-0.5">Vídeo HD</p>
-                    </div>
-                </div>
-            `;
+        // CHAMA SEU BACKEND NOVO 🚀
+        const response = await fetch(`${API_URL}/courses/${courseId}/modules`, {
+            headers: { "Authorization": `Bearer ${token}` }
         });
 
-        // HTML do Módulo (Accordion aberto por padrão)
+        if (!response.ok) throw new Error("Erro ao carregar conteúdo");
+
+        const modules = await response.json();
+        renderSidebar(modules);
+
+        // Se tiver pelo menos uma aula, já carrega a primeira no player
+        if (modules.length > 0 && modules[0].lessons.length > 0) {
+            playLesson(modules[0].lessons[0]);
+        }
+
+    } catch (error) {
+        console.error(error);
+        alert("Erro ao carregar as aulas. Tente novamente.");
+    }
+}
+
+// 3. Monta o Menu Lateral (Accordion)
+function renderSidebar(modules) {
+    const container = document.getElementById("modules-container"); // Garanta que existe esse ID no HTML
+    if (!container) return;
+
+    container.innerHTML = "";
+
+    if (modules.length === 0) {
+        container.innerHTML = "<p class='text-gray-500 text-sm p-4'>Nenhuma aula cadastrada ainda.</p>";
+        return;
+    }
+
+    modules.forEach((mod, index) => {
+        // Cria o HTML de cada Aula dentro do Módulo
+        let lessonsHtml = "";
+
+        if (mod.lessons && mod.lessons.length > 0) {
+            lessonsHtml = mod.lessons.map(lesson => `
+                <li onclick='playLesson(${JSON.stringify(lesson)})'
+                    class="cursor-pointer p-3 flex items-center gap-3 hover:bg-white/5 transition border-l-2 border-transparent hover:border-gold group">
+                    <div class="w-6 h-6 rounded-full bg-gray-800 flex items-center justify-center text-[10px] text-gray-400 group-hover:bg-gold group-hover:text-black transition">
+                        <i class="fas fa-play"></i>
+                    </div>
+                    <div>
+                        <p class="text-xs text-gray-300 group-hover:text-white">${lesson.title}</p>
+                        <p class="text-[10px] text-gray-600">${formatDuration(lesson.durationSeconds)}</p>
+                    </div>
+                </li>
+            `).join("");
+        } else {
+            lessonsHtml = "<li class='p-3 text-xs text-gray-600 italic'>Em breve...</li>";
+        }
+
+        // HTML do Módulo (Accordion)
         const html = `
-            <div class="border-b border-white/5">
-                <div class="p-4 bg-[#1a1a1a] flex justify-between items-center cursor-default">
-                    <span class="font-bold text-xs text-gray-300 uppercase tracking-wider">${mod.title}</span>
-                    <i class="fas fa-chevron-down text-[10px] text-gray-600"></i>
-                </div>
-                <div class="bg-black/20">
+            <div class="border-b border-gray-800">
+                <button class="w-full bg-[#151515] p-4 flex items-center justify-between hover:bg-[#1a1a1a] transition text-left"
+                        onclick="toggleModule('mod-${index}')">
+                    <div>
+                        <p class="text-[10px] text-gold uppercase tracking-widest font-bold">Módulo ${index + 1}</p>
+                        <h4 class="text-sm font-bold text-white mt-1">${mod.title}</h4>
+                    </div>
+                    <i class="fas fa-chevron-down text-gray-500 transform transition-transform" id="icon-mod-${index}"></i>
+                </button>
+                <ul id="mod-${index}" class="hidden bg-black/40">
                     ${lessonsHtml}
-                </div>
+                </ul>
             </div>
         `;
-        sidebar.innerHTML += html;
+        container.innerHTML += html;
     });
 }
 
-function playVideo(videoId, title, element) {
-    // Atualiza o iframe
-    const iframe = document.querySelector("iframe");
-    if(iframe) {
-        iframe.src = `https://www.youtube.com/embed/${videoId}?autoplay=1&modestbranding=1&rel=0`;
+// 4. Toca o Vídeo (Troca o Iframe)
+window.playLesson = function(lesson) { // Global para funcionar no onclick
+    const iframe = document.getElementById("video-player");
+    const titleDisplay = document.getElementById("current-lesson-title");
+
+    if (iframe) {
+        // Converte link do Youtube comum para Embed
+        const embedUrl = getEmbedUrl(lesson.videoUrl);
+        iframe.src = embedUrl;
     }
 
-    // Atualiza título da aula na tela
-    const titleEl = document.querySelector("main h2");
-    if(titleEl) titleEl.textContent = title;
+    if (titleDisplay) {
+        titleDisplay.textContent = lesson.title;
+    }
 
-    // Gerencia classe "Ativa" visualmente na sidebar
-    document.querySelectorAll(".lesson-item").forEach(el => {
-        el.classList.remove("active-lesson", "opacity-100", "bg-white/5");
-        el.classList.add("opacity-70");
-    });
+    // Rola para o topo suavemente
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+};
 
-    if(element) {
-        element.classList.add("active-lesson", "opacity-100", "bg-white/5");
-        element.classList.remove("opacity-70");
+// Helpers
+function toggleModule(id) {
+    const el = document.getElementById(id);
+    const icon = document.getElementById(`icon-${id}`);
+    if (el) {
+        el.classList.toggle("hidden");
+        if(icon) icon.classList.toggle("rotate-180");
+    }
+}
+
+function getEmbedUrl(url) {
+    if (!url) return "";
+    // Se já for embed, retorna
+    if (url.includes("/embed/")) return url;
+
+    // Extrai ID do Youtube (suporta v=ID ou youtu.be/ID)
+    let videoId = "";
+    if (url.includes("v=")) {
+        videoId = url.split("v=")[1].split("&")[0];
+    } else if (url.includes("youtu.be/")) {
+        videoId = url.split("youtu.be/")[1];
+    }
+
+    return videoId ? `https://www.youtube.com/embed/${videoId}?autoplay=1&rel=0` : url;
+}
+
+function formatDuration(seconds) {
+    if(!seconds) return "";
+    const min = Math.floor(seconds / 60);
+    return `${min} min`;
+}
+
+function setupLogout() {
+    const btn = document.getElementById("btn-logout");
+    if (btn) {
+        btn.addEventListener("click", (e) => {
+            e.preventDefault();
+            localStorage.clear();
+            window.location.href = "/auth/login.html";
+        });
     }
 }

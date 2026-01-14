@@ -34,19 +34,25 @@ public class SecurityConfig {
                 .cors(cors -> cors.configurationSource(corsConfigurationSource()))
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(authorize -> authorize
-                        // 1. ARQUIVOS PÚBLICOS (HTML, CSS, JS, Imagens)
+                        // 1. ARQUIVOS PÚBLICOS
                         .requestMatchers(
                                 "/", "/index.html", "/error", "/favicon.ico",
                                 "/auth/**", "/aluno/**", "/admin/**",
                                 "/js/**", "/css/**", "/images/**", "/assets/**"
                         ).permitAll()
 
-                        // 2. API PÚBLICA (LOGIN/CADASTRO)
+                        // 2. API PÚBLICA (LOGIN/CADASTRO/LOJA)
                         .requestMatchers(HttpMethod.POST, "/auth/login", "/auth/register", "/users").permitAll()
+                        .requestMatchers("/payments/**", "/webhook/**").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/courses", "/courses/**").permitAll()
 
-                        .requestMatchers("/payments/**").permitAll()
+                        // 3. REGRAS DE ADMIN (Essenciais para o botão Salvar funcionar)
+                        // O .hasRole("ADMIN") vai procurar pelo "ROLE_ADMIN" que colocamos no User.java
+                        .requestMatchers(HttpMethod.POST, "/courses/**").hasRole("ADMIN")
+                        .requestMatchers(HttpMethod.PUT, "/courses/**").hasRole("ADMIN")
+                        .requestMatchers(HttpMethod.DELETE, "/courses/**").hasRole("ADMIN")
 
-                        // 3. TODO O RESTO EXIGE LOGIN (Token obrigatório)
+                        // 4. TODO O RESTO EXIGE LOGIN
                         .anyRequest().authenticated()
                 )
                 .addFilterBefore(securityFilter, UsernamePasswordAuthenticationFilter.class);
@@ -55,24 +61,20 @@ public class SecurityConfig {
     }
 
     @Bean
-    public PasswordEncoder passwordEncoder() {
-        return new BCryptPasswordEncoder();
-    }
+    public PasswordEncoder passwordEncoder() { return new BCryptPasswordEncoder(); }
 
     @Bean
     public AuthenticationManager authenticationManager(AuthenticationConfiguration authenticationConfiguration) throws Exception {
         return authenticationConfiguration.getAuthenticationManager();
     }
 
-    // Configuração Global de CORS (Evita erros de conexão entre Front e Back)
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
-        configuration.setAllowedOrigins(List.of("*")); // Permite qualquer origem (localhost, ip, etc)
+        configuration.setAllowedOrigins(List.of("*"));
         configuration.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS"));
-        configuration.setAllowedHeaders(List.of("*")); // Permite todos os headers (Authorization, Content-Type)
-        configuration.setAllowCredentials(false); // false quando allowedOrigins é *
-
+        configuration.setAllowedHeaders(List.of("*"));
+        configuration.setAllowCredentials(false);
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
         source.registerCorsConfiguration("/**", configuration);
         return source;
