@@ -3,6 +3,7 @@ package com.courseplatform.backend.controller;
 import com.courseplatform.backend.dto.CourseDTO;
 import com.courseplatform.backend.dto.LessonCreateDTO;
 import com.courseplatform.backend.dto.ModuleCreateDTO;
+import com.courseplatform.backend.dto.ModuleResponseDTO;
 import com.courseplatform.backend.entity.Course;
 import com.courseplatform.backend.entity.Lesson;
 import com.courseplatform.backend.entity.Module;
@@ -76,17 +77,21 @@ public class CourseController {
     // PARTE 2: MÓDULOS
     // ==========================================
 
+    // ==========================================
+    // PARTE 2: MÓDULOS
+    // ==========================================
+
     @PostMapping("/modules")
     public ResponseEntity<Module> createModule(@RequestBody ModuleCreateDTO dto) {
         Module novoModulo = service.createModule(dto);
-        // Retorna 201 Created
         return ResponseEntity.status(HttpStatus.CREATED).body(novoModulo);
     }
 
+    // --- AQUI ESTÁ A MUDANÇA ---
     @GetMapping("/{courseId}/modules")
-    public ResponseEntity<List<Module>> listModules(@PathVariable Long courseId) {
-        // Aqui poderíamos verificar se o curso existe, mas o service geralmente lança erro se não achar
-        return ResponseEntity.ok(service.listModulesByCourse(courseId));
+    public ResponseEntity<List<ModuleResponseDTO>> listModulesForPlayer(@PathVariable Long courseId) {
+        // Agora chamamos o método novo que traz a árvore completa
+        return ResponseEntity.ok(service.getCourseModules(courseId));
     }
 
     // ==========================================
