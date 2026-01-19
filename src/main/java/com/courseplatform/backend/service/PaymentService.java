@@ -2,24 +2,24 @@ package com.courseplatform.backend.service;
 
 import com.courseplatform.backend.entity.Course;
 import com.courseplatform.backend.entity.User;
-import com.courseplatform.backend.repository.CourseRepository; // <--- NOVO
-import com.courseplatform.backend.repository.UserRepository;   // <--- NOVO
+import com.courseplatform.backend.repository.CourseRepository;
+import com.courseplatform.backend.repository.UserRepository;
 import com.mercadopago.client.common.IdentificationRequest;
-import com.mercadopago.client.payment.PaymentClient; // <--- NOVO
+import com.mercadopago.client.payment.PaymentClient;
 import com.mercadopago.client.preference.*;
-import com.mercadopago.resources.payment.Payment;   // <--- NOVO
+import com.mercadopago.exceptions.MPApiException; // <--- IMPORTANTE: Import novo para tratar o erro
+import com.mercadopago.resources.payment.Payment;
 import com.mercadopago.resources.preference.Preference;
-import org.springframework.beans.factory.annotation.Autowired; // <--- NOVO
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.UUID; // <--- NOVO
+import java.util.UUID;
 
 @Service
 public class PaymentService {
 
-    // 👇 Injeção de dependências necessárias para o Webhook
     @Autowired
     private EnrollmentService enrollmentService;
     @Autowired
@@ -59,7 +59,7 @@ public class PaymentService {
 
             // 3. PRA ONDE VAI DEPOIS?
             PreferenceBackUrlsRequest backUrls = PreferenceBackUrlsRequest.builder()
-                    .success("http://localhost:8081/aluno/sucesso.html")
+                    .success("http://localhost:8081/aluno/sucesso.html") // Jhon precisa criar isso
                     .pending("http://localhost:8081/aluno/pendente.html")
                     .failure("http://localhost:8081/aluno/erro.html")
                     .build();
@@ -70,16 +70,24 @@ public class PaymentService {
                     .payer(payerRequest)
                     .backUrls(backUrls)
                     .autoReturn("approved")
-                    // 👇 AQUI É O SEGREDO: Enviamos ID_CURSO + "_" + ID_USER para recuperar depois
                     .externalReference(course.getId() + "_" + user.getId())
                     .statementDescriptor("ODONTOPRO")
+                    // 👇 IMPORTANTE: Avisa o MP onde chamar o webhook (Só funciona com HTTPS/Ngrok ou Deploy)
+                    // Se estiver testando local sem Ngrok, o MP vai ignorar, mas precisa estar aqui pro futuro.
+                    .notificationUrl("https://seusite.com/webhook/payment")
                     .build();
 
-            // 5. CRIAÇÃO DO LINK REAL
+            // 5. CRIAÇÃO DO LINK REAL (COM O TRATAMENTO DE ERRO DO JHON)
             PreferenceClient client = new PreferenceClient();
-            Preference preference = client.create(preferenceRequest);
 
-            return preference.getInitPoint();
+            try {
+                Preference preference = client.create(preferenceRequest);
+                return preference.getInitPoint();
+            } catch (MPApiException e) {
+                // 🚨 AQUI ESTÁ O QUE O JHON PEDIU: O ERRO DETALHADO DO MP
+                System.err.println("❌ ERRO CRÍTICO MERCADO PAGO: " + e.getApiResponse().getContent());
+                throw new RuntimeException("Erro ao gerar link MP: " + e.getMessage());
+            }
 
         } catch (Exception e) {
             e.printStackTrace();
@@ -87,22 +95,18 @@ public class PaymentService {
         }
     }
 
-    // MÉTODO 2: PROCESSA A NOTIFICAÇÃO (VOLTA - NOVO! 🆕)
+    // MÉTODO 2: PROCESSA A NOTIFICAÇÃO (VOLTA)
     public void processPaymentNotification(Long paymentId) {
         try {
             System.out.println("🔔 WEBHOOK: Verificando pagamento ID: " + paymentId);
 
-            // 1. Pergunta pro Mercado Pago o status real
             PaymentClient client = new PaymentClient();
             Payment payment = client.get(paymentId);
             String status = payment.getStatus();
             System.out.println("📊 Status atual no Mercado Pago: " + status);
 
-            // 2. Se estiver APROVADO, libera o curso
             if ("approved".equals(status)) {
-                // Recupera quem é o aluno e qual o curso pelo código que enviamos antes
                 String externalRef = payment.getExternalReference();
-                // Exemplo de ref: "12_a1b2-c3d4-..." (idCurso_idUser)
 
                 if (externalRef != null) {
                     String[] parts = externalRef.split("_");
@@ -111,17 +115,14 @@ public class PaymentService {
 
                     System.out.println("🎁 Liberando curso " + courseId + " para aluno " + userId);
 
-                    // Busca no banco
                     var course = courseRepository.findById(courseId).orElseThrow();
                     var user = userRepository.findById(userId).orElseThrow();
 
-                    // Matricula o aluno!
                     enrollmentService.enrollStudent(user, course);
                 }
             }
         } catch (Exception e) {
             System.err.println("❌ Erro no Webhook: " + e.getMessage());
-            // Não lançamos erro aqui para não travar a resposta 200 OK pro Mercado Pago
         }
     }
 }
