@@ -1,96 +1,95 @@
-// ==========================================
-// JS DA LOJA (CATÁLOGO)
-// ==========================================
 const API_URL = "http://localhost:8081";
 let globalCourses = [];
+let ownedCourseIds = [];
 
 document.addEventListener("DOMContentLoaded", () => {
-    renderSkeletons();
     updateUserInfo();
-    setupLogout();
-    fetchCatalog();
+    fetchInitialData();
     setupSearch();
+    setupLogout();
 });
 
-// Busca TODOS os cursos do Backend
-async function fetchCatalog() {
+async function fetchInitialData() {
     const token = localStorage.getItem("token");
     if (!token) { window.location.href = "/auth/login.html"; return; }
 
     try {
-        const res = await fetch(`${API_URL}/courses`, { headers: { "Authorization": `Bearer ${token}` } });
-        globalCourses = await res.json();
+        const [catalogRes, enrollRes] = await Promise.all([
+            fetch(`${API_URL}/courses`, { headers: { "Authorization": `Bearer ${token}` } }),
+            fetch(`${API_URL}/enrollments/my-courses`, { headers: { "Authorization": `Bearer ${token}` } })
+        ]);
 
-        // Pega lista de cursos JÁ COMPRADOS do LocalStorage
-        const myCourses = JSON.parse(localStorage.getItem("my_courses") || "[]");
-
-        renderCatalog(globalCourses, myCourses);
+        globalCourses = await catalogRes.json();
+        if (enrollRes.ok) {
+            const myCourses = await enrollRes.json();
+            ownedCourseIds = myCourses.map(c => c.id);
+        }
+        renderCatalog(globalCourses);
     } catch (e) { console.error(e); }
 }
 
-function renderCatalog(list, myCourses) {
+function renderCatalog(list) {
     const container = document.getElementById("courses-grid");
+    if (!container) return;
     container.innerHTML = "";
 
     list.forEach(c => {
-        // Verifica se eu já tenho esse curso
-        const iOwnIt = myCourses.includes(c.id);
-
-        const imgLink = c.imageUrl || c.image_url || "";
-        const hasImg = imgLink.startsWith("http");
-        const cover = hasImg ? `<img src="${imgLink}" class="w-full h-full object-cover">` : `<div class="w-full h-full bg-gray-800 flex items-center justify-center"><i class="fas fa-tooth text-4xl text-gray-700"></i></div>`;
-
-        // Se já tenho: Botão Cinza "Adquirido". Se não: Botão Dourado "Comprar"
+        const iOwnIt = ownedCourseIds.includes(c.id);
         const btn = iOwnIt
-            ? `<button disabled class="w-full py-3 bg-gray-800 text-gray-400 text-xs font-bold uppercase tracking-widest cursor-not-allowed">Já Adquirido</button>`
-            : `<button onclick="buyCourse(${c.id}, '${c.title}')" class="w-full py-3 bg-gold hover:bg-yellow-500 text-black text-xs font-bold uppercase tracking-widest transition shadow-lg">Comprar - R$ ${c.price}</button>`;
+            ? `<button disabled class="w-full py-3 bg-gray-800 text-gray-500 text-xs font-bold uppercase tracking-widest cursor-not-allowed">Já Adquirido</button>`
+            : `<button onclick="startCheckout(${c.id})" class="w-full py-3 bg-gold hover:bg-yellow-500 text-black text-xs font-bold uppercase tracking-widest transition shadow-lg">Comprar - R$ ${c.price}</button>`;
 
-        const html = `
-            <div class="bg-dark-800 border border-white/5 hover:border-gold/30 transition group flex flex-col h-full">
-                <div class="h-48 relative overflow-hidden">${cover}</div>
+        container.innerHTML += `
+            <div class="bg-[#111] border border-white/5 hover:border-gold/30 transition flex flex-col h-full group">
+                <div class="h-48 bg-neutral-900 relative overflow-hidden">
+                    <img src="${c.imageUrl || ''}" class="w-full h-full object-cover opacity-80 group-hover:opacity-100 transition">
+                </div>
                 <div class="p-6 flex flex-col flex-1">
-                    <div class="text-[10px] text-gold uppercase tracking-widest mb-2">${c.category || 'Curso'}</div>
                     <h3 class="text-lg font-serif text-white mb-2">${c.title}</h3>
-                    <p class="text-gray-500 text-xs line-clamp-3 mb-6 flex-1">${c.description || 'Sem descrição.'}</p>
+                    <p class="text-gray-500 text-xs line-clamp-3 mb-6 flex-1">${c.description || ''}</p>
                     <div class="mt-auto">${btn}</div>
                 </div>
             </div>`;
-        container.innerHTML += html;
     });
 }
 
-// Simula a Compra e SALVA a posse do curso
-async function buyCourse(id, title) {
-    UI.toast.info("Processando pagamento...");
-    await new Promise(r => setTimeout(r, 1500)); // Delay fake
+async function startCheckout(courseId) {
+    const token = localStorage.getItem("token");
+    const user = JSON.parse(localStorage.getItem("user") || "{}");
 
-    // 1. Salva que comprei o ID X
-    const myCourses = JSON.parse(localStorage.getItem("my_courses") || "[]");
-    if(!myCourses.includes(id)) {
-        myCourses.push(id);
-        localStorage.setItem("my_courses", JSON.stringify(myCourses));
-    }
+    try {
+        const response = await fetch(`${API_URL}/payments/checkout`, {
+            method: "POST",
+            headers: { "Authorization": `Bearer ${token}`, "Content-Type": "application/json" },
+            body: JSON.stringify({ userId: user.id, courseId: courseId })
+        });
 
-    // 2. Redireciona
-    window.location.href = `/aluno/pagamento-sucesso.html?course=${encodeURIComponent(title)}`;
+        const data = await response.json();
+        if (data.url || data.init_point) {
+            window.location.href = data.url || data.init_point;
+        } else {
+            alert("Erro ao gerar pagamento.");
+        }
+    } catch (e) { alert("Falha na conexão."); }
 }
 
-// ... (Inclua aqui as funções setupSearch, updateUserInfo, setupLogout e renderSkeletons iguais ao dashboard.js anterior) ...
 function updateUserInfo() {
-    const n = localStorage.getItem("userName");
-    if(document.getElementById("user-name-display")) document.getElementById("user-name-display").textContent = n;
+    const name = localStorage.getItem("userName");
+    const el = document.getElementById("user-name-display");
+    if (el && name) el.textContent = name;
 }
+
 function setupLogout() {
-    document.getElementById("btn-logout").addEventListener("click", (e) => {
-        e.preventDefault(); localStorage.clear(); window.location.href="/auth/login.html";
+    document.getElementById("btn-logout")?.addEventListener("click", () => {
+        localStorage.clear();
+        window.location.href = "/auth/login.html";
     });
 }
-function renderSkeletons() { /* ... código skeleton ... */ }
+
 function setupSearch() {
-    document.getElementById("search-input").addEventListener("input", (e) => {
+    document.getElementById("search-input")?.addEventListener("input", (e) => {
         const term = e.target.value.toLowerCase();
-        const myCourses = JSON.parse(localStorage.getItem("my_courses") || "[]");
         const filtered = globalCourses.filter(c => c.title.toLowerCase().includes(term));
-        renderCatalog(filtered, myCourses);
+        renderCatalog(filtered);
     });
 }

@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gerenciar Cursos | OdontoPro</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <script>
+        tailwind.config = { theme: { extend: { colors: { gold: '#D4AF37', dark: '#0a0a0a', panel: '#151515' } } } }
+    </script>
+</head>
+<body class="bg-black text-gray-300 flex h-screen overflow-hidden">
+
+<aside class="w-64 bg-panel border-r border-white/10 hidden md:flex flex-col shrink-0">
+    <div class="h-20 flex items-center px-8 border-b border-white/10">
+        <span class="font-bold text-white tracking-widest uppercase">ODONTO<span class="text-gold">PRO</span></span>
+    </div>
+    <nav class="flex-1 py-8 space-y-2 px-4">
+        <a href="/admin/dashboard.html" class="flex items-center px-4 py-3 text-gray-500 hover:text-white hover:bg-white/5 rounded transition">
+            <i class="fas fa-chart-line w-6"></i> <span class="text-sm font-bold uppercase tracking-wider">Visão Geral</span>
+        </a>
+        <a href="/admin/alunos.html" class="flex items-center px-4 py-3 text-gray-500 hover:text-white hover:bg-white/5 rounded transition">
+            <i class="fas fa-users w-6"></i> <span class="text-sm font-bold uppercase tracking-wider">Alunos</span>
+        </a>
+        <a href="/admin/gerenciar-cursos.html" class="flex items-center px-4 py-3 bg-gold/10 text-gold rounded border border-gold/20">
+            <i class="fas fa-film w-6"></i> <span class="text-sm font-bold uppercase tracking-wider">Cursos</span>
+        </a>
+    </nav>
+</aside>
+
+<main class="flex-1 flex flex-col overflow-hidden">
+    <header class="h-20 bg-dark/95 border-b border-white/10 flex items-center justify-between px-8">
+        <h2 class="text-xl text-white font-light">Gestão de <span class="font-bold text-gold">Cursos</span></h2>
+        <a href="/admin/form-curso.html" class="bg-gold text-black px-6 py-2 text-xs font-bold uppercase rounded shadow-lg">+ Criar Curso</a>
+    </header>
+
+    <div class="flex-1 overflow-y-auto p-8">
+        <div class="flex gap-4 mb-6">
+            <input type="text" id="search-courses" placeholder="Buscar curso..." class="bg-panel border border-white/10 p-2 rounded text-sm w-64 focus:border-gold outline-none">
+        </div>
+
+        <div id="courses-admin-list" class="space-y-4">
+        </div>
+    </div>
+</main>
+
+<script src="/js/admin-courses.js"></script>
+</body>
+</html>
