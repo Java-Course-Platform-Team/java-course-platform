@@ -1,4 +1,5 @@
-const API_URL = "http://localhost:8081";
+// store.js - GERENCIAMENTO DA LOJA E MATRÍCULAS (VERSÃO LUXURY REAL)
+const API_URL = "http://localhost:8081"; // Porta oficial do Felipe
 let globalCourses = [];
 let ownedCourseIds = [];
 
@@ -9,6 +10,7 @@ document.addEventListener("DOMContentLoaded", () => {
     setupLogout();
 });
 
+// 1. CARREGAMENTO DE DADOS REAIS
 async function fetchInitialData() {
     const token = localStorage.getItem("token");
     if (!token) { window.location.href = "/auth/login.html"; return; }
@@ -19,43 +21,75 @@ async function fetchInitialData() {
             fetch(`${API_URL}/enrollments/my-courses`, { headers: { "Authorization": `Bearer ${token}` } })
         ]);
 
-        globalCourses = await catalogRes.json();
+        if (catalogRes.ok) globalCourses = await catalogRes.json();
+
         if (enrollRes.ok) {
             const myCourses = await enrollRes.json();
             ownedCourseIds = myCourses.map(c => c.id);
         }
+
         renderCatalog(globalCourses);
-    } catch (e) { console.error(e); }
+    } catch (e) {
+        if (typeof UI !== 'undefined') UI.toast.error("Falha ao carregar catálogo de elite.");
+    }
 }
 
+// 2. RENDERIZAÇÃO COM EXIBIÇÃO DE PREÇO CORRIGIDA
 function renderCatalog(list) {
     const container = document.getElementById("courses-grid");
     if (!container) return;
     container.innerHTML = "";
 
+    if (list.length === 0) {
+        container.innerHTML = `<p class="text-gray-500 italic text-center col-span-full py-20">Nenhum curso disponível nesta coleção no momento.</p>`;
+        return;
+    }
+
     list.forEach(c => {
         const iOwnIt = ownedCourseIds.includes(c.id);
-        const btn = iOwnIt
-            ? `<button disabled class="w-full py-3 bg-gray-800 text-gray-500 text-xs font-bold uppercase tracking-widest cursor-not-allowed">Já Adquirido</button>`
-            : `<button onclick="startCheckout(${c.id})" class="w-full py-3 bg-gold hover:bg-yellow-500 text-black text-xs font-bold uppercase tracking-widest transition shadow-lg">Comprar - R$ ${c.price}</button>`;
+
+        // Formatação do preço para o padrão brasileiro
+        const priceFormatted = parseFloat(c.price || 0).toLocaleString('pt-BR', {
+            style: 'currency',
+            currency: 'BRL'
+        });
+
+        const btnAction = iOwnIt
+            ? `<button disabled class="w-full py-4 bg-white/5 text-gray-600 text-[10px] font-bold uppercase tracking-[0.3em] cursor-not-allowed border border-white/5">Já Adquirido</button>`
+            : `<button onclick="startCheckout(this, ${c.id})" class="w-full py-4 bg-gold hover:bg-gold-light text-black text-[10px] font-bold uppercase tracking-[0.3em] transition-all shadow-[0_10px_30px_rgba(212,175,55,0.1)]">Adquirir Acesso</button>`;
 
         container.innerHTML += `
-            <div class="bg-[#111] border border-white/5 hover:border-gold/30 transition flex flex-col h-full group">
-                <div class="h-48 bg-neutral-900 relative overflow-hidden">
-                    <img src="${c.imageUrl || ''}" class="w-full h-full object-cover opacity-80 group-hover:opacity-100 transition">
+            <div class="bg-black border border-white/5 hover:border-gold/30 transition-all duration-500 flex flex-col h-full group">
+                <div class="h-64 bg-neutral-900 relative overflow-hidden">
+                    <img src="${c.imageUrl || 'https://images.unsplash.com/photo-1629909613654-28e377c37b09'}"
+                         class="w-full h-full object-cover opacity-60 group-hover:opacity-100 group-hover:scale-110 transition-all duration-1000">
+                    <div class="absolute inset-0 bg-gradient-to-t from-black via-transparent to-transparent"></div>
                 </div>
-                <div class="p-6 flex flex-col flex-1">
-                    <h3 class="text-lg font-serif text-white mb-2">${c.title}</h3>
-                    <p class="text-gray-500 text-xs line-clamp-3 mb-6 flex-1">${c.description || ''}</p>
-                    <div class="mt-auto">${btn}</div>
+                <div class="p-8 flex flex-col flex-1">
+                    <div class="flex justify-between items-start mb-2">
+                        <span class="text-gold text-[9px] uppercase tracking-[0.4em]">Coleção Elite</span>
+                        <span class="text-white font-serif italic text-sm">${priceFormatted}</span>
+                    </div>
+                    <h3 class="text-xl font-serif text-white mb-3 italic">${c.title}</h3>
+                    <p class="text-gray-500 text-xs line-clamp-3 mb-8 leading-relaxed">${c.description || 'Experiência exclusiva para membros OdontoPro.'}</p>
+                    <div class="mt-auto">${btnAction}</div>
                 </div>
             </div>`;
     });
 }
 
-async function startCheckout(courseId) {
+// 3. CHECKOUT REAL COM UUID
+async function startCheckout(btn, courseId) {
     const token = localStorage.getItem("token");
     const user = JSON.parse(localStorage.getItem("user") || "{}");
+
+    if (!user.id) {
+        if (typeof UI !== 'undefined') UI.toast.error("Sessão expirada. Reenviando ao login...");
+        setTimeout(() => window.location.href = "/auth/login.html", 2000);
+        return;
+    }
+
+    if (typeof UI !== 'undefined') UI.buttonLoading(btn, true, "Processando...");
 
     try {
         const response = await fetch(`${API_URL}/payments/checkout`, {
@@ -68,15 +102,19 @@ async function startCheckout(courseId) {
         if (data.url || data.init_point) {
             window.location.href = data.url || data.init_point;
         } else {
-            alert("Erro ao gerar pagamento.");
+            throw new Error();
         }
-    } catch (e) { alert("Falha na conexão."); }
+    } catch (e) {
+        if (typeof UI !== 'undefined') UI.toast.error("Falha ao gerar link de pagamento.");
+    } finally {
+        if (typeof UI !== 'undefined') UI.buttonLoading(btn, false);
+    }
 }
 
 function updateUserInfo() {
-    const name = localStorage.getItem("userName");
+    const user = JSON.parse(localStorage.getItem("user") || "{}");
     const el = document.getElementById("user-name-display");
-    if (el && name) el.textContent = name;
+    if (el && user.name) el.textContent = user.name;
 }
 
 function setupLogout() {
