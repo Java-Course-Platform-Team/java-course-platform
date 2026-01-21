@@ -1,7 +1,11 @@
-const API_URL = "http://localhost:8081";
+// ==========================================
+// CONTROLE DO PLAYER E PROGRESSO - ODONTOPRO
+// ==========================================
+const API_URL = "http://localhost:8081"; // Porta oficial do Felipe
 
 document.addEventListener("DOMContentLoaded", () => {
     checkAuth();
+    updateUserInfo(); // Garante o nome do usuário na Navbar
     loadCourseContent();
     setupLogout();
 });
@@ -11,13 +15,14 @@ function checkAuth() {
     if (!token) window.location.href = "/auth/login.html";
 }
 
+// 1. CARREGAMENTO DINÂMICO DE CONTEÚDO
 async function loadCourseContent() {
     const params = new URLSearchParams(window.location.search);
     const courseId = params.get("id");
     const courseTitle = params.get("title");
 
     if (!courseId) {
-        window.location.href = "/aluno/area-aluno.html";
+        window.location.href = "/aluno/catalogo.html";
         return;
     }
 
@@ -35,14 +40,16 @@ async function loadCourseContent() {
         const modules = await response.json();
         renderSidebar(modules);
 
-        if (modules.length > 0 && modules[0].lessons.length > 0) {
+        // Auto-play da primeira aula disponível
+        if (modules.length > 0 && modules[0].lessons && modules[0].lessons.length > 0) {
             playLesson(modules[0].lessons[0]);
         }
     } catch (error) {
-        console.error(error);
+        if (typeof UI !== 'undefined') UI.toast.error("Erro ao sincronizar módulos.");
     }
 }
 
+// 2. RENDERIZAÇÃO DA SIDEBAR LUXURY
 function renderSidebar(modules) {
     const container = document.getElementById("modules-container");
     if (!container) return;
@@ -51,30 +58,31 @@ function renderSidebar(modules) {
     modules.forEach((mod, index) => {
         let lessonsHtml = mod.lessons && mod.lessons.length > 0
             ? mod.lessons.map(lesson => `
-                <li class="lesson-item cursor-pointer p-3 flex items-center gap-3 hover:bg-white/5 transition border-l-2 border-transparent hover:border-gold group"
+                <li class="lesson-item cursor-pointer p-4 flex items-center gap-4 hover:bg-white/5 transition border-l-2 border-transparent hover:border-gold group"
                     data-lesson-info='${JSON.stringify(lesson).replace(/'/g, "&apos;")}'>
-                    <div class="w-6 h-6 rounded-full bg-gray-800 flex items-center justify-center text-[10px] text-gray-400 group-hover:bg-gold group-hover:text-black transition">
+                    <div class="w-8 h-8 rounded-full bg-dark-900 border border-white/10 flex items-center justify-center text-[10px] text-gray-500 group-hover:border-gold group-hover:text-gold transition">
                         <i class="fas fa-play"></i>
                     </div>
                     <div>
-                        <p class="text-xs text-gray-300 group-hover:text-white">${lesson.title}</p>
+                        <p class="text-[11px] font-medium text-gray-400 group-hover:text-white transition">${lesson.title}</p>
                     </div>
                 </li>`).join("")
-            : "<li class='p-3 text-xs text-gray-600 italic'>Em breve...</li>";
+            : "<li class='p-4 text-[10px] text-gray-600 italic tracking-widest'>Conteúdo em breve...</li>";
 
         container.innerHTML += `
-            <div class="border-b border-gray-800">
-                <button class="w-full bg-[#151515] p-4 flex items-center justify-between hover:bg-[#1a1a1a] transition" onclick="toggleModule('mod-${index}')">
-                    <div>
-                        <p class="text-[10px] text-gold uppercase tracking-widest font-bold">Módulo ${index + 1}</p>
-                        <h4 class="text-sm font-bold text-white mt-1">${mod.title}</h4>
+            <div class="border-b border-white/5">
+                <button class="w-full bg-black p-5 flex items-center justify-between hover:bg-white/5 transition" onclick="toggleModule('mod-${index}')">
+                    <div class="text-left">
+                        <p class="text-[9px] text-gold uppercase tracking-[0.3em] font-bold">Módulo ${index + 1}</p>
+                        <h4 class="text-xs font-bold text-white mt-1 uppercase tracking-wider">${mod.title}</h4>
                     </div>
-                    <i class="fas fa-chevron-down text-gray-500 transition-transform" id="icon-mod-${index}"></i>
+                    <i class="fas fa-chevron-down text-gray-600 text-xs transition-transform" id="icon-mod-${index}"></i>
                 </button>
-                <ul id="mod-${index}" class="hidden bg-black/40">${lessonsHtml}</ul>
+                <ul id="mod-${index}" class="hidden bg-dark-950/50">${lessonsHtml}</ul>
             </div>`;
     });
 
+    // Eventos de clique nas aulas
     document.querySelectorAll('.lesson-item').forEach(item => {
         item.addEventListener('click', () => {
             const lessonData = JSON.parse(item.getAttribute('data-lesson-info'));
@@ -83,6 +91,7 @@ function renderSidebar(modules) {
     });
 }
 
+// 3. CONTROLE DO PLAYER
 window.playLesson = function(lesson) {
     const iframe = document.getElementById("video-player");
     const titleDisplay = document.getElementById("current-lesson-title");
@@ -90,26 +99,56 @@ window.playLesson = function(lesson) {
 
     if (iframe) iframe.src = getEmbedUrl(lesson.videoUrl);
     if (titleDisplay) titleDisplay.textContent = lesson.title;
-    if (btnComplete) btnComplete.onclick = () => markAsCompleted(lesson.id);
+
+    // Atualiza o gatilho de conclusão para a aula atual
+    if (btnComplete) {
+        btnComplete.onclick = function() { markAsCompleted(this, lesson.id); };
+    }
 
     window.scrollTo({ top: 0, behavior: 'smooth' });
 };
 
-async function markAsCompleted(lessonId) {
+// 4. CONCLUSÃO DE AULA (CONEXÃO REAL BACKEND)
+async function markAsCompleted(btn, lessonId) {
     const token = localStorage.getItem("token");
+
+    // UX: Feedback de carregamento
+    if (typeof UI !== 'undefined') UI.buttonLoading(btn, true, "Registrando...");
+
     try {
         const res = await fetch(`${API_URL}/progress/${lessonId}`, {
             method: 'POST',
             headers: { "Authorization": `Bearer ${token}` }
         });
-        if (res.ok) alert("Aula marcada como concluída! 🎓");
-    } catch (e) { console.error(e); }
+
+        if (res.ok) {
+            if (typeof UI !== 'undefined') UI.toast.success("Aula concluída com sucesso! 🎓");
+            btn.innerHTML = '<i class="fas fa-check mr-2"></i> Concluída';
+            btn.classList.add("opacity-50", "cursor-not-allowed");
+            btn.onclick = null;
+        } else {
+            throw new Error();
+        }
+    } catch (e) {
+        if (typeof UI !== 'undefined') UI.toast.error("Erro ao salvar progresso.");
+    } finally {
+        if (typeof UI !== 'undefined') UI.buttonLoading(btn, false, "Concluir Aula");
+    }
 }
 
+// 5. UTILITÁRIOS
 function getEmbedUrl(url) {
-    if (!url || url.includes("/embed/")) return url;
-    let videoId = url.includes("v=") ? url.split("v=")[1].split("&")[0] : url.split("youtu.be/")[1];
-    return `https://www.youtube.com/embed/${videoId}?autoplay=1&rel=0`;
+    if (!url) return "";
+    if (url.includes("/embed/")) return url + "?autoplay=1&rel=0";
+
+    let videoId = "";
+    if (url.includes("v=")) {
+        videoId = url.split("v=")[1].split("&")[0];
+    } else if (url.includes("youtu.be/")) {
+        videoId = url.split("youtu.be/")[1].split("?")[0];
+    }
+
+    return videoId ? `https://www.youtube.com/embed/${videoId}?autoplay=1&rel=0` : url;
 }
 
 function toggleModule(id) {
@@ -119,6 +158,12 @@ function toggleModule(id) {
         el.classList.toggle("hidden");
         if(icon) icon.classList.toggle("rotate-180");
     }
+}
+
+function updateUserInfo() {
+    const user = JSON.parse(localStorage.getItem("user") || "{}"); // Sincronizado com auth.js
+    const el = document.getElementById("user-name-display");
+    if (el && user.name) el.textContent = user.name;
 }
 
 function setupLogout() {

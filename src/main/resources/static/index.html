@@ -3,10 +3,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>OdontoPro Luxury | O Padrão Ouro</title>
+    <title>OdontoPro Luxury | O Padrão Ouro da Odontologia</title>
 
     <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;1,400;1,700&family=Manrope:wght@200;300;400;600;800&display=swap" rel="stylesheet">
-
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
 
@@ -15,7 +14,7 @@
             theme: {
                 extend: {
                     colors: {
-                        gold: { DEFAULT: '#D4AF37', light: '#F9df74', dark: '#997b19', intense: '#E5C158' },
+                        gold: { DEFAULT: '#D4AF37', light: '#F9df74', dark: '#997b19' },
                         dark: { 950: '#000000', 900: '#050505', 800: '#0a0a0a' }
                     },
                     fontFamily: { sans: ['Manrope', 'sans-serif'], serif: ['Playfair Display', 'serif'] }
@@ -25,41 +24,25 @@
     </script>
 
     <style>
-        /* Cursor de Luxo (Rastro de Ouro) */
-        html, body, a, button { cursor: none !important; }
+        html, body { cursor: none !important; background-color: #000; overflow-x: hidden; color: #fff; }
         #cursor-canvas { position: fixed; inset: 0; pointer-events: none; z-index: 9999; }
-        #cursor-core { width: 8px; height: 8px; background-color: #D4AF37; border-radius: 50%; position: fixed; pointer-events: none; z-index: 10000; box-shadow: 0 0 15px #D4AF37; transition: transform 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
+        #cursor-core { width: 8px; height: 8px; background-color: #D4AF37; border-radius: 50%; position: fixed; pointer-events: none; z-index: 10000; box-shadow: 0 0 15px #D4AF37; }
 
-        body { background-color: #000; overflow-x: hidden; color: #fff; }
+        body::after { content: ""; position: fixed; inset: 0; background-image: url("https://upload.wikimedia.org/wikipedia/commons/7/76/1k_filmgrain.png"); opacity: 0.04; pointer-events: none; z-index: 9000; }
+        .gold-text { background: linear-gradient(to bottom, #fcf6ba, #bf953f, #b38728, #fbf5b7); -webkit-background-clip: text; background-clip: text; color: transparent; }
 
-        /* Elemento de Encarecimento: Textura de Ruído (Noise) */
-        body::after {
-            content: ""; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background-image: url("https://upload.wikimedia.org/wikipedia/commons/7/76/1k_filmgrain.png");
-            opacity: 0.04; pointer-events: none; z-index: 9000;
-        }
-
-        .gold-text {
-            background: linear-gradient(to bottom, #fcf6ba, #bf953f, #b38728, #fbf5b7);
-            -webkit-background-clip: text; background-clip: text; color: transparent;
-        }
-
-        /* Hero Parallax */
         .hero-bg {
-            background: linear-gradient(to bottom, rgba(0,0,0,0.5), rgba(0,0,0,1)),
-                        url('https://images.unsplash.com/photo-1629909613654-28e377c37b09?q=80&w=2600');
+            background: linear-gradient(to bottom, rgba(0,0,0,0.6), rgba(0,0,0,1)), url('https://images.unsplash.com/photo-1629909613654-28e377c37b09?q=80&w=2600');
             background-size: cover; background-position: center; background-attachment: fixed;
         }
 
-        /* Glassmorphism Ultra-fino */
-        .glass-card { background: rgba(255, 255, 255, 0.02); backdrop-filter: blur(10px); border: 1px solid rgba(255, 255, 255, 0.05); }
-
-        /* Animações de Revelação */
-        .reveal { opacity: 0; transform: translateY(30px); transition: all 1s cubic-bezier(0.2, 1, 0.3, 1); }
+        .reveal { opacity: 0; transform: translateY(40px); transition: all 1.2s cubic-bezier(0.2, 1, 0.3, 1); }
         .reveal.active { opacity: 1; transform: translateY(0); }
 
         .page-transition { position: fixed; inset: 0; background: #000; z-index: 99999; display: flex; align-items: center; justify-content: center; transition: opacity 1.5s ease; }
         body.loaded .page-transition { opacity: 0; pointer-events: none; }
+
+        .glass-card { background: rgba(255, 255, 255, 0.02); backdrop-filter: blur(10px); border: 1px solid rgba(255, 255, 255, 0.05); }
     </style>
 </head>
 <body class="antialiased selection:bg-gold selection:text-black">
@@ -68,74 +51,182 @@
 <canvas id="cursor-canvas"></canvas>
 <div id="cursor-core"></div>
 
-<nav id="navbar" class="fixed w-full z-[60] transition-all duration-700 py-8 px-10">
+<nav class="fixed w-full z-[60] py-8 px-10">
     <div class="max-w-7xl mx-auto flex justify-between items-center glass-card px-10 py-4 rounded-full">
         <span class="font-serif text-2xl font-bold tracking-[0.2em] text-white italic">ODONTO<span class="gold-text">PRO</span></span>
         <div class="hidden md:flex items-center gap-10 text-[9px] font-bold uppercase tracking-[0.4em]">
-            <a href="#stats" class="hover:text-gold transition">Status</a>
-            <a href="#cursos" class="hover:text-gold transition">Coleção</a>
-            <a href="/auth/login.html" class="px-6 py-2 border border-gold/20 text-gold rounded-full hover:bg-gold hover:text-black transition">Membro Black</a>
+            <a href="/auth/login.html" class="px-8 py-3 bg-gold text-black rounded-full hover:bg-white transition-all duration-500 shadow-lg font-bold uppercase">Acesso Elite</a>
         </div>
     </div>
 </nav>
 
 <section class="hero-bg h-screen flex items-center justify-center text-center px-6">
     <div class="max-w-5xl relative z-10">
-        <h1 class="text-6xl md:text-[8rem] font-serif text-white mb-6 leading-none tracking-tighter" id="hero-title"></h1>
+        <h1 class="text-6xl md:text-[8.5rem] font-serif text-white mb-6 leading-none tracking-tighter" id="hero-title"></h1>
         <p class="reveal text-gray-400 text-xl md:text-2xl font-light mb-12 italic tracking-wide">
-            A maestria técnica que separa o profissional do <span class="gold-text font-bold">excepcional.</span>
+            A maestria técnica que separa o profissional do <span class="gold-text font-bold uppercase tracking-widest">Excepcional.</span>
         </p>
         <div class="reveal">
-            <a href="#cursos" class="magnetic-btn inline-block px-16 py-6 bg-gold text-black font-black uppercase tracking-[0.3em] text-[10px] shadow-[0_20px_50px_rgba(212,175,55,0.2)] hover:scale-105 transition-transform duration-500">
-                Iniciar Legado
-            </a>
+            <a href="#collection" class="inline-block px-16 py-6 bg-gold text-black font-black uppercase tracking-[0.3em] text-[10px] shadow-[0_20px_50px_rgba(212,175,55,0.2)] hover:scale-105 transition-all duration-500">Explorar Legado</a>
         </div>
     </div>
 </section>
 
-<section id="stats" class="py-40 bg-black border-y border-white/5 relative overflow-hidden">
-    <div class="max-w-7xl mx-auto px-10 grid grid-cols-1 md:grid-cols-4 gap-16 text-center relative z-10">
+<section id="stats" class="py-40 bg-black border-y border-white/5 relative">
+    <div class="max-w-7xl mx-auto px-10 grid grid-cols-1 md:grid-cols-4 gap-16 text-center">
         <div class="reveal">
             <div class="text-7xl font-serif text-white mb-4 luxury-num" data-target="15400">0</div>
             <p class="text-gold text-[10px] uppercase tracking-[0.5em] font-bold">Alunos Elite</p>
         </div>
         <div class="reveal">
             <div class="text-7xl font-serif text-white mb-4"><span class="luxury-num" data-target="98">0</span>%</div>
-            <p class="text-gold text-[10px] uppercase tracking-[0.5em] font-bold">Aprovação Master</p>
+            <p class="text-gold text-[10px] uppercase tracking-[0.5em] font-bold">Aprovação</p>
         </div>
         <div class="reveal">
             <div class="text-7xl font-serif text-white mb-4 luxury-num" data-target="120">0</div>
-            <p class="text-gold text-[10px] uppercase tracking-[0.5em] font-bold">Mentorias Ativas</p>
+            <p class="text-gold text-[10px] uppercase tracking-[0.5em] font-bold">Cursos Mentoria</p>
         </div>
         <div class="reveal">
             <div class="text-7xl font-serif text-white mb-4 italic gold-text">24/7</div>
-            <p class="text-gold text-[10px] uppercase tracking-[0.5em] font-bold">Concierge Black</p>
+            <p class="text-gold text-[10px] uppercase tracking-[0.5em] font-bold">Suporte Black</p>
         </div>
     </div>
 </section>
 
-<section id="cursos" class="py-52 bg-black px-10">
-    <div class="max-w-screen-2xl mx-auto">
-        <h2 class="text-5xl md:text-[6rem] font-serif text-white italic text-center mb-40 reveal uppercase tracking-tighter">The <span class="gold-text">Collection</span></h2>
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-20">
-            <div class="reveal group relative h-[700px] overflow-hidden glass-card">
-                <img src="https://images.unsplash.com/photo-1606811971618-4486d14f3f99?q=80&w=1000" class="w-full h-full object-cover grayscale opacity-40 group-hover:grayscale-0 group-hover:opacity-100 group-hover:scale-110 transition-all duration-1000">
+<section class="py-52 bg-dark-900 overflow-hidden">
+    <div class="max-w-7xl mx-auto px-10">
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-32 items-center">
+            <div class="reveal">
+                <p class="text-gold text-[10px] uppercase tracking-[0.8em] mb-6">Filosofia OdontoPro</p>
+                <h2 class="text-5xl md:text-7xl font-serif text-white mb-10 leading-tight italic">Onde a ciência encontra o <span class="gold-text">Prestígio.</span></h2>
+                <p class="text-gray-400 text-lg leading-relaxed mb-12 font-light">
+                    Não ensinamos apenas odontologia. Entregamos o protocolo de guerra para dominar o mercado de alto ticket.
+                    Nossa metodologia foi desenhada para reduzir a curva de aprendizado e elevar instantaneamente a percepção de valor do seu consultório.
+                </p>
+                <div class="flex gap-10">
+                    <div>
+                        <p class="text-white font-bold text-2xl font-serif mb-2">01.</p>
+                        <p class="text-[9px] text-gray-500 uppercase tracking-widest">Técnica Pura</p>
+                    </div>
+                    <div class="w-[1px] bg-white/10 h-12"></div>
+                    <div>
+                        <p class="text-white font-bold text-2xl font-serif mb-2">02.</p>
+                        <p class="text-[9px] text-gray-500 uppercase tracking-widest">Branding de Luxo</p>
+                    </div>
+                    <div class="w-[1px] bg-white/10 h-12"></div>
+                    <div>
+                        <p class="text-white font-bold text-2xl font-serif mb-2">03.</p>
+                        <p class="text-[9px] text-gray-500 uppercase tracking-widest">Gestão Elite</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="reveal relative">
+                <img src="https://images.unsplash.com/photo-1629909613654-28e377c37b09?q=80&w=1500"
+                     class="w-full h-[600px] object-cover grayscale-[30%] opacity-80 border border-white/10 shadow-[0_0_50px_rgba(212,175,55,0.1)] transition-all duration-700">
+
+                <div class="absolute -bottom-10 -left-10 bg-gold p-10 shadow-[20px_20px_60px_rgba(0,0,0,0.5)] z-20">
+                    <p class="text-black font-black text-4xl font-serif italic">7D</p>
+                    <p class="text-black text-[8px] font-bold uppercase tracking-widest">Model Business</p>
+                </div>
+                <div class="absolute -top-10 -right-10 w-40 h-40 bg-gold/10 blur-[100px] pointer-events-none"></div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<section id="collection" class="py-52 bg-black">
+    <div class="max-w-screen-2xl mx-auto px-10">
+        <div class="flex flex-col md:flex-row justify-between items-end mb-32 reveal">
+            <div>
+                <p class="text-gold text-[10px] uppercase tracking-[0.8em] mb-4">Currículo 2026</p>
+                <h2 class="text-6xl md:text-9xl font-serif text-white italic tracking-tighter">The <span class="gold-text">Collection</span></h2>
+            </div>
+            <p class="text-gray-500 text-[10px] uppercase tracking-[0.4em] max-w-xs mb-4">Programas exclusivos para membros selecionados.</p>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+            <div class="reveal group relative h-[700px] overflow-hidden border border-white/5">
+                <img src="https://images.unsplash.com/photo-1606811971618-4486d14f3f99?q=80&w=1000" class="w-full h-full object-cover grayscale group-hover:grayscale-0 transition-all duration-1000 group-hover:scale-110 opacity-40">
                 <div class="absolute inset-0 bg-gradient-to-t from-black via-transparent to-transparent"></div>
-                <div class="absolute bottom-12 left-10 right-10 text-center">
-                    <h3 class="text-3xl font-serif text-white mb-8 tracking-widest uppercase">Implantodontia</h3>
-                    <a href="/auth/cadastro.html" class="block w-full py-5 border border-gold text-gold text-[10px] font-bold uppercase tracking-[0.4em] hover:bg-gold hover:text-black transition-all">Matrícula Black</a>
+                <div class="absolute bottom-10 left-10 right-10">
+                    <h3 class="text-4xl font-serif text-white mb-6">Protocolos de Implante Z</h3>
+                    <a href="/auth/cadastro.html" class="inline-block py-4 px-10 border border-gold text-gold text-[10px] font-bold uppercase tracking-widest hover:bg-gold hover:text-black transition">Matrícula Black</a>
+                </div>
+            </div>
+            <div class="reveal group relative h-[700px] overflow-hidden border border-white/5" style="transition-delay: 200ms;">
+                <img src="https://images.unsplash.com/photo-1445527815219-ecbfec67492e?q=80&w=1000" class="w-full h-full object-cover grayscale group-hover:grayscale-0 transition-all duration-1000 group-hover:scale-110 opacity-40">
+                <div class="absolute inset-0 bg-gradient-to-t from-black via-transparent to-transparent"></div>
+                <div class="absolute bottom-10 left-10 right-10">
+                    <h3 class="text-4xl font-serif text-white mb-6">Estética e Facetas</h3>
+                    <a href="/auth/cadastro.html" class="inline-block py-4 px-10 border border-gold text-gold text-[10px] font-bold uppercase tracking-widest hover:bg-gold hover:text-black transition">Matrícula Black</a>
+                </div>
+            </div>
+            <div class="reveal group relative h-[700px] overflow-hidden border border-white/5" style="transition-delay: 400ms;">
+                <img src="https://images.unsplash.com/photo-1512678080530-7760d81faba6?q=80&w=1000" class="w-full h-full object-cover grayscale group-hover:grayscale-0 transition-all duration-1000 group-hover:scale-110 opacity-40">
+                <div class="absolute inset-0 bg-gradient-to-t from-black via-transparent to-transparent"></div>
+                <div class="absolute bottom-10 left-10 right-10">
+                    <h3 class="text-4xl font-serif text-white mb-6">Arquitetura de Clínicas</h3>
+                    <a href="/auth/cadastro.html" class="inline-block py-4 px-10 border border-gold text-gold text-[10px] font-bold uppercase tracking-widest hover:bg-gold hover:text-black transition">Matrícula Black</a>
                 </div>
             </div>
         </div>
     </div>
 </section>
 
-<footer class="py-20 text-center opacity-30 text-[9px] tracking-[0.8em] uppercase italic">
-    OdontoPro Absolute Legacy © 2026 - All Rights Reserved
+<section class="py-60 bg-black text-center relative">
+    <div class="max-w-4xl mx-auto px-6 relative z-10">
+        <h2 class="reveal text-5xl md:text-8xl font-serif text-white mb-10 italic uppercase tracking-tighter">O Nível Absolute te <span class="gold-text">Chama.</span></h2>
+        <p class="reveal text-gray-500 text-xl font-light mb-16 tracking-[0.5em]">LEGACY STARTS NOW</p>
+        <div class="reveal">
+            <a href="/auth/cadastro.html" class="px-20 py-8 bg-white text-black font-black uppercase tracking-[0.5em] text-[12px] hover:bg-gold transition-all duration-700 hover:scale-105 inline-block">
+                Iniciar Ascensão
+            </a>
+        </div>
+    </div>
+    <div class="absolute inset-0 flex items-center justify-center opacity-[0.02] pointer-events-none">
+        <span class="text-[35vw] font-serif font-bold italic">ODONTO</span>
+    </div>
+</section>
+
+<footer class="py-20 border-t border-white/5 text-center bg-black">
+    <p class="text-[9px] text-gray-600 uppercase tracking-[0.8em]">OdontoPro Luxury Absolute © 2026 — All Rights Reserved</p>
 </footer>
 
 <script>
-    // 1. MOTOR DO CURSOR DE LUXO
+    const API_BASE_URL = 'http://localhost:8081';
+
+    async function syncStats() {
+        try {
+            const response = await fetch(`${API_BASE_URL}/stats`);
+            if (!response.ok) throw new Error();
+            const data = await response.json();
+            const nums = document.querySelectorAll('.luxury-num');
+            // Mapeamento real conforme o DTO do Felipe
+            nums[0].dataset.target = data.students || 15400;
+            nums[1].dataset.target = 98;
+            nums[2].dataset.target = data.courses || 120;
+        } catch (error) { console.log("Usando backup visual."); }
+        startCounters();
+    }
+
+    function startCounters() {
+        document.querySelectorAll('.luxury-num').forEach(el => {
+            if (el.dataset.started === "true") return;
+            el.dataset.started = "true";
+            const target = parseInt(el.dataset.target);
+            let current = 0;
+            const step = target / 60;
+            const timer = setInterval(() => {
+                current += step;
+                if (current >= target) {
+                    el.innerText = target.toLocaleString('pt-BR');
+                    clearInterval(timer);
+                } else { el.innerText = Math.floor(current).toLocaleString('pt-BR'); }
+            }, 30);
+        });
+    }
+
     const canvas = document.getElementById('cursor-canvas');
     const core = document.getElementById('cursor-core');
     const ctx = canvas.getContext('2d');
@@ -153,7 +244,6 @@
         ctx.clearRect(0, 0, width, height);
         core.style.left = mouse.x + 'px'; core.style.top = mouse.y + 'px';
         core.style.transform = 'translate(-50%, -50%)';
-
         trail.forEach((p, i) => {
             p.o -= 0.02; p.x += (Math.random()-0.5)*2; p.y += (Math.random()-0.5)*2;
             ctx.globalAlpha = p.o; ctx.fillStyle = '#D4AF37';
@@ -164,29 +254,8 @@
     }
     animateCursor();
 
-    // 2. MOTOR DE NÚMEROS BLINDADO
-    function runCounters() {
-        document.querySelectorAll('.luxury-num').forEach(el => {
-            if (el.dataset.active === "true") return;
-            el.dataset.active = "true";
-            const target = parseInt(el.dataset.target);
-            let current = 0;
-            const step = target / 60;
-            const timer = setInterval(() => {
-                current += step;
-                if (current >= target) {
-                    el.innerText = target.toLocaleString('pt-BR');
-                    clearInterval(timer);
-                } else { el.innerText = Math.floor(current).toLocaleString('pt-BR'); }
-            }, 30);
-        });
-    }
-
-    // 3. EFEITOS DE VALOR AGREGADO (MAGNÉTICO E REVEAL)
     window.addEventListener('load', () => {
         document.body.classList.add('loaded');
-
-        // Typing Effect
         const title = document.getElementById('hero-title');
         const text = "Sua Carreira. Redefinida.";
         let charIdx = 0;
@@ -195,38 +264,17 @@
             else clearInterval(type);
         }, 120);
 
-        // Observer para Números e Revelação
         const observer = new IntersectionObserver((ents) => {
             ents.forEach(e => {
                 if(e.isIntersecting) {
                     e.target.classList.add('active');
-                    if(e.target.id === 'stats') runCounters();
+                    if(e.target.id === 'stats') syncStats();
                 }
             });
         }, { threshold: 0.1 });
 
         document.querySelectorAll('.reveal').forEach(el => observer.observe(el));
         observer.observe(document.getElementById('stats'));
-
-        // Backup de Segurança
-        setTimeout(runCounters, 3500);
-    });
-
-    // Botão Magnético
-    document.querySelectorAll('.magnetic-btn').forEach(btn => {
-        btn.addEventListener('mousemove', (e) => {
-            const rect = btn.getBoundingClientRect();
-            const x = e.clientX - rect.left - rect.width / 2;
-            const y = e.clientY - rect.top - rect.height / 2;
-            btn.style.transform = `translate(${x * 0.3}px, ${y * 0.3}px)`;
-            core.style.transform = 'translate(-50%, -50%) scale(5)';
-            core.style.opacity = '0.2';
-        });
-        btn.addEventListener('mouseleave', () => {
-            btn.style.transform = `translate(0, 0)`;
-            core.style.transform = 'translate(-50%, -50%) scale(1)';
-            core.style.opacity = '1';
-        });
     });
 </script>
 </body>

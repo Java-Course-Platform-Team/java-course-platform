@@ -7,8 +7,10 @@ import com.courseplatform.backend.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
@@ -17,28 +19,45 @@ public class UserService {
     private final PasswordEncoder passwordEncoder;
 
     public User registerUser(UserCreateDTO dto) {
-        // 👇 ADICIONE ESSA LINHA AQUI! ELA VAI SALVAR SUA VIDA.
-        System.out.println("O QUE CHEGOU DO FRONTEND: " + dto.toString());
         if (repository.existsByEmail(dto.getEmail())) {
-            throw new RuntimeException("Erro: Email já cadastrado no sistema!");
+            throw new RuntimeException("Erro: Email já cadastrado!");
         }
-
         User newUser = new User();
         newUser.setName(dto.getName());
         newUser.setEmail(dto.getEmail());
-
-        // AQUI ESTÁ A CORREÇÃO 👇
-        newUser.setCpf(dto.getCpf()); // Agora pega o CPF do envelope e joga no usuário
-
-        String senhaCriptografada = passwordEncoder.encode(dto.getPassword());
-        newUser.setPasswordHash(senhaCriptografada);
+        newUser.setCpf(dto.getCpf());
+        newUser.setPasswordHash(passwordEncoder.encode(dto.getPassword()));
         newUser.setRole(Role.STUDENT);
-
         return repository.save(newUser);
     }
 
-    // Este método permite que o UserController pegue a lista do banco
     public List<User> listAllUsers() {
         return repository.findAll();
+    }
+
+    // 1. EXCLUIR USUÁRIO (Real)
+    @Transactional
+    public void deleteUser(UUID id) {
+        if (!repository.existsById(id)) {
+            throw new RuntimeException("Usuário não encontrado.");
+        }
+        // Nota: Garanta que Enrollment e Progress tenham CascadeType.REMOVE ou remova-os manualmente aqui
+        repository.deleteById(id);
+    }
+
+    // 2. ATUALIZAR DADOS
+    public User updateUser(UUID id, User data) {
+        User user = repository.findById(id).orElseThrow(() -> new RuntimeException("Usuário não encontrado."));
+        user.setName(data.getName());
+        user.setEmail(data.getEmail());
+        user.setCpf(data.getCpf());
+        return repository.save(user);
+    }
+
+    // 3. RESETAR SENHA (Padrão: odonto123)
+    public void resetPassword(UUID id) {
+        User user = repository.findById(id).orElseThrow(() -> new RuntimeException("Usuário não encontrado."));
+        user.setPasswordHash(passwordEncoder.encode("odonto123"));
+        repository.save(user);
     }
 }
