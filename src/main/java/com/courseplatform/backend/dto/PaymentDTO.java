@@ -12,6 +12,6 @@ import java.util.UUID;
 public class PaymentDTO {
 
     private UUID userId;
-    private Long courseId;
+    private UUID courseId;
 
 }

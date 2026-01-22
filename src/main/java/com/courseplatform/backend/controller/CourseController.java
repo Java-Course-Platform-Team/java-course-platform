@@ -10,13 +10,13 @@ import com.courseplatform.backend.entity.Module;
 import com.courseplatform.backend.repository.CourseRepository;
 import com.courseplatform.backend.service.CourseService;
 import lombok.RequiredArgsConstructor;
-import org.springframework.http.HttpStatus; // <--- Importante para os Status
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.server.ResponseStatusException; // <--- Para erros limpos
+import org.springframework.web.server.ResponseStatusException;
 
 import java.util.List;
-import java.util.UUID;
+import java.util.UUID; // <--- Importante
 
 @RestController
 @RequestMapping("/courses")
@@ -32,13 +32,11 @@ public class CourseController {
 
     @GetMapping
     public ResponseEntity<List<Course>> listarCursos() {
-        // Retorna 200 OK com a lista (Vazio ou Cheia)
         return ResponseEntity.ok(repository.findAll());
     }
 
     @PostMapping
     public ResponseEntity<Course> criarCurso(@RequestBody CourseDTO dados) {
-        // 1. Validação Básica (Cliente real precisa disso)
         if (dados.getTitle() == null || dados.getTitle().isEmpty()) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "O título do curso é obrigatório.");
         }
@@ -55,27 +53,20 @@ public class CourseController {
 
         Course cursoSalvo = repository.save(novoCurso);
 
-        // PROFISSIONAL: Retorna 201 CREATED (Padrão REST)
         return ResponseEntity.status(HttpStatus.CREATED).body(cursoSalvo);
     }
 
+    // --- CORRIGIDO AQUI EMBAIXO (Long -> UUID) ---
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> deletarCurso(@PathVariable Long id) {
-        // 1. Verifica se existe antes de tentar apagar
+    public ResponseEntity<Void> deletarCurso(@PathVariable UUID id) {
         if (!repository.existsById(id)) {
-            // PROFISSIONAL: Retorna 404 NOT FOUND se o ID não existir
             return ResponseEntity.notFound().build();
         }
 
         repository.deleteById(id);
 
-        // PROFISSIONAL: Retorna 204 NO CONTENT (Sucesso, mas sem corpo)
         return ResponseEntity.noContent().build();
     }
-
-    // ==========================================
-    // PARTE 2: MÓDULOS
-    // ==========================================
 
     // ==========================================
     // PARTE 2: MÓDULOS
@@ -87,10 +78,10 @@ public class CourseController {
         return ResponseEntity.status(HttpStatus.CREATED).body(novoModulo);
     }
 
-    // --- AQUI ESTÁ A MUDANÇA ---
+    // --- CORRIGIDO AQUI EMBAIXO (Long -> UUID) ---
     @GetMapping("/{courseId}/modules")
-    public ResponseEntity<List<ModuleResponseDTO>> listModulesForPlayer(@PathVariable Long courseId) {
-        // Agora chamamos o método novo que traz a árvore completa
+    public ResponseEntity<List<ModuleResponseDTO>> listModulesForPlayer(@PathVariable UUID courseId) {
+        // O service.getCourseModules também precisa esperar um UUID lá dentro!
         return ResponseEntity.ok(service.getCourseModules(courseId));
     }
 
@@ -101,7 +92,6 @@ public class CourseController {
     @PostMapping("/lessons")
     public ResponseEntity<Lesson> createLesson(@RequestBody LessonCreateDTO dto) {
         Lesson novaAula = service.createLesson(dto);
-        // Retorna 201 Created
         return ResponseEntity.status(HttpStatus.CREATED).body(novaAula);
     }
 

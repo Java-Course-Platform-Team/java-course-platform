@@ -14,7 +14,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
-import java.util.UUID;
+import java.util.UUID; // <--- Importante
 
 @Service
 @RequiredArgsConstructor
@@ -27,6 +27,7 @@ public class CourseService {
     // --- 1. CRIAR MÓDULO ---
     public Module createModule(ModuleCreateDTO dto) {
         // Primeiro, achamos o pai (O Curso)
+        // OBS: Certifique-se que dto.getCourseId() retorna UUID
         Course course = courseRepository.findById(dto.getCourseId())
                 .orElseThrow(() -> new RuntimeException("Curso não encontrado com ID: " + dto.getCourseId()));
 
@@ -55,7 +56,8 @@ public class CourseService {
     }
 
     // Lista os módulos de um curso (para a gente testar depois)
-    public List<Module> listModulesByCourse(Long courseId) {
+    // --- MUDOU DE LONG PARA UUID AQUI EMBAIXO 👇 ---
+    public List<Module> listModulesByCourse(UUID courseId) {
         return moduleRepository.findByCourseId(courseId);
     }
 
@@ -65,7 +67,8 @@ public class CourseService {
     }
 
     // === NOVO MÉTODO PARA O PLAYER (A ÁRVORE DE CONTEÚDO) ===
-    public List<ModuleResponseDTO> getCourseModules(Long courseId) {
+    // --- MUDOU DE LONG PARA UUID AQUI EMBAIXO 👇 ---
+    public List<ModuleResponseDTO> getCourseModules(UUID courseId) {
 
         // 1. Busca todos os módulos do curso
         List<Module> modules = moduleRepository.findByCourseId(courseId);

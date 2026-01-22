@@ -6,6 +6,6 @@ import java.util.List;
 import java.util.UUID;
 
 public interface ModuleRepository extends JpaRepository<Module, UUID> {
-    // Essa linha mágica permite buscar todos os módulos de um curso específico
-    List<Module> findByCourseId(Long courseId);
+
+    List<Module> findByCourseId(UUID courseId);
 }
