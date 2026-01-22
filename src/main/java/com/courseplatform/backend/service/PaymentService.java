@@ -6,15 +6,15 @@ import com.courseplatform.backend.repository.CourseRepository;
 import com.courseplatform.backend.repository.UserRepository;
 import com.mercadopago.MercadoPagoConfig;
 import com.mercadopago.client.common.IdentificationRequest;
-import com.mercadopago.client.payment.PaymentClient;
 import com.mercadopago.client.preference.*;
 import com.mercadopago.exceptions.MPApiException;
 import com.mercadopago.resources.payment.Payment;
 import com.mercadopago.resources.preference.Preference;
+import jakarta.annotation.PostConstruct;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
-import jakarta.annotation.PostConstruct;
+import com.mercadopago.client.payment.PaymentClient;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -33,24 +33,24 @@ public class PaymentService {
     @Value("${mercadopago.access_token}")
     private String accessToken;
 
+    // Inicializa o Mercado Pago assim que o app liga
     @PostConstruct
     public void init() {
-        // Inicializa o motor com o seu token oficial
         MercadoPagoConfig.setAccessToken(accessToken);
     }
 
+    // MÉTODO 1: GERA O LINK (IDA)
     public String createPaymentLink(Course course, User user) {
         try {
-            // 1. LIMPEZA TOTAL DE CPF (O MP só aceita números puros)
-            String cpfNumerico = user.getCpf().replaceAll("\\D", "");
+            // 1. LIMPEZA DE CPF (O MP só aceita números puros)
+            String cpfNumerico = (user.getCpf() != null) ? user.getCpf().replaceAll("\\D", "") : "";
 
             // 2. CONFIGURAÇÃO DO ITEM
             PreferenceItemRequest itemRequest = PreferenceItemRequest.builder()
                     .id(course.getId().toString())
                     .title(course.getTitle())
-                    .description("Acesso ao curso: " + course.getTitle())
+                    .description("Curso na OdontoPro")
                     .pictureUrl(course.getImageUrl())
-                    .categoryId("learnings")
                     .quantity(1)
                     .currencyId("BRL")
                     .unitPrice(course.getPrice())
@@ -59,57 +59,52 @@ public class PaymentService {
             List<PreferenceItemRequest> items = new ArrayList<>();
             items.add(itemRequest);
 
-            // 3. CONFIGURAÇÃO DO PAGADOR (Payer)
+            // 3. CONFIGURAÇÃO DO PAGADOR
             PreferencePayerRequest payerRequest = PreferencePayerRequest.builder()
                     .name(user.getName())
                     .email(user.getEmail())
                     .identification(
                             IdentificationRequest.builder()
                                     .type("CPF")
-                                    .number(cpfNumerico)
+                                    .number(cpfNumerico) // CPF limpo
                                     .build()
                     )
                     .build();
 
-            // 4. URLs DE RETORNO (Corrigindo o erro 'must be defined')
-            // Removido o localhost:8081 para evitar bloqueios de segurança do MP em ambiente de teste
+            // 4. URLS DE RETORNO
             PreferenceBackUrlsRequest backUrls = PreferenceBackUrlsRequest.builder()
-                    .success("https://www.google.com") // URL temporária para teste de sucesso
-                    .pending("https://www.google.com")
-                    .failure("https://www.google.com")
+                    .success("http://localhost:8081/aluno/sucesso.html") // Jhon pode mudar depois
+                    .pending("http://localhost:8081/aluno/pendente.html")
+                    .failure("http://localhost:8081/aluno/erro.html")
                     .build();
 
-            // 5. CONSTRUÇÃO DA PREFERÊNCIA
+            // 5. PREFERÊNCIA FINAL
             PreferenceRequest preferenceRequest = PreferenceRequest.builder()
                     .items(items)
                     .payer(payerRequest)
                     .backUrls(backUrls)
-                    // NOTA: Desativei o autoReturn para o MP não travar na validação da URL
-                    .externalReference(course.getId() + "_" + user.getId())
+                    .externalReference(course.getId() + "_" + user.getId()) // course_user
                     .statementDescriptor("ODONTOPRO")
                     .build();
 
             PreferenceClient client = new PreferenceClient();
+            Preference preference = client.create(preferenceRequest);
 
-            try {
-                Preference preference = client.create(preferenceRequest);
-                System.out.println("✅ Link gerado com sucesso para o curso: " + course.getTitle());
-                return preference.getInitPoint();
-            } catch (MPApiException e) {
-                // Aqui o senhor verá o motivo exato se houver outra rejeição
-                System.err.println("❌ ERRO API MERCADO PAGO: " + e.getApiResponse().getContent());
-                throw new RuntimeException("Erro na API do Mercado Pago.");
-            }
+            return preference.getInitPoint();
 
+        } catch (MPApiException e) {
+            System.err.println("❌ ERRO MP: " + e.getApiResponse().getContent());
+            throw new RuntimeException("Erro ao gerar link MP: " + e.getMessage());
         } catch (Exception e) {
-            e.printStackTrace();
-            throw new RuntimeException("Erro ao criar link de pagamento.");
+            throw new RuntimeException("Erro genérico pagamento", e);
         }
     }
 
+    // MÉTODO 2: WEBHOOK (CORRIGIDO PARA UUID)
     public void processPaymentNotification(Long paymentId) {
-        // Mantive a lógica de processamento original do Felipe
         try {
+            System.out.println("🔔 WEBHOOK: Verificando ID: " + paymentId);
+
             PaymentClient client = new PaymentClient();
             Payment payment = client.get(paymentId);
             String status = payment.getStatus();
@@ -118,8 +113,10 @@ public class PaymentService {
                 String externalRef = payment.getExternalReference();
                 if (externalRef != null) {
                     String[] parts = externalRef.split("_");
-                    Long courseId = Long.parseLong(parts[0]);
+                    UUID courseId = UUID.fromString(parts[0]);
                     UUID userId = UUID.fromString(parts[1]);
+
+                    System.out.println("🎁 Liberando curso " + courseId + " para aluno " + userId);
 
                     var course = courseRepository.findById(courseId).orElseThrow();
                     var user = userRepository.findById(userId).orElseThrow();
