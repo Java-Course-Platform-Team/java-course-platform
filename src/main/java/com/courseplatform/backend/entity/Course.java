@@ -4,8 +4,8 @@ import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-
 import java.math.BigDecimal;
+import java.util.UUID; // <--- Importante!
 
 @Entity
 @Table(name = "tb_courses")
@@ -15,17 +15,17 @@ import java.math.BigDecimal;
 public class Course {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+    @GeneratedValue(strategy = GenerationType.UUID)
+    private UUID id;
 
     private String title;
-    private String slug; //  (bom para URL)
+    private String slug;
     private BigDecimal price;
     private String category;
 
     @Column(name = "image_url")
-    private String imageUrl; // Link da imagem da capa
+    private String imageUrl;
 
     @Column(columnDefinition = "TEXT")
-    private String description; // Texto longo
+    private String description;
 }

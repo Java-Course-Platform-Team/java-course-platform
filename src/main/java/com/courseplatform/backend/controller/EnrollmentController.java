@@ -14,6 +14,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.UUID;
 import java.util.stream.Collectors;
 
 @RestController
@@ -53,7 +54,7 @@ public class EnrollmentController {
 
     // === 2. BOTÃO MÁGICO (Matrícula Manual para Localhost) ===
     @PostMapping("/free-pass/{courseId}")
-    public ResponseEntity<String> forceEnroll(@PathVariable Long courseId, Authentication authentication) {
+    public ResponseEntity<String> forceEnroll(@PathVariable UUID courseId, Authentication authentication) {
 
         String email = authentication.getName();
         User user = userRepository.findByEmail(email)
