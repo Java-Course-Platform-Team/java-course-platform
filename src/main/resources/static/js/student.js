@@ -1,5 +1,8 @@
-// student.js - Dashboard do Aluno
-const API_URL = "http://localhost:8081";
+// student.js - Dashboard do Aluno (Nuvem)
+//  CONFIGURAÇÃO AUTOMÁTICA DE AMBIENTE
+const API_URL = window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1"
+    ? "http://localhost:8081"                  // Se estou no PC, uso IntelliJ Local
+    : "https://odonto-backend-j9oy.onrender.com"; // Se estou na Web, uso a Nuvem
 
 document.addEventListener("DOMContentLoaded", () => {
     updateUserInfo();

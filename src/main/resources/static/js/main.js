@@ -1,5 +1,8 @@
-// main.js - Versão Corrigida para Porta 8081
-const API_BASE_URL = 'http://localhost:8081';
+// main.js - Versão Corrigida para Nuvem
+//  CONFIGURAÇÃO AUTOMÁTICA DE AMBIENTE
+const API_URL = window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1"
+    ? "http://localhost:8081"                  // Se estou no PC, uso IntelliJ Local
+    : "https://odonto-backend-j9oy.onrender.com"; // Se estou na Web, uso a Nuvem
 
 async function loadNavbar() {
     const navbarContainer = document.getElementById('navbar-container');

@@ -1,5 +1,8 @@
 // admin-course-form.js - Integração Real com o Backend OdontoPro
-const API_URL = "http://localhost:8081";
+//  CONFIGURAÇÃO AUTOMÁTICA DE AMBIENTE
+const API_URL = window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1"
+    ? "http://localhost:8081"                  // Se estou no PC, uso IntelliJ Local
+    : "https://odonto-backend-j9oy.onrender.com"; // Se estou na Web, uso a Nuvem
 const token = localStorage.getItem("token");
 
 // Identifica se estamos em modo de edição

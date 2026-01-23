@@ -1,8 +1,9 @@
-// ==========================================
-// STORE (LOJA DE CURSOS) - VERSÃO FINAL (REAL)
-// ==========================================
+// STORE (LOJA DE CURSOS) - VERSÃO FINAL (Nuvem)
 
-const API_URL = "http://localhost:8081";
+//  CONFIGURAÇÃO AUTOMÁTICA DE AMBIENTE
+const API_URL = window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1"
+    ? "http://localhost:8081"                  // Se estou no PC, uso IntelliJ Local
+    : "https://odonto-backend-j9oy.onrender.com"; // Se estou na Web, uso a Nuvem
 let globalCourses = [];
 
 document.addEventListener("DOMContentLoaded", () => {
@@ -38,9 +39,7 @@ async function startCheckout(courseId, courseTitle, price) {
         return;
     }
 
-    // 2. Tenta pegar o ID do usuário (Salvo no login)
-    // Se o John não estiver salvando o objeto 'user' inteiro, isso pode ser null.
-    // Nesse caso, o Backend teria que pegar o ID pelo Token (mas vamos tentar mandar o JSON conforme combinado).
+    // 2. Tenta pegar o ID do usuário
     const userJson = localStorage.getItem("user");
     let userId = null;
     if (userJson) {
@@ -50,7 +49,7 @@ async function startCheckout(courseId, courseTitle, price) {
         } catch (e) { console.error("Erro ao ler usuário", e); }
     }
 
-    // 3. Feedback Visual (Botão muda de estado)
+    // 3. Feedback Visual
     if (typeof UI !== 'undefined') UI.toast.info("Conectando ao Mercado Pago...");
 
     // Procura o botão que foi clicado para desativar
@@ -69,7 +68,7 @@ async function startCheckout(courseId, courseTitle, price) {
                 "Content-Type": "application/json"
             },
             body: JSON.stringify({
-                userId: userId, // Se for null, o Backend pega do Token
+                userId: userId,
                 courseId: courseId
             })
         });
@@ -183,11 +182,9 @@ function renderCourses(coursesList) {
 
     coursesList.forEach(course => {
         const price = course.price ? parseFloat(course.price) : 0.00;
-        const playerLink = `/aluno/player.html?id=${course.id}&title=${encodeURIComponent(course.title)}`;
 
-        // Se o Backend mandar um campo 'purchased: true', mudamos o botão para "Assistir"
-        // Por enquanto, assumimos que na Loja o foco é vender.
-        const actionButton = `<button onclick="startCheckout(${course.id}, '${course.title.replace(/'/g, "\\'")}', ${price})" class="px-6 py-2 bg-yellow-500 hover:bg-yellow-400 text-black text-xs font-bold uppercase tracking-widest transition-colors shadow-[0_0_15px_rgba(212,175,55,0.4)] rounded-sm">
+        // CORREÇÃO: Aspas simples adicionadas em volta do UUID ('${course.id}')
+        const actionButton = `<button onclick="startCheckout('${course.id}', '${course.title.replace(/'/g, "\\'")}', ${price})" class="px-6 py-2 bg-yellow-500 hover:bg-yellow-400 text-black text-xs font-bold uppercase tracking-widest transition-colors shadow-[0_0_15px_rgba(212,175,55,0.4)] rounded-sm">
                 Comprar
               </button>`;
 

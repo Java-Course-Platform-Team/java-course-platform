@@ -1,5 +1,9 @@
-// store.js - GERENCIAMENTO DA LOJA E MATRÍCULAS (VERSÃO LUXURY REAL)
-const API_URL = "http://localhost:8081"; // Porta oficial do Felipe
+// store.js - GERENCIAMENTO DA LOJA E MATRÍCULAS (VERSÃO LUXURY NUVEM)
+//  CONFIGURAÇÃO AUTOMÁTICA DE AMBIENTE
+const API_URL = window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1"
+    ? "http://localhost:8081"                  // Se estou no PC, uso IntelliJ Local
+    : "https://odonto-backend-j9oy.onrender.com"; // Se estou na Web, uso a Nuvem
+
 let globalCourses = [];
 let ownedCourseIds = [];
 
@@ -54,9 +58,10 @@ function renderCatalog(list) {
             currency: 'BRL'
         });
 
+        // CORREÇÃO CRÍTICA AQUI: Aspas simples adicionadas em '${c.id}' para suportar UUID
         const btnAction = iOwnIt
             ? `<button disabled class="w-full py-4 bg-white/5 text-gray-600 text-[10px] font-bold uppercase tracking-[0.3em] cursor-not-allowed border border-white/5">Já Adquirido</button>`
-            : `<button onclick="startCheckout(this, ${c.id})" class="w-full py-4 bg-gold hover:bg-gold-light text-black text-[10px] font-bold uppercase tracking-[0.3em] transition-all shadow-[0_10px_30px_rgba(212,175,55,0.1)]">Adquirir Acesso</button>`;
+            : `<button onclick="startCheckout(this, '${c.id}')" class="w-full py-4 bg-gold hover:bg-gold-light text-black text-[10px] font-bold uppercase tracking-[0.3em] transition-all shadow-[0_10px_30px_rgba(212,175,55,0.1)]">Adquirir Acesso</button>`;
 
         container.innerHTML += `
             <div class="bg-black border border-white/5 hover:border-gold/30 transition-all duration-500 flex flex-col h-full group">

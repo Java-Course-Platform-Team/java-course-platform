@@ -32,6 +32,7 @@ public class User implements UserDetails {
     @Column(unique = true)
     private String email;
 
+    @Column(unique = true)
     private String cpf;
 
     @Column(name = "password_hash")

@@ -1,5 +1,5 @@
 # --- ESTÁGIO 1: BUILD (A Construção) ---
-# Mudei de 17 para 21 aqui embaixo 👇
+
 FROM maven:3.9.6-eclipse-temurin-21 AS build
 
 # Define a pasta de trabalho dentro do container
@@ -18,7 +18,7 @@ COPY src ./src
 RUN mvn clean package -DskipTests
 
 # --- ESTÁGIO 2: RUN (A Execução) ---
-# Mudei de 17 para 21 aqui também 👇
+
 FROM eclipse-temurin:21-jre-alpine
 
 # Define a pasta de trabalho

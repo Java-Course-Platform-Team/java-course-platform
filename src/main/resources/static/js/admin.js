@@ -1,5 +1,10 @@
 // admin.js - GESTÃO OPERACIONAL REAL
-const API_URL = "http://localhost:8081";
+//  CONFIGURAÇÃO AUTOMÁTICA DE AMBIENTE
+const API_URL = window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1"
+    ? "http://localhost:8081"                  // Se estou no PC, uso IntelliJ Local
+    : "https://odonto-backend-j9oy.onrender.com"; // Se estou na Web, uso a Nuvem
+
+console.log(`Ambiente: ${window.location.hostname} | API: ${API_URL}`);
 
 document.addEventListener("DOMContentLoaded", () => {
     fetchDashboardStats();
@@ -29,7 +34,7 @@ async function fetchDashboardStats() {
         const stats = await statsRes.json();
         const courses = await coursesRes.json();
 
-        // Mapeamento exato com o DashboardStatsDTO do Felipe
+        // Mapeamento exato com o DashboardStatsDTO
         animateValue("total-students", 0, stats.students || 0, 1000);
         animateValue("total-courses", 0, stats.courses || 0, 1000);
         animateValue("total-admins", 0, stats.admins || 0, 1000);
@@ -48,7 +53,7 @@ async function fetchDashboardStats() {
     } catch (e) {
         console.error("Erro de sincronização:", e);
         if (typeof UI !== 'undefined') {
-            UI.toast.error("Servidor 8081 inacessível ou sessão expirada.");
+            UI.toast.error("Servidor inacessível ou sessão expirada.");
         }
     }
 }
