@@ -1,4 +1,8 @@
-const API_URL = "http://localhost:8081";
+// admin-students.js
+//  CONFIGURAÇÃO AUTOMÁTICA DE AMBIENTE
+const API_URL = window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1"
+    ? "http://localhost:8081"                  // Se estou no PC, uso IntelliJ Local
+    : "https://odonto-backend-j9oy.onrender.com"; // Se estou na Web, uso a Nuvem
 const token = localStorage.getItem("token");
 
 document.addEventListener("DOMContentLoaded", fetchStudents);
@@ -11,12 +15,14 @@ async function fetchStudents() {
         const students = await res.json();
         renderTable(students);
     } catch (e) {
-        UI.toast.error("Erro ao carregar alunos.");
+        if (typeof UI !== 'undefined') UI.toast.error("Erro ao carregar alunos.");
     }
 }
 
 function renderTable(list) {
     const tbody = document.getElementById("students-table-body");
+    if (!tbody) return;
+
     tbody.innerHTML = list.map(s => `
         <tr class="hover:bg-white/5 transition">
             <td class="px-8 py-4 text-white font-bold">${s.name}</td>
@@ -51,7 +57,7 @@ async function resetPassword(id) {
             method: 'PATCH',
             headers: { "Authorization": `Bearer ${token}` }
         });
-        UI.toast.success("Senha resetada com sucesso.");
+        if (typeof UI !== 'undefined') UI.toast.success("Senha resetada com sucesso.");
     }
 }
 
@@ -62,7 +68,7 @@ async function deleteUser(id) {
             headers: { "Authorization": `Bearer ${token}` }
         });
         if(res.ok) {
-            UI.toast.success("Usuário removido do banco.");
+            if (typeof UI !== 'undefined') UI.toast.success("Usuário removido do banco.");
             fetchStudents();
         }
     }

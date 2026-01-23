@@ -1,5 +1,8 @@
 // admin-content.js - Persistência Real no Banco
-const API_URL = "http://localhost:8081";
+//  CONFIGURAÇÃO AUTOMÁTICA DE AMBIENTE
+const API_URL = window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1"
+    ? "http://localhost:8081"                  // Se estou no PC, uso IntelliJ Local
+    : "https://odonto-backend-j9oy.onrender.com"; // Se estou na Web, uso a Nuvem
 const token = localStorage.getItem("token");
 const urlParams = new URLSearchParams(window.location.search);
 const courseId = urlParams.get('id');
@@ -27,7 +30,8 @@ async function addModule() {
         const res = await fetch(`${API_URL}/courses/modules`, {
             method: "POST",
             headers: { "Authorization": `Bearer ${token}`, "Content-Type": "application/json" },
-            body: JSON.stringify({ title, courseId: parseInt(courseId) })
+            // CORREÇÃO AQUI: Removido parseInt() pois courseId agora é UUID (String)
+            body: JSON.stringify({ title, courseId: courseId })
         });
         if (res.ok) {
             UI.toast.success("Módulo salvo!");

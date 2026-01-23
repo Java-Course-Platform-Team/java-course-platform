@@ -1,5 +1,8 @@
 // admin-courses.js - GESTÃO ELITE DE CURSOS ODONTOPRO
-const API_URL = "http://localhost:8081";
+//  CONFIGURAÇÃO AUTOMÁTICA DE AMBIENTE
+const API_URL = window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1"
+    ? "http://localhost:8081"                  // Se estou no PC, uso IntelliJ Local
+    : "https://odonto-backend-j9oy.onrender.com"; // Se estou na Web, uso a Nuvem
 const token = localStorage.getItem("token");
 
 document.addEventListener("DOMContentLoaded", () => {
@@ -55,11 +58,11 @@ function renderCoursesList(courses) {
                     <span>Aulas</span>
                 </a>
 
-                <button onclick="editCourse(${c.id})" class="p-3 bg-white/5 hover:bg-white/10 text-gray-400 hover:text-white rounded transition" title="Editar Informações">
+                <button onclick="editCourse('${c.id}')" class="p-3 bg-white/5 hover:bg-white/10 text-gray-400 hover:text-white rounded transition" title="Editar Informações">
                     <i class="fas fa-edit"></i>
                 </button>
 
-                <button onclick="deleteCourse(${c.id})" class="p-3 bg-white/5 hover:bg-red-500/20 text-gray-600 hover:text-red-500 rounded transition" title="Excluir Curso">
+                <button onclick="deleteCourse('${c.id}')" class="p-3 bg-white/5 hover:bg-red-500/20 text-gray-600 hover:text-red-500 rounded transition" title="Excluir Curso">
                     <i class="fas fa-trash"></i>
                 </button>
             </div>
@@ -76,7 +79,7 @@ async function deleteCourse(id) {
                 headers: { "Authorization": `Bearer ${token}` }
             });
             if (res.ok) {
-                // UI.toast.success("Curso removido com sucesso."); // Se tiver a UI carregada
+                // UI.toast.success("Curso removido com sucesso.");
                 fetchCourses();
             }
         } catch (e) {

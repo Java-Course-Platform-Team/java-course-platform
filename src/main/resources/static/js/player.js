@@ -1,7 +1,8 @@
-// ==========================================
-// CONTROLE DO PLAYER E PROGRESSO - ODONTOPRO
-// ==========================================
-const API_URL = "http://localhost:8081"; // Porta oficial do Felipe
+// CONTROLE DO PLAYER E PROGRESSO - ODONTOPRO (Nuvem)
+//  CONFIGURAÇÃO AUTOMÁTICA DE AMBIENTE
+const API_URL = window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1"
+    ? "http://localhost:8081"                  // Se estou no PC, uso IntelliJ Local
+    : "https://odonto-backend-j9oy.onrender.com"; // Se estou na Web, uso a Nuvem
 
 document.addEventListener("DOMContentLoaded", () => {
     checkAuth();
@@ -102,6 +103,7 @@ window.playLesson = function(lesson) {
 
     // Atualiza o gatilho de conclusão para a aula atual
     if (btnComplete) {
+        // CORREÇÃO: Passando o ID (UUID) corretamente
         btnComplete.onclick = function() { markAsCompleted(this, lesson.id); };
     }
 
