@@ -12,7 +12,7 @@
         tailwind.config = { theme: { extend: { colors: { gold: '#D4AF37', dark: '#050505' }, fontFamily: { sans: ['Manrope', 'sans-serif'], serif: ['Playfair Display', 'serif'] } } } }
     </script>
     <style>
-        /* Cortina de Transição */
+        
         .page-transition-overlay {
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
             background-color: #050505; z-index: 9999; opacity: 1; pointer-events: none;
@@ -24,6 +24,7 @@
 <body class="bg-black text-gray-300 h-screen flex overflow-hidden">
 
 <div class="page-transition-overlay"></div>
+
 
 <div class="hidden lg:flex w-1/2 relative items-center justify-center bg-dark">
     <div class="absolute inset-0">
@@ -37,13 +38,14 @@
     </div>
 </div>
 
-<div class="w-full lg:w-1/2 flex flex-col justify-center items-center p-8 bg-dark relative">
-    <a href="/" class="absolute top-8 left-8 text-gray-500 hover:text-white transition text-xs uppercase tracking-widest flex items-center gap-2">
+
+<div class="w-full lg:w-1/2 flex flex-col justify-center items-center p-6 md:p-12 bg-dark relative">
+    <a href="/" class="absolute top-6 left-6 text-gray-500 hover:text-white transition text-xs uppercase tracking-widest flex items-center gap-2">
         <i class="fas fa-arrow-left"></i> Voltar
     </a>
 
-    <div class="w-full max-w-md">
-        <div class="text-center mb-10">
+    <div class="w-full max-w-sm md:max-w-md">
+        <div class="text-center mb-8 md:mb-10">
             <i class="fas fa-tooth text-gold text-3xl mb-4"></i>
             <h1 class="text-2xl font-serif text-white mb-2">Bem-vindo de volta</h1>
             <p class="text-gray-500 text-sm">Acesse seu painel exclusivo.</p>
@@ -70,7 +72,7 @@
                 <a href="#" class="text-xs text-gray-500 hover:text-gold transition">Esqueceu a senha?</a>
             </div>
 
-            <button type="submit" class="w-full bg-gold hover:bg-yellow-500 text-black font-bold py-4 text-xs uppercase tracking-[0.2em] transition-all transform hover:-translate-y-1 shadow-[0_0_20px_rgba(212,175,55,0.2)] rounded-sm">
+            <button type="submit" class="w-full bg-gold hover:bg-yellow-500 text-black font-bold py-4 text-xs uppercase tracking-[0.2em] transition-all transform hover:-translate-y-1 shadow-[0_0_20px_rgba(212,175,55,0.2)] rounded-sm active:scale-95">
                 Acessar Conta
             </button>
         </form>
@@ -89,7 +91,7 @@
 <script src="/js/utils.js"></script>
 <script src="/js/auth.js"></script>
 <script>
-    // Lógica da Transição
+
     document.addEventListener("DOMContentLoaded", () => {
         setTimeout(() => { document.body.classList.add('page-loaded'); }, 50);
         document.querySelectorAll('a').forEach(link => {

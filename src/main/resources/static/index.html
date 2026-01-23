@@ -24,9 +24,16 @@
     </script>
 
     <style>
-        html, body { cursor: none !important; background-color: #000; overflow-x: hidden; color: #fff; }
-        #cursor-canvas { position: fixed; inset: 0; pointer-events: none; z-index: 9999; }
-        #cursor-core { width: 8px; height: 8px; background-color: #D4AF37; border-radius: 50%; position: fixed; pointer-events: none; z-index: 10000; box-shadow: 0 0 15px #D4AF37; }
+        html, body { background-color: #000; overflow-x: hidden; color: #fff; }
+
+        @media (min-width: 768px) {
+            html, body { cursor: none; }
+            #cursor-canvas { position: fixed; inset: 0; pointer-events: none; z-index: 9999; }
+            #cursor-core { width: 8px; height: 8px; background-color: #D4AF37; border-radius: 50%; position: fixed; pointer-events: none; z-index: 10000; box-shadow: 0 0 15px #D4AF37; }
+        }
+        @media (max-width: 767px) {
+            #cursor-canvas, #cursor-core { display: none !important; }
+        }
 
         body::after { content: ""; position: fixed; inset: 0; background-image: url("https://upload.wikimedia.org/wikipedia/commons/7/76/1k_filmgrain.png"); opacity: 0.04; pointer-events: none; z-index: 9000; }
         .gold-text { background: linear-gradient(to bottom, #fcf6ba, #bf953f, #b38728, #fbf5b7); -webkit-background-clip: text; background-clip: text; color: transparent; }
@@ -51,69 +58,77 @@
 <canvas id="cursor-canvas"></canvas>
 <div id="cursor-core"></div>
 
-<nav class="fixed w-full z-[60] py-8 px-10">
-    <div class="max-w-7xl mx-auto flex justify-between items-center glass-card px-10 py-4 rounded-full">
-        <span class="font-serif text-2xl font-bold tracking-[0.2em] text-white italic">ODONTO<span class="gold-text">PRO</span></span>
-        <div class="hidden md:flex items-center gap-10 text-[9px] font-bold uppercase tracking-[0.4em]">
-            <a href="/auth/login.html" class="px-8 py-3 bg-gold text-black rounded-full hover:bg-white transition-all duration-500 shadow-lg font-bold uppercase">Acesso Elite</a>
+
+<nav class="fixed w-full z-[60] py-4 md:py-8 px-4 md:px-10">
+    <div class="max-w-7xl mx-auto flex justify-between items-center glass-card px-6 md:px-10 py-3 md:py-4 rounded-full">
+        <span class="font-serif text-xl md:text-2xl font-bold tracking-[0.2em] text-white italic">ODONTO<span class="gold-text">PRO</span></span>
+
+
+        <div class="flex items-center gap-4 md:gap-10 text-[9px] font-bold uppercase tracking-[0.2em] md:tracking-[0.4em]">
+            <a href="/auth/login.html" class="px-5 py-2 md:px-8 md:py-3 bg-gold text-black rounded-full hover:bg-white transition-all duration-500 shadow-lg font-bold uppercase whitespace-nowrap">
+                Acesso <span class="hidden md:inline">Elite</span>
+            </a>
         </div>
     </div>
 </nav>
 
-<section class="hero-bg h-screen flex items-center justify-center text-center px-6">
-    <div class="max-w-5xl relative z-10">
-        <h1 class="text-6xl md:text-[8.5rem] font-serif text-white mb-6 leading-none tracking-tighter" id="hero-title"></h1>
-        <p class="reveal text-gray-400 text-xl md:text-2xl font-light mb-12 italic tracking-wide">
-            A maestria técnica que separa o profissional do <span class="gold-text font-bold uppercase tracking-widest">Excepcional.</span>
+<section class="hero-bg h-screen flex items-center justify-center text-center px-4 md:px-6">
+    <div class="max-w-5xl relative z-10 mt-16 md:mt-0">
+
+        <h1 class="text-5xl md:text-7xl lg:text-[8.5rem] font-serif text-white mb-6 leading-tight md:leading-none tracking-tighter" id="hero-title"></h1>
+
+        <p class="reveal text-gray-400 text-sm md:text-xl lg:text-2xl font-light mb-12 italic tracking-wide px-4">
+            A maestria técnica que separa o profissional do <span class="gold-text font-bold uppercase tracking-widest block md:inline mt-2 md:mt-0">Excepcional.</span>
         </p>
         <div class="reveal">
-            <a href="#collection" class="inline-block px-16 py-6 bg-gold text-black font-black uppercase tracking-[0.3em] text-[10px] shadow-[0_20px_50px_rgba(212,175,55,0.2)] hover:scale-105 transition-all duration-500">Explorar Legado</a>
+            <a href="#collection" class="inline-block px-10 py-4 md:px-16 md:py-6 bg-gold text-black font-black uppercase tracking-[0.2em] md:tracking-[0.3em] text-[10px] shadow-[0_20px_50px_rgba(212,175,55,0.2)] hover:scale-105 transition-all duration-500 rounded-sm">Explorar Legado</a>
         </div>
     </div>
 </section>
 
-<section id="stats" class="py-40 bg-black border-y border-white/5 relative">
-    <div class="max-w-7xl mx-auto px-10 grid grid-cols-1 md:grid-cols-4 gap-16 text-center">
+<section id="stats" class="py-20 md:py-40 bg-black border-y border-white/5 relative">
+    <div class="max-w-7xl mx-auto px-6 md:px-10 grid grid-cols-2 md:grid-cols-4 gap-8 md:gap-16 text-center">
         <div class="reveal">
-            <div class="text-7xl font-serif text-white mb-4 luxury-num" data-target="15400">0</div>
-            <p class="text-gold text-[10px] uppercase tracking-[0.5em] font-bold">Alunos Elite</p>
+            <div class="text-4xl md:text-7xl font-serif text-white mb-2 md:mb-4 luxury-num" data-target="15400">0</div>
+            <p class="text-gold text-[8px] md:text-[10px] uppercase tracking-[0.3em] md:tracking-[0.5em] font-bold">Alunos Elite</p>
         </div>
         <div class="reveal">
-            <div class="text-7xl font-serif text-white mb-4"><span class="luxury-num" data-target="98">0</span>%</div>
-            <p class="text-gold text-[10px] uppercase tracking-[0.5em] font-bold">Aprovação</p>
+            <div class="text-4xl md:text-7xl font-serif text-white mb-2 md:mb-4"><span class="luxury-num" data-target="98">0</span>%</div>
+            <p class="text-gold text-[8px] md:text-[10px] uppercase tracking-[0.3em] md:tracking-[0.5em] font-bold">Aprovação</p>
         </div>
         <div class="reveal">
-            <div class="text-7xl font-serif text-white mb-4 luxury-num" data-target="120">0</div>
-            <p class="text-gold text-[10px] uppercase tracking-[0.5em] font-bold">Cursos Mentoria</p>
+            <div class="text-4xl md:text-7xl font-serif text-white mb-2 md:mb-4 luxury-num" data-target="120">0</div>
+            <p class="text-gold text-[8px] md:text-[10px] uppercase tracking-[0.3em] md:tracking-[0.5em] font-bold">Cursos Mentoria</p>
         </div>
         <div class="reveal">
-            <div class="text-7xl font-serif text-white mb-4 italic gold-text">24/7</div>
-            <p class="text-gold text-[10px] uppercase tracking-[0.5em] font-bold">Suporte Black</p>
+            <div class="text-4xl md:text-7xl font-serif text-white mb-2 md:mb-4 italic gold-text">24/7</div>
+            <p class="text-gold text-[8px] md:text-[10px] uppercase tracking-[0.3em] md:tracking-[0.5em] font-bold">Suporte Black</p>
         </div>
     </div>
 </section>
 
-<section class="py-52 bg-dark-900 overflow-hidden">
-    <div class="max-w-7xl mx-auto px-10">
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-32 items-center">
-            <div class="reveal">
+<section class="py-20 md:py-52 bg-dark-900 overflow-hidden">
+    <div class="max-w-7xl mx-auto px-6 md:px-10">
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-16 md:gap-32 items-center">
+            <div class="reveal text-center md:text-left">
                 <p class="text-gold text-[10px] uppercase tracking-[0.8em] mb-6">Filosofia OdontoPro</p>
-                <h2 class="text-5xl md:text-7xl font-serif text-white mb-10 leading-tight italic">Onde a ciência encontra o <span class="gold-text">Prestígio.</span></h2>
-                <p class="text-gray-400 text-lg leading-relaxed mb-12 font-light">
+                <h2 class="text-4xl md:text-7xl font-serif text-white mb-6 md:mb-10 leading-tight italic">Onde a ciência encontra o <span class="gold-text">Prestígio.</span></h2>
+                <p class="text-gray-400 text-sm md:text-lg leading-relaxed mb-12 font-light">
                     Não ensinamos apenas odontologia. Entregamos o protocolo de guerra para dominar o mercado de alto ticket.
-                    Nossa metodologia foi desenhada para reduzir a curva de aprendizado e elevar instantaneamente a percepção de valor do seu consultório.
+                    Nossa metodologia foi desenhada para reduzir a curva de aprendizado.
                 </p>
-                <div class="flex gap-10">
+
+                <div class="flex flex-col md:flex-row gap-8 md:gap-10 justify-center md:justify-start">
                     <div>
                         <p class="text-white font-bold text-2xl font-serif mb-2">01.</p>
                         <p class="text-[9px] text-gray-500 uppercase tracking-widest">Técnica Pura</p>
                     </div>
-                    <div class="w-[1px] bg-white/10 h-12"></div>
+                    <div class="hidden md:block w-[1px] bg-white/10 h-12"></div>
                     <div>
                         <p class="text-white font-bold text-2xl font-serif mb-2">02.</p>
                         <p class="text-[9px] text-gray-500 uppercase tracking-widest">Branding de Luxo</p>
                     </div>
-                    <div class="w-[1px] bg-white/10 h-12"></div>
+                    <div class="hidden md:block w-[1px] bg-white/10 h-12"></div>
                     <div>
                         <p class="text-white font-bold text-2xl font-serif mb-2">03.</p>
                         <p class="text-[9px] text-gray-500 uppercase tracking-widest">Gestão Elite</p>
@@ -121,52 +136,51 @@
                 </div>
             </div>
 
-            <div class="reveal relative">
+            <div class="reveal relative order-first md:order-last">
                 <img src="https://images.unsplash.com/photo-1629909613654-28e377c37b09?q=80&w=1500"
-                     class="w-full h-[600px] object-cover grayscale-[30%] opacity-80 border border-white/10 shadow-[0_0_50px_rgba(212,175,55,0.1)] transition-all duration-700">
+                     class="w-full h-[400px] md:h-[600px] object-cover grayscale-[30%] opacity-80 border border-white/10 shadow-[0_0_50px_rgba(212,175,55,0.1)] transition-all duration-700">
 
-                <div class="absolute -bottom-10 -left-10 bg-gold p-10 shadow-[20px_20px_60px_rgba(0,0,0,0.5)] z-20">
-                    <p class="text-black font-black text-4xl font-serif italic">7D</p>
+                <div class="absolute -bottom-5 -left-5 md:-bottom-10 md:-left-10 bg-gold p-6 md:p-10 shadow-[20px_20px_60px_rgba(0,0,0,0.5)] z-20">
+                    <p class="text-black font-black text-2xl md:text-4xl font-serif italic">7D</p>
                     <p class="text-black text-[8px] font-bold uppercase tracking-widest">Model Business</p>
                 </div>
-                <div class="absolute -top-10 -right-10 w-40 h-40 bg-gold/10 blur-[100px] pointer-events-none"></div>
             </div>
         </div>
     </div>
 </section>
 
-<section id="collection" class="py-52 bg-black">
-    <div class="max-w-screen-2xl mx-auto px-10">
-        <div class="flex flex-col md:flex-row justify-between items-end mb-32 reveal">
-            <div>
+<section id="collection" class="py-20 md:py-52 bg-black">
+    <div class="max-w-screen-2xl mx-auto px-6 md:px-10">
+        <div class="flex flex-col md:flex-row justify-between items-end mb-16 md:mb-32 reveal">
+            <div class="mb-6 md:mb-0">
                 <p class="text-gold text-[10px] uppercase tracking-[0.8em] mb-4">Currículo 2026</p>
-                <h2 class="text-6xl md:text-9xl font-serif text-white italic tracking-tighter">The <span class="gold-text">Collection</span></h2>
+                <h2 class="text-5xl md:text-9xl font-serif text-white italic tracking-tighter">The <span class="gold-text">Collection</span></h2>
             </div>
             <p class="text-gray-500 text-[10px] uppercase tracking-[0.4em] max-w-xs mb-4">Programas exclusivos para membros selecionados.</p>
         </div>
 
         <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
-            <div class="reveal group relative h-[700px] overflow-hidden border border-white/5">
+            <div class="reveal group relative h-[500px] md:h-[700px] overflow-hidden border border-white/5">
                 <img src="https://images.unsplash.com/photo-1606811971618-4486d14f3f99?q=80&w=1000" class="w-full h-full object-cover grayscale group-hover:grayscale-0 transition-all duration-1000 group-hover:scale-110 opacity-40">
                 <div class="absolute inset-0 bg-gradient-to-t from-black via-transparent to-transparent"></div>
                 <div class="absolute bottom-10 left-10 right-10">
-                    <h3 class="text-4xl font-serif text-white mb-6">Protocolos de Implante Z</h3>
+                    <h3 class="text-3xl md:text-4xl font-serif text-white mb-6">Protocolos de Implante Z</h3>
                     <a href="/auth/cadastro.html" class="inline-block py-4 px-10 border border-gold text-gold text-[10px] font-bold uppercase tracking-widest hover:bg-gold hover:text-black transition">Matrícula Black</a>
                 </div>
             </div>
-            <div class="reveal group relative h-[700px] overflow-hidden border border-white/5" style="transition-delay: 200ms;">
+            <div class="reveal group relative h-[500px] md:h-[700px] overflow-hidden border border-white/5" style="transition-delay: 200ms;">
                 <img src="https://images.unsplash.com/photo-1445527815219-ecbfec67492e?q=80&w=1000" class="w-full h-full object-cover grayscale group-hover:grayscale-0 transition-all duration-1000 group-hover:scale-110 opacity-40">
                 <div class="absolute inset-0 bg-gradient-to-t from-black via-transparent to-transparent"></div>
                 <div class="absolute bottom-10 left-10 right-10">
-                    <h3 class="text-4xl font-serif text-white mb-6">Estética e Facetas</h3>
+                    <h3 class="text-3xl md:text-4xl font-serif text-white mb-6">Estética e Facetas</h3>
                     <a href="/auth/cadastro.html" class="inline-block py-4 px-10 border border-gold text-gold text-[10px] font-bold uppercase tracking-widest hover:bg-gold hover:text-black transition">Matrícula Black</a>
                 </div>
             </div>
-            <div class="reveal group relative h-[700px] overflow-hidden border border-white/5" style="transition-delay: 400ms;">
+            <div class="reveal group relative h-[500px] md:h-[700px] overflow-hidden border border-white/5" style="transition-delay: 400ms;">
                 <img src="https://images.unsplash.com/photo-1512678080530-7760d81faba6?q=80&w=1000" class="w-full h-full object-cover grayscale group-hover:grayscale-0 transition-all duration-1000 group-hover:scale-110 opacity-40">
                 <div class="absolute inset-0 bg-gradient-to-t from-black via-transparent to-transparent"></div>
                 <div class="absolute bottom-10 left-10 right-10">
-                    <h3 class="text-4xl font-serif text-white mb-6">Arquitetura de Clínicas</h3>
+                    <h3 class="text-3xl md:text-4xl font-serif text-white mb-6">Arquitetura de Clínicas</h3>
                     <a href="/auth/cadastro.html" class="inline-block py-4 px-10 border border-gold text-gold text-[10px] font-bold uppercase tracking-widest hover:bg-gold hover:text-black transition">Matrícula Black</a>
                 </div>
             </div>
@@ -174,28 +188,15 @@
     </div>
 </section>
 
-<section class="py-60 bg-black text-center relative">
-    <div class="max-w-4xl mx-auto px-6 relative z-10">
-        <h2 class="reveal text-5xl md:text-8xl font-serif text-white mb-10 italic uppercase tracking-tighter">O Nível Absolute te <span class="gold-text">Chama.</span></h2>
-        <p class="reveal text-gray-500 text-xl font-light mb-16 tracking-[0.5em]">LEGACY STARTS NOW</p>
-        <div class="reveal">
-            <a href="/auth/cadastro.html" class="px-20 py-8 bg-white text-black font-black uppercase tracking-[0.5em] text-[12px] hover:bg-gold transition-all duration-700 hover:scale-105 inline-block">
-                Iniciar Ascensão
-            </a>
-        </div>
-    </div>
-    <div class="absolute inset-0 flex items-center justify-center opacity-[0.02] pointer-events-none">
-        <span class="text-[35vw] font-serif font-bold italic">ODONTO</span>
-    </div>
-</section>
-
-<footer class="py-20 border-t border-white/5 text-center bg-black">
-    <p class="text-[9px] text-gray-600 uppercase tracking-[0.8em]">OdontoPro Luxury Absolute © 2026 — All Rights Reserved</p>
+<footer class="py-12 md:py-20 border-t border-white/5 text-center bg-black">
+    <p class="text-[9px] text-gray-600 uppercase tracking-[0.4em] md:tracking-[0.8em] px-4">OdontoPro Luxury Absolute © 2026 — All Rights Reserved</p>
 </footer>
 
 <script>
-    // URL ATUALIZADA PARA O RENDER
-    const API_BASE_URL = 'https://odonto-backend-j9oy.onrender.com';
+
+    const API_BASE_URL = window.location.hostname === "localhost"
+        ? "http://localhost:8081"
+        : "https://odonto-backend-j9oy.onrender.com";
 
     async function syncStats() {
         try {
@@ -203,10 +204,11 @@
             if (!response.ok) throw new Error();
             const data = await response.json();
             const nums = document.querySelectorAll('.luxury-num');
-            // Mapeamento real conforme o DTO do Felipe
-            nums[0].dataset.target = data.students || 15400;
-            nums[1].dataset.target = 98;
-            nums[2].dataset.target = data.courses || 120;
+            if(nums.length >= 3) {
+                nums[0].dataset.target = data.students || 15400;
+                nums[1].dataset.target = 98;
+                nums[2].dataset.target = data.courses || 120;
+            }
         } catch (error) { console.log("Usando backup visual."); }
         startCounters();
     }
@@ -228,32 +230,35 @@
         });
     }
 
-    const canvas = document.getElementById('cursor-canvas');
-    const core = document.getElementById('cursor-core');
-    const ctx = canvas.getContext('2d');
-    let width = canvas.width = window.innerWidth;
-    let height = canvas.height = window.innerHeight;
-    let mouse = { x: width/2, y: height/2 };
-    let trail = [];
 
-    window.addEventListener('mousemove', (e) => {
-        mouse.x = e.clientX; mouse.y = e.clientY;
-        for (let i = 0; i < 4; i++) { trail.push({ x: mouse.x, y: mouse.y, o: 1 }); }
-    });
+    if (window.innerWidth >= 768) {
+        const canvas = document.getElementById('cursor-canvas');
+        const core = document.getElementById('cursor-core');
+        const ctx = canvas.getContext('2d');
+        let width = canvas.width = window.innerWidth;
+        let height = canvas.height = window.innerHeight;
+        let mouse = { x: width/2, y: height/2 };
+        let trail = [];
 
-    function animateCursor() {
-        ctx.clearRect(0, 0, width, height);
-        core.style.left = mouse.x + 'px'; core.style.top = mouse.y + 'px';
-        core.style.transform = 'translate(-50%, -50%)';
-        trail.forEach((p, i) => {
-            p.o -= 0.02; p.x += (Math.random()-0.5)*2; p.y += (Math.random()-0.5)*2;
-            ctx.globalAlpha = p.o; ctx.fillStyle = '#D4AF37';
-            ctx.beginPath(); ctx.arc(p.x, p.y, 1.5, 0, Math.PI*2); ctx.fill();
-            if(p.o <= 0) trail.splice(i, 1);
+        window.addEventListener('mousemove', (e) => {
+            mouse.x = e.clientX; mouse.y = e.clientY;
+            for (let i = 0; i < 4; i++) { trail.push({ x: mouse.x, y: mouse.y, o: 1 }); }
         });
-        requestAnimationFrame(animateCursor);
+
+        function animateCursor() {
+            ctx.clearRect(0, 0, width, height);
+            core.style.left = mouse.x + 'px'; core.style.top = mouse.y + 'px';
+            core.style.transform = 'translate(-50%, -50%)';
+            trail.forEach((p, i) => {
+                p.o -= 0.02; p.x += (Math.random()-0.5)*2; p.y += (Math.random()-0.5)*2;
+                ctx.globalAlpha = p.o; ctx.fillStyle = '#D4AF37';
+                ctx.beginPath(); ctx.arc(p.x, p.y, 1.5, 0, Math.PI*2); ctx.fill();
+                if(p.o <= 0) trail.splice(i, 1);
+            });
+            requestAnimationFrame(animateCursor);
+        }
+        animateCursor();
     }
-    animateCursor();
 
     window.addEventListener('load', () => {
         document.body.classList.add('loaded');
@@ -275,7 +280,8 @@
         }, { threshold: 0.1 });
 
         document.querySelectorAll('.reveal').forEach(el => observer.observe(el));
-        observer.observe(document.getElementById('stats'));
+        const statsEl = document.getElementById('stats');
+        if(statsEl) observer.observe(statsEl);
     });
 </script>
 </body>
