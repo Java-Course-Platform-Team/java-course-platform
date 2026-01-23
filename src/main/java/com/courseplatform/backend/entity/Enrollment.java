@@ -1,4 +1,5 @@
 package com.courseplatform.backend.entity;
+
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -16,16 +17,18 @@ import java.util.UUID;
 public class Enrollment {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.AUTO)
+    @GeneratedValue(strategy = GenerationType.UUID) // CORREÇÃO: Padronizado para UUID (estava AUTO)
     private UUID id;
+
     @ManyToOne
     @JoinColumn(name = "user_id", nullable = false)
     private User user;
+
     @ManyToOne
     @JoinColumn(name = "course_id", nullable = false)
     private Course course;
 
     private LocalDateTime enrolledAt;
 
-    private LocalDateTime date;
+    private LocalDateTime date; // Mantendo campo legado se houver uso, senão enrolledAt basta
 }
