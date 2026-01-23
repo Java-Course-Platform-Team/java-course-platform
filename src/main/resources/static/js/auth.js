@@ -1,10 +1,28 @@
-// auth.js - Autenticação & Cadastro (Corrigido para Nuvem)
-//  CONFIGURAÇÃO AUTOMÁTICA DE AMBIENTE
+// auth.js - Com Máscara de CPF e Configurações de Nuvem
+// CONFIGURAÇÃO AUTOMÁTICA DE AMBIENTE
 const API_URL = window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1"
-    ? "http://localhost:8081"                  // Se estou no PC, uso IntelliJ Local
-    : "https://odonto-backend-j9oy.onrender.com"; // Se estou na Web, uso a Nuvem
+    ? "http://localhost:8081"
+    : "https://odonto-backend-j9oy.onrender.com";
 
 document.addEventListener("DOMContentLoaded", () => {
+
+    // ==================================================
+    // 🎭 MÁSCARA DE CPF (O Segredo Novo)
+    // ==================================================
+    const cpfInput = document.getElementById("cpf");
+    if (cpfInput) {
+        cpfInput.addEventListener("input", (e) => {
+            let value = e.target.value.replace(/\D/g, ""); // Remove tudo que não é número
+            if (value.length > 11) value = value.slice(0, 11); // Limita a 11 números
+
+            // Adiciona os pontos e traço
+            value = value.replace(/(\d{3})(\d)/, "$1.$2");
+            value = value.replace(/(\d{3})(\d)/, "$1.$2");
+            value = value.replace(/(\d{3})(\d{1,2})$/, "$1-$2");
+
+            e.target.value = value; // Devolve formatado pro campo
+        });
+    }
 
     // ==================================================
     // 1. LÓGICA DE LOGIN
@@ -15,12 +33,10 @@ document.addEventListener("DOMContentLoaded", () => {
             e.preventDefault();
             const btn = loginForm.querySelector("button[type='submit']");
 
-            // Feedback visual (se a lib UI existir)
             if (typeof UI !== 'undefined') UI.buttonLoading(btn, true, "Validando...");
 
             try {
-                // Chama o AuthController.java (@PostMapping("/login"))
-                const response = await fetch(`${BASE_URL}/auth/login`, {
+                const response = await fetch(`${API_URL}/auth/login`, {
                     method: "POST",
                     headers: { "Content-Type": "application/json" },
                     body: JSON.stringify({
@@ -33,20 +49,16 @@ document.addEventListener("DOMContentLoaded", () => {
 
                 const data = await response.json();
 
-                // SALVA TUDO NO LOCALSTORAGE
                 localStorage.setItem("token", data.token);
-                // Salva o objeto completo (ID agora é UUID vindo do Java)
                 localStorage.setItem("user", JSON.stringify({
                     id: data.id,
                     name: data.name,
                     role: data.role
                 }));
-                // Mantém compatibilidade com scripts antigos
                 localStorage.setItem("userName", data.name);
 
                 if (typeof UI !== 'undefined') UI.toast.info(`Bem-vindo, Dr(a). ${data.name}!`);
 
-                // REDIRECIONAMENTO INTELIGENTE
                 setTimeout(() => {
                     const role = data.role;
                     if (role === 'ADMIN' || role === 'ROLE_ADMIN') {
@@ -77,23 +89,24 @@ document.addEventListener("DOMContentLoaded", () => {
 
             if (typeof UI !== 'undefined') UI.buttonLoading(submitBtn, true, "Criando conta...");
 
+            // Pega o CPF e remove os pontos/traços antes de enviar
+            const rawCpf = document.getElementById("cpf").value.replace(/\D/g, "");
+
             try {
-                // ATENÇÃO: Usando /users porque seu SecurityConfig liberou essa rota
-                // .requestMatchers(HttpMethod.POST, ... "/users").permitAll()
-                const response = await fetch(`${BASE_URL}/users`, {
+                const response = await fetch(`${API_URL}/users`, {
                     method: "POST",
                     headers: { "Content-Type": "application/json" },
                     body: JSON.stringify({
                         name: document.getElementById("nome").value.trim(),
                         email: document.getElementById("email").value.trim(),
                         password: document.getElementById("senha").value,
-                        cpf: document.getElementById("cpf").value,
-                        role: "STUDENT" // Força o cadastro como aluno
+                        cpf: rawCpf, // Envia só os números (Ex: 12345678900)
+                        role: "STUDENT"
                     })
                 });
 
                 if (response.ok) {
-                    if (typeof UI !== 'undefined') UI.toast.success("Conta criada! Redirecionando para login...");
+                    if (typeof UI !== 'undefined') UI.toast.success("Conta criada! Redirecionando...");
                     else alert("Conta criada com sucesso!");
 
                     setTimeout(() => window.location.href = "/auth/login.html", 2000);
