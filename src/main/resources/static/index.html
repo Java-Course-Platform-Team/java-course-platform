@@ -25,7 +25,7 @@
 
     <style>
         html, body { background-color: #000; overflow-x: hidden; color: #fff; }
-
+        /* Cursor personalizado desativado em mobile para melhor performance touch */
         @media (min-width: 768px) {
             html, body { cursor: none; }
             #cursor-canvas { position: fixed; inset: 0; pointer-events: none; z-index: 9999; }
@@ -38,9 +38,19 @@
         body::after { content: ""; position: fixed; inset: 0; background-image: url("https://upload.wikimedia.org/wikipedia/commons/7/76/1k_filmgrain.png"); opacity: 0.04; pointer-events: none; z-index: 9000; }
         .gold-text { background: linear-gradient(to bottom, #fcf6ba, #bf953f, #b38728, #fbf5b7); -webkit-background-clip: text; background-clip: text; color: transparent; }
 
+        /* CORREÇÃO IOS: background-attachment: scroll no mobile */
         .hero-bg {
             background: linear-gradient(to bottom, rgba(0,0,0,0.6), rgba(0,0,0,1)), url('https://images.unsplash.com/photo-1629909613654-28e377c37b09?q=80&w=2600');
-            background-size: cover; background-position: center; background-attachment: fixed;
+            background-size: cover;
+            background-position: center;
+            background-attachment: scroll; /* Padrão seguro para mobile */
+        }
+
+        /* Apenas Desktop tem o efeito parallax fixo */
+        @media (min-width: 1024px) {
+            .hero-bg {
+                background-attachment: fixed;
+            }
         }
 
         .reveal { opacity: 0; transform: translateY(40px); transition: all 1.2s cubic-bezier(0.2, 1, 0.3, 1); }
@@ -58,12 +68,12 @@
 <canvas id="cursor-canvas"></canvas>
 <div id="cursor-core"></div>
 
-
+<!-- Navbar com suporte Mobile -->
 <nav class="fixed w-full z-[60] py-4 md:py-8 px-4 md:px-10">
     <div class="max-w-7xl mx-auto flex justify-between items-center glass-card px-6 md:px-10 py-3 md:py-4 rounded-full">
         <span class="font-serif text-xl md:text-2xl font-bold tracking-[0.2em] text-white italic">ODONTO<span class="gold-text">PRO</span></span>
 
-
+        <!-- Botão visível em todas as telas agora -->
         <div class="flex items-center gap-4 md:gap-10 text-[9px] font-bold uppercase tracking-[0.2em] md:tracking-[0.4em]">
             <a href="/auth/login.html" class="px-5 py-2 md:px-8 md:py-3 bg-gold text-black rounded-full hover:bg-white transition-all duration-500 shadow-lg font-bold uppercase whitespace-nowrap">
                 Acesso <span class="hidden md:inline">Elite</span>
@@ -74,7 +84,7 @@
 
 <section class="hero-bg h-screen flex items-center justify-center text-center px-4 md:px-6">
     <div class="max-w-5xl relative z-10 mt-16 md:mt-0">
-
+        <!-- Texto responsivo: text-5xl no mobile, text-[8.5rem] no desktop -->
         <h1 class="text-5xl md:text-7xl lg:text-[8.5rem] font-serif text-white mb-6 leading-tight md:leading-none tracking-tighter" id="hero-title"></h1>
 
         <p class="reveal text-gray-400 text-sm md:text-xl lg:text-2xl font-light mb-12 italic tracking-wide px-4">
@@ -117,7 +127,7 @@
                     Não ensinamos apenas odontologia. Entregamos o protocolo de guerra para dominar o mercado de alto ticket.
                     Nossa metodologia foi desenhada para reduzir a curva de aprendizado.
                 </p>
-
+                <!-- Ajuste da lista horizontal para vertical em mobile -->
                 <div class="flex flex-col md:flex-row gap-8 md:gap-10 justify-center md:justify-start">
                     <div>
                         <p class="text-white font-bold text-2xl font-serif mb-2">01.</p>
@@ -193,7 +203,7 @@
 </footer>
 
 <script>
-
+    // URL CONFIGURADA PARA BACKEND
     const API_BASE_URL = window.location.hostname === "localhost"
         ? "http://localhost:8081"
         : "https://odonto-backend-j9oy.onrender.com";
@@ -230,7 +240,7 @@
         });
     }
 
-
+    // Cursor só ativa em desktop
     if (window.innerWidth >= 768) {
         const canvas = document.getElementById('cursor-canvas');
         const core = document.getElementById('cursor-core');
