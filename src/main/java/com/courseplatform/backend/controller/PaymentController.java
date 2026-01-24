@@ -11,6 +11,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.HashMap;
+import java.util.Map;
+
 @RestController
 @RequestMapping("/payments")
 public class PaymentController {
@@ -32,7 +35,6 @@ public class PaymentController {
         Course course = courseRepository.findById(request.getCourseId())
                 .orElseThrow(() -> new RuntimeException("Curso não encontrado"));
 
-        // Gera o PIX usando o serviço
         PaymentDTO paymentDTO = paymentService.createPayment(
                 user,
                 course.getPrice(),
@@ -42,17 +44,25 @@ public class PaymentController {
         return ResponseEntity.ok(paymentDTO);
     }
 
-    @PostMapping("/link")
-    public ResponseEntity<String> generateLink(@RequestBody PaymentRequestDTO request) {
+    // Rota corrigida para /checkout e retorno JSON para "url"
+    @PostMapping("/checkout")
+    public ResponseEntity<Map<String, String>> generateLink(@RequestBody PaymentRequestDTO request) {
+
+        System.out.println("1. Recebendo pedido de checkout para curso ID: " + request.getCourseId());
+
         User user = userRepository.findById(request.getUserId())
                 .orElseThrow(() -> new RuntimeException("Usuário não encontrado"));
 
         Course course = courseRepository.findById(request.getCourseId())
                 .orElseThrow(() -> new RuntimeException("Curso não encontrado"));
 
-        // Gera o link de checkout usando o serviço
         String link = paymentService.createPaymentLink(course, user);
 
-        return ResponseEntity.ok(link);
+        System.out.println("2. LINK GERADO: " + link);
+
+        Map<String, String> response = new HashMap<>();
+        response.put("url", link); // Chave "url" para o store.js entender
+
+        return ResponseEntity.ok(response);
     }
 }
