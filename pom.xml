@@ -47,8 +47,8 @@
 		<!-- Mercado Pago SDK (Versão Atualizada e Disponível) -->
 		<dependency>
 			<groupId>com.mercadopago</groupId>
-			<artifactId>dx-java</artifactId>
-			<version>2.1.35</version>
+			<artifactId>sdk-java</artifactId>
+			<version>2.1.28</version>
 		</dependency>
 
 		<!-- Banco de Dados e Ferramentas -->
