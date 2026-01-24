@@ -1,126 +1,189 @@
-// auth.js - Com Máscara de CPF e Configurações de Nuvem
-// CONFIGURAÇÃO AUTOMÁTICA DE AMBIENTE
-const API_URL = window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1"
+// auth.js - Gerenciamento de Autenticação com Validação Completa
+
+const API_BASE_URL = window.location.hostname === "localhost"
     ? "http://localhost:8081"
     : "https://odonto-backend-j9oy.onrender.com";
 
-document.addEventListener("DOMContentLoaded", () => {
+// Função utilitária para exibir erros (Requer Toastify)
+function showError(message) {
+    if (typeof Toastify === 'function') {
+        Toastify({
+            text: message,
+            duration: 3000,
+            gravity: "top",
+            position: "right",
+            style: { background: "#ef4444" } // Vermelho
+        }).showToast();
+    } else {
+        alert(message);
+    }
+}
 
-    // ==================================================
-    // 🎭 MÁSCARA DE CPF (O Segredo Novo)
-    // ==================================================
-    const cpfInput = document.getElementById("cpf");
-    if (cpfInput) {
-        cpfInput.addEventListener("input", (e) => {
-            let value = e.target.value.replace(/\D/g, ""); // Remove tudo que não é número
-            if (value.length > 11) value = value.slice(0, 11); // Limita a 11 números
+function showSuccess(message) {
+    if (typeof Toastify === 'function') {
+        Toastify({
+            text: message,
+            duration: 3000,
+            gravity: "top",
+            position: "right",
+            style: { background: "#D4AF37" } // Dourado
+        }).showToast();
+    }
+}
 
-            // Adiciona os pontos e traço
-            value = value.replace(/(\d{3})(\d)/, "$1.$2");
-            value = value.replace(/(\d{3})(\d)/, "$1.$2");
-            value = value.replace(/(\d{3})(\d{1,2})$/, "$1-$2");
+// Lógica de Login
+async function handleLogin(event) {
+    event.preventDefault();
 
-            e.target.value = value; // Devolve formatado pro campo
-        });
+    const emailInput = document.getElementById('email');
+    const passwordInput = document.getElementById('password');
+    const submitBtn = event.target.querySelector('button[type="submit"]');
+
+    const email = emailInput.value.trim();
+    const password = passwordInput.value.trim();
+
+    // VALIDAÇÃO FRONTEND
+    if (!email) {
+        showError("Por favor, digite seu e-mail.");
+        emailInput.focus();
+        return;
+    }
+    if (!password) {
+        showError("Por favor, digite sua senha.");
+        passwordInput.focus();
+        return;
     }
 
-    // ==================================================
-    // 1. LÓGICA DE LOGIN
-    // ==================================================
-    const loginForm = document.getElementById("login-form");
-    if (loginForm) {
-        loginForm.addEventListener("submit", async (e) => {
-            e.preventDefault();
-            const btn = loginForm.querySelector("button[type='submit']");
+    // Feedback visual
+    const originalBtnText = submitBtn.innerText;
+    submitBtn.innerText = "Autenticando...";
+    submitBtn.disabled = true;
 
-            if (typeof UI !== 'undefined') UI.buttonLoading(btn, true, "Validando...");
-
-            try {
-                const response = await fetch(`${API_URL}/auth/login`, {
-                    method: "POST",
-                    headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify({
-                        email: document.getElementById("email").value.trim(),
-                        password: document.getElementById("password").value
-                    })
-                });
-
-                if (!response.ok) throw new Error("Acesso negado");
-
-                const data = await response.json();
-
-                localStorage.setItem("token", data.token);
-                localStorage.setItem("user", JSON.stringify({
-                    id: data.id,
-                    name: data.name,
-                    role: data.role
-                }));
-                localStorage.setItem("userName", data.name);
-
-                if (typeof UI !== 'undefined') UI.toast.info(`Bem-vindo, Dr(a). ${data.name}!`);
-
-                setTimeout(() => {
-                    const role = data.role;
-                    if (role === 'ADMIN' || role === 'ROLE_ADMIN') {
-                        window.location.href = "/admin/dashboard.html";
-                    } else {
-                        window.location.href = "/aluno/area-aluno.html";
-                    }
-                }, 1500);
-
-            } catch (error) {
-                console.error(error);
-                if (typeof UI !== 'undefined') UI.toast.error("E-mail ou senha inválidos.");
-                else alert("E-mail ou senha inválidos.");
-            } finally {
-                if (typeof UI !== 'undefined') UI.buttonLoading(btn, false);
-            }
+    try {
+        const response = await fetch(`${API_BASE_URL}/auth/login`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ email, password })
         });
-    }
 
-    // ==================================================
-    // 2. LÓGICA DE CADASTRO
-    // ==================================================
-    const cadastroForm = document.getElementById("cadastro-form");
-    if (cadastroForm) {
-        cadastroForm.addEventListener("submit", async (e) => {
-            e.preventDefault();
-            const submitBtn = cadastroForm.querySelector("button[type='submit']");
+        if (response.ok) {
+            const data = await response.json();
+            localStorage.setItem('token', data.token);
+            localStorage.setItem('user', JSON.stringify(data.user)); // Salva dados do usuário
 
-            if (typeof UI !== 'undefined') UI.buttonLoading(submitBtn, true, "Criando conta...");
+            showSuccess("Login realizado com sucesso!");
 
-            // Pega o CPF e remove os pontos/traços antes de enviar
-            const rawCpf = document.getElementById("cpf").value.replace(/\D/g, "");
-
-            try {
-                const response = await fetch(`${API_URL}/users`, {
-                    method: "POST",
-                    headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify({
-                        name: document.getElementById("nome").value.trim(),
-                        email: document.getElementById("email").value.trim(),
-                        password: document.getElementById("senha").value,
-                        cpf: rawCpf, // Envia só os números (Ex: 12345678900)
-                        role: "STUDENT"
-                    })
-                });
-
-                if (response.ok) {
-                    if (typeof UI !== 'undefined') UI.toast.success("Conta criada! Redirecionando...");
-                    else alert("Conta criada com sucesso!");
-
-                    setTimeout(() => window.location.href = "/auth/login.html", 2000);
+            setTimeout(() => {
+                if (data.user.role === 'ADMIN') {
+                    window.location.href = '/admin/dashboard.html';
                 } else {
-                    const err = await response.json();
-                    if (typeof UI !== 'undefined') UI.toast.error(err.message || "Erro ao criar conta.");
-                    else alert("Erro: " + (err.message || "Tente novamente."));
+                    window.location.href = '/aluno/area-aluno.html';
                 }
-            } catch (error) {
-                console.error(error);
-                if (typeof UI !== 'undefined') UI.toast.error("Servidor indisponível ou erro de conexão.");
-            } finally {
-                if (typeof UI !== 'undefined') UI.buttonLoading(submitBtn, false);
-            }
+            }, 1000);
+        } else {
+            const errorData = await response.json().catch(() => ({}));
+            showError(errorData.message || "Credenciais inválidas.");
+            submitBtn.innerText = originalBtnText;
+            submitBtn.disabled = false;
+        }
+    } catch (error) {
+        console.error('Erro:', error);
+        showError("Erro ao conectar com o servidor.");
+        submitBtn.innerText = originalBtnText;
+        submitBtn.disabled = false;
+    }
+}
+
+// Lógica de Cadastro
+async function handleRegister(event) {
+    event.preventDefault();
+
+    const nameInput = document.getElementById('nome'); // ID ajustado para 'nome'
+    const emailInput = document.getElementById('email');
+    const passwordInput = document.getElementById('password');
+    const confirmPasswordInput = document.getElementById('confirmPassword');
+    const submitBtn = event.target.querySelector('button[type="submit"]');
+
+    const name = nameInput.value.trim();
+    const email = emailInput.value.trim();
+    const password = passwordInput.value.trim();
+
+    // VALIDAÇÃO FRONTEND ROBUSTA
+    if (name.length < 3) {
+        showError("O nome deve ter pelo menos 3 caracteres.");
+        nameInput.focus();
+        return;
+    }
+    if (!email.includes('@') || !email.includes('.')) {
+        showError("Por favor, insira um e-mail válido.");
+        emailInput.focus();
+        return;
+    }
+    if (password.length < 6) {
+        showError("A senha deve ter no mínimo 6 caracteres.");
+        passwordInput.focus();
+        return;
+    }
+
+    // Validação de confirmação de senha
+    if (confirmPasswordInput) {
+        if (password !== confirmPasswordInput.value.trim()) {
+            showError("As senhas não coincidem.");
+            confirmPasswordInput.focus();
+            return;
+        }
+    }
+
+    submitBtn.innerText = "Criando conta...";
+    submitBtn.disabled = true;
+
+    try {
+        const response = await fetch(`${API_BASE_URL}/auth/register`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ name, email, password, role: 'STUDENT' })
         });
+
+        if (response.ok) {
+            showSuccess("Conta criada! Redirecionando para login...");
+            setTimeout(() => {
+                window.location.href = '/auth/login.html';
+            }, 1500);
+        } else {
+            // Tenta pegar mensagem de erro detalhada do backend
+            const errorText = await response.text();
+            try {
+                const errorJson = JSON.parse(errorText);
+                // Se for erro de validação (lista de erros)
+                if (errorJson.errors) {
+                    const firstError = Object.values(errorJson.errors)[0];
+                    showError(firstError || "Dados inválidos.");
+                } else {
+                    showError(errorJson.message || "Erro ao criar conta.");
+                }
+            } catch (e) {
+                showError("Erro ao criar conta. O e-mail já pode estar em uso.");
+            }
+            submitBtn.innerText = "Criar Conta";
+            submitBtn.disabled = false;
+        }
+    } catch (error) {
+        console.error('Erro:', error);
+        showError("Erro de conexão.");
+        submitBtn.innerText = "Criar Conta";
+        submitBtn.disabled = false;
+    }
+}
+
+// Inicialização dos Event Listeners
+document.addEventListener('DOMContentLoaded', () => {
+    const loginForm = document.getElementById('login-form');
+    if (loginForm) {
+        loginForm.addEventListener('submit', handleLogin);
+    }
+
+    const registerForm = document.getElementById('register-form');
+    if (registerForm) {
+        registerForm.addEventListener('submit', handleRegister);
     }
 });

@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Matrícula | OdontoPro Luxury</title>
+    <title>Cadastro | OdontoPro Luxury</title>
     <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700&family=Manrope:wght@300;400;600&display=swap" rel="stylesheet">
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
@@ -11,88 +11,67 @@
     <script>
         tailwind.config = { theme: { extend: { colors: { gold: '#D4AF37', dark: '#050505' }, fontFamily: { sans: ['Manrope', 'sans-serif'], serif: ['Playfair Display', 'serif'] } } } }
     </script>
-    <style>
-        /* Cortina de Transição */
-        .page-transition-overlay {
-            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background-color: #050505; z-index: 9999; opacity: 1; pointer-events: none;
-            transition: opacity 0.8s cubic-bezier(0.4, 0, 0.2, 1);
-        }
-        body.page-loaded .page-transition-overlay { opacity: 0; }
-    </style>
 </head>
-<body class="bg-black text-gray-300 h-screen flex overflow-hidden">
+<body class="bg-black text-gray-300 min-h-screen flex items-center justify-center p-4">
 
-<div class="page-transition-overlay"></div>
+<div class="w-full max-w-4xl bg-dark border border-white/5 shadow-2xl rounded-lg overflow-hidden flex flex-col md:flex-row">
 
-<div class="hidden lg:flex w-1/2 relative items-center justify-center bg-dark border-r border-white/5">
-    <div class="absolute inset-0">
-        <img src="https://images.unsplash.com/photo-1556761175-5973dc0f32e7?q=80&w=1500&auto=format&fit=crop" class="w-full h-full object-cover opacity-30 grayscale">
-        <div class="absolute inset-0 bg-gradient-to-l from-black via-black/50 to-transparent"></div>
-    </div>
-    <div class="relative z-10 max-w-lg px-12">
-        <h2 class="text-4xl font-serif text-white leading-tight mb-8">Junte-se à Elite.</h2>
-        <ul class="space-y-6">
-            <li class="flex items-center gap-4 text-sm text-gray-300">
-                <div class="w-8 h-8 rounded-full border border-gold/30 flex items-center justify-center text-gold"><i class="fas fa-check"></i></div>
-                Acesso ilimitado a todos os cursos
-            </li>
-            <li class="flex items-center gap-4 text-sm text-gray-300">
-                <div class="w-8 h-8 rounded-full border border-gold/30 flex items-center justify-center text-gold"><i class="fas fa-check"></i></div>
-                Certificação válida em todo território
-            </li>
-            <li class="flex items-center gap-4 text-sm text-gray-300">
-                <div class="w-8 h-8 rounded-full border border-gold/30 flex items-center justify-center text-gold"><i class="fas fa-check"></i></div>
-                Networking com especialistas
-            </li>
-        </ul>
-    </div>
-</div>
-
-<div class="w-full lg:w-1/2 flex flex-col justify-center items-center p-8 bg-dark relative overflow-y-auto">
-    <a href="/" class="absolute top-8 left-8 text-gray-500 hover:text-white transition text-xs uppercase tracking-widest flex items-center gap-2">
-        <i class="fas fa-arrow-left"></i> Voltar
-    </a>
-
-    <div class="w-full max-w-md mt-10 lg:mt-0">
-        <div class="text-center mb-8">
-            <h1 class="text-2xl font-serif text-white mb-2">Solicitar Matrícula</h1>
-            <p class="text-gray-500 text-sm">Preencha seus dados para análise.</p>
+    <div class="w-full md:w-5/12 bg-[#0a0a0a] p-8 md:p-12 flex flex-col justify-between relative overflow-hidden">
+        <div class="absolute inset-0 bg-[url('https://images.unsplash.com/photo-1606811971618-4486d14f3f99?q=80&w=1000')] bg-cover opacity-10 grayscale"></div>
+        <div class="relative z-10">
+            <div class="flex items-center gap-2 mb-8">
+                <i class="fas fa-tooth text-gold"></i>
+                <span class="font-serif text-white font-bold tracking-widest">ODONTO<span class="text-gold">PRO</span></span>
+            </div>
+            <h2 class="text-3xl font-serif text-white mb-4">Junte-se à Elite</h2>
+            <p class="text-gray-500 text-sm leading-relaxed mb-6">
+                Tenha acesso a conteúdos exclusivos, mentorias de alto nível e uma comunidade selecionada de profissionais.
+            </p>
+            <ul class="space-y-3 text-xs text-gray-400">
+                <li class="flex items-center gap-2"><i class="fas fa-check text-gold"></i> Acesso ilimitado 24/7</li>
+                <li class="flex items-center gap-2"><i class="fas fa-check text-gold"></i> Certificação Internacional</li>
+                <li class="flex items-center gap-2"><i class="fas fa-check text-gold"></i> Networking Premium</li>
+            </ul>
         </div>
+        <div class="relative z-10 mt-8">
+            <p class="text-[10px] uppercase tracking-widest text-gold font-bold">Member Application</p>
+        </div>
+    </div>
 
-        <form id="cadastro-form" class="space-y-5">
+    <div class="w-full md:w-7/12 p-8 md:p-12 bg-dark">
+        <h1 class="text-2xl font-serif text-white mb-6">Criar Nova Conta</h1>
+
+        <form id="register-form" class="space-y-5">
             <div class="group">
                 <label class="block text-[10px] uppercase tracking-widest text-gray-500 mb-1 group-focus-within:text-gold transition">Nome Completo</label>
-                <input type="text" id="nome" class="w-full bg-transparent border-b border-gray-800 py-2 text-white focus:border-gold outline-none transition-colors" placeholder="Dr. Nome Sobrenome">
+                <!-- REQUIRED, MINLENGTH E ID NOME -->
+                <input type="text" id="nome" required minlength="3" class="w-full bg-transparent border-b border-gray-800 py-2 text-white focus:border-gold outline-none transition-colors" placeholder="Dr. João Silva">
             </div>
+
             <div class="group">
-                <label class="block text-[10px] uppercase tracking-widest text-gray-500 mb-1 group-focus-within:text-gold transition">CPF</label>
-                <input type="text" id="cpf" class="w-full bg-transparent border-b border-gray-800 py-2 text-white focus:border-gold outline-none transition-colors" placeholder="000.000.000-00" maxlength="14">
+                <label class="block text-[10px] uppercase tracking-widest text-gray-500 mb-1 group-focus-within:text-gold transition">E-mail Profissional</label>
+                <!-- REQUIRED -->
+                <input type="email" id="email" required class="w-full bg-transparent border-b border-gray-800 py-2 text-white focus:border-gold outline-none transition-colors" placeholder="joao@clinica.com">
             </div>
-            <div class="grid grid-cols-2 gap-4">
-                <div class="group">
-                    <label class="block text-[10px] uppercase tracking-widest text-gray-500 mb-1 group-focus-within:text-gold transition">E-mail</label>
-                    <input type="email" id="email" class="w-full bg-transparent border-b border-gray-800 py-2 text-white focus:border-gold outline-none transition-colors" placeholder="email@exemplo.com">
-                </div>
-                <div class="group">
-                    <label class="block text-[10px] uppercase tracking-widest text-gray-500 mb-1 group-focus-within:text-gold transition">Confirme o E-mail</label>
-                    <input type="email" id="confirma_email" class="w-full bg-transparent border-b border-gray-800 py-2 text-white focus:border-gold outline-none transition-colors" placeholder="Confirme seu e-mail">
-                </div>
-            </div>
-            <div class="grid grid-cols-2 gap-4">
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
                 <div class="group">
                     <label class="block text-[10px] uppercase tracking-widest text-gray-500 mb-1 group-focus-within:text-gold transition">Senha</label>
-                    <input type="password" id="senha" class="w-full bg-transparent border-b border-gray-800 py-2 text-white focus:border-gold outline-none transition-colors" placeholder="Mínimo 6 caracteres">
+                    <!-- REQUIRED E MINLENGTH -->
+                    <input type="password" id="password" required minlength="6" class="w-full bg-transparent border-b border-gray-800 py-2 text-white focus:border-gold outline-none transition-colors" placeholder="••••••••">
                 </div>
                 <div class="group">
-                    <label class="block text-[10px] uppercase tracking-widest text-gray-500 mb-1 group-focus-within:text-gold transition">Confirme a Senha</label>
-                    <input type="password" id="confirma_senha" class="w-full bg-transparent border-b border-gray-800 py-2 text-white focus:border-gold outline-none transition-colors" placeholder="Repita a senha">
+                    <label class="block text-[10px] uppercase tracking-widest text-gray-500 mb-1 group-focus-within:text-gold transition">Confirmar Senha</label>
+                    <!-- REQUIRED E ID CONFIRMPASSWORD -->
+                    <input type="password" id="confirmPassword" required class="w-full bg-transparent border-b border-gray-800 py-2 text-white focus:border-gold outline-none transition-colors" placeholder="••••••••">
                 </div>
             </div>
 
-            <button type="submit" class="w-full bg-gold hover:bg-yellow-500 text-black font-bold py-4 text-xs uppercase tracking-[0.2em] transition-all transform hover:-translate-y-1 shadow-[0_0_20px_rgba(212,175,55,0.2)] rounded-sm mt-4">
-                Finalizar Cadastro
-            </button>
+            <div class="pt-4">
+                <button type="submit" class="w-full bg-gold hover:bg-yellow-500 text-black font-bold py-3 text-xs uppercase tracking-[0.2em] transition-all transform hover:-translate-y-1 shadow-[0_0_15px_rgba(212,175,55,0.2)] rounded-sm">
+                    Finalizar Cadastro
+                </button>
+            </div>
         </form>
 
         <p class="text-center text-gray-600 text-xs mt-6">
@@ -104,21 +83,5 @@
 <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/toastify-js"></script>
 <script src="/js/utils.js"></script>
 <script src="/js/auth.js"></script>
-<script>
-    // Lógica da Transição
-    document.addEventListener("DOMContentLoaded", () => {
-        setTimeout(() => { document.body.classList.add('page-loaded'); }, 50);
-        document.querySelectorAll('a').forEach(link => {
-            link.addEventListener('click', function(e) {
-                const targetUrl = this.getAttribute('href');
-                if ((targetUrl.startsWith('/') || targetUrl.startsWith('#')) && targetUrl !== '#') {
-                    e.preventDefault();
-                    document.body.classList.remove('page-loaded');
-                    setTimeout(() => { window.location.href = targetUrl; }, 800);
-                }
-            });
-        });
-    });
-</script>
 </body>
 </html>
