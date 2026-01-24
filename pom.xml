@@ -44,11 +44,11 @@
 			<version>4.4.0</version>
 		</dependency>
 
-		<!-- Mercado Pago SDK (Correção Atual) -->
+		<!-- Mercado Pago SDK (Versão Atualizada e Disponível) -->
 		<dependency>
 			<groupId>com.mercadopago</groupId>
 			<artifactId>dx-java</artifactId>
-			<version>2.1.26</version>
+			<version>2.1.35</version>
 		</dependency>
 
 		<!-- Banco de Dados e Ferramentas -->
