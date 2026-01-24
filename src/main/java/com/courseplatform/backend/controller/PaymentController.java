@@ -1,55 +1,58 @@
 package com.courseplatform.backend.controller;
 
 import com.courseplatform.backend.dto.PaymentDTO;
+import com.courseplatform.backend.dto.PaymentRequestDTO;
 import com.courseplatform.backend.entity.Course;
 import com.courseplatform.backend.entity.User;
 import com.courseplatform.backend.repository.CourseRepository;
 import com.courseplatform.backend.repository.UserRepository;
 import com.courseplatform.backend.service.PaymentService;
-import lombok.RequiredArgsConstructor;
-import org.springframework.http.HttpStatus;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.server.ResponseStatusException;
-
-import java.util.Map;
 
 @RestController
 @RequestMapping("/payments")
-@RequiredArgsConstructor
 public class PaymentController {
 
-    private final PaymentService paymentService;
-    private final UserRepository userRepository;
-    private final CourseRepository courseRepository;
+    @Autowired
+    private PaymentService paymentService;
 
-    @PostMapping("/checkout")
-    public ResponseEntity<Map<String, String>> checkout(@RequestBody PaymentDTO dto, Authentication authentication) {
+    @Autowired
+    private UserRepository userRepository;
 
-        System.out.println("💰 Pedido de Checkout recebido!");
+    @Autowired
+    private CourseRepository courseRepository;
 
-        // 1. Acha o Usuário (Tenta pelo ID do JSON, se não der, pega do Token)
-        User user;
-        if (dto.getUserId() != null) {
-            user = userRepository.findById(dto.getUserId())
-                    .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Usuário não encontrado"));
-        } else {
-            String email = authentication.getName();
-            user = userRepository.findByEmail(email)
-                    .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Usuário do token não encontrado"));
-        }
+    @PostMapping("/pix")
+    public ResponseEntity<PaymentDTO> generatePix(@RequestBody PaymentRequestDTO request) {
+        User user = userRepository.findById(request.getUserId())
+                .orElseThrow(() -> new RuntimeException("Usuário não encontrado"));
 
-        // 2. Acha o Curso
-        Course course = courseRepository.findById(dto.getCourseId())
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Curso não encontrado"));
+        Course course = courseRepository.findById(request.getCourseId())
+                .orElseThrow(() -> new RuntimeException("Curso não encontrado"));
 
-        System.out.println("🛒 Comprando: " + course.getTitle() + " | Cliente: " + user.getName());
+        // Gera o PIX usando o serviço
+        PaymentDTO paymentDTO = paymentService.createPayment(
+                user,
+                course.getPrice(),
+                "Curso: " + course.getTitle()
+        );
 
-        // 3. Gera o Link no Mercado Pago
-        String paymentUrl = paymentService.createPaymentLink(course, user);
+        return ResponseEntity.ok(paymentDTO);
+    }
 
-        // 4. Devolve o Link para o Frontend
-        return ResponseEntity.ok(Map.of("url", paymentUrl));
+    @PostMapping("/link")
+    public ResponseEntity<String> generateLink(@RequestBody PaymentRequestDTO request) {
+        User user = userRepository.findById(request.getUserId())
+                .orElseThrow(() -> new RuntimeException("Usuário não encontrado"));
+
+        Course course = courseRepository.findById(request.getCourseId())
+                .orElseThrow(() -> new RuntimeException("Curso não encontrado"));
+
+        // Gera o link de checkout usando o serviço
+        String link = paymentService.createPaymentLink(course, user);
+
+        return ResponseEntity.ok(link);
     }
 }
