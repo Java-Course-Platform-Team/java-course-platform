@@ -1,14 +1,14 @@
 package com.courseplatform.backend.dto;
 
+import com.courseplatform.backend.entity.User;
 import lombok.AllArgsConstructor;
 import lombok.Data;
-import java.util.UUID;
+import lombok.NoArgsConstructor;
 
 @Data
 @AllArgsConstructor
+@NoArgsConstructor
 public class LoginResponseDTO {
     private String token;
-    private UUID id;    // O identificador único do Dr. para compras e progresso
-    private String name;
-    private String role;
+    private User user;
 }

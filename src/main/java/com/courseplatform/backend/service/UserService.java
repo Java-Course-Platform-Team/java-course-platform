@@ -1,63 +1,45 @@
 package com.courseplatform.backend.service;
 
-import com.courseplatform.backend.Role;
 import com.courseplatform.backend.dto.UserCreateDTO;
 import com.courseplatform.backend.entity.User;
 import com.courseplatform.backend.repository.UserRepository;
-import lombok.RequiredArgsConstructor;
+import com.courseplatform.backend.Role;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
-import java.util.List;
-import java.util.UUID;
+import java.util.Optional;
 
 @Service
-@RequiredArgsConstructor
 public class UserService {
-    private final UserRepository repository;
-    private final PasswordEncoder passwordEncoder;
 
-    public User registerUser(UserCreateDTO dto) {
-        if (repository.existsByEmail(dto.getEmail())) {
-            throw new RuntimeException("Erro: Email já cadastrado!");
+    @Autowired
+    private UserRepository userRepository;
+
+    @Autowired
+    private PasswordEncoder passwordEncoder;
+
+    public User createUser(UserCreateDTO dto) {
+        // Validação de e-mail duplicado
+        Optional<User> existingUser = userRepository.findByEmail(dto.getEmail());
+        if (existingUser.isPresent()) {
+            throw new RuntimeException("E-mail já cadastrado.");
         }
-        User newUser = new User();
-        newUser.setName(dto.getName());
-        newUser.setEmail(dto.getEmail());
-        newUser.setCpf(dto.getCpf());
-        newUser.setPasswordHash(passwordEncoder.encode(dto.getPassword()));
-        newUser.setRole(Role.STUDENT);
-        return repository.save(newUser);
-    }
 
-    public List<User> listAllUsers() {
-        return repository.findAll();
-    }
+        User user = new User();
+        user.setName(dto.getName());
+        user.setEmail(dto.getEmail());
+        user.setPassword(passwordEncoder.encode(dto.getPassword()));
 
-    // 1. EXCLUIR USUÁRIO (Real)
-    @Transactional
-    public void deleteUser(UUID id) {
-        if (!repository.existsById(id)) {
-            throw new RuntimeException("Usuário não encontrado.");
+        // Define papel padrão como STUDENT se não for informado
+        if (dto.getRole() == null) {
+            user.setRole(Role.STUDENT);
+        } else {
+            user.setRole(dto.getRole());
         }
-        // Nota: Garanta que Enrollment e Progress tenham CascadeType.REMOVE ou remova-os manualmente aqui
-        repository.deleteById(id);
-    }
 
-    // 2. ATUALIZAR DADOS
-    public User updateUser(UUID id, User data) {
-        User user = repository.findById(id).orElseThrow(() -> new RuntimeException("Usuário não encontrado."));
-        user.setName(data.getName());
-        user.setEmail(data.getEmail());
-        user.setCpf(data.getCpf());
-        return repository.save(user);
-    }
+        // Removida a referência ao CPF (dto.getCpf()) pois não existe no formulário de cadastro atual
 
-    // 3. RESETAR SENHA (Padrão: odonto123)
-    public void resetPassword(UUID id) {
-        User user = repository.findById(id).orElseThrow(() -> new RuntimeException("Usuário não encontrado."));
-        user.setPasswordHash(passwordEncoder.encode("odonto123"));
-        repository.save(user);
+        return userRepository.save(user);
     }
 }
