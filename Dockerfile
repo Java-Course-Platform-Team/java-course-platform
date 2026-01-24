@@ -1,34 +1,20 @@
-# --- ESTÁGIO 1: BUILD (A Construção) ---
-
-FROM maven:3.9.6-eclipse-temurin-21 AS build
-
-# Define a pasta de trabalho dentro do container
+# Etapa 1: Build
+# Usando Maven com Java 17 para compilar o projeto
+FROM maven:3.9-eclipse-temurin-17 AS build
 WORKDIR /app
-
-# Copia apenas o arquivo de dependências primeiro
-COPY pom.xml .
-
-# Baixa as dependências (sem copiar o código fonte ainda)
-RUN mvn dependency:go-offline
-
-# Agora sim, copia o código fonte do seu projeto
-COPY src ./src
-
-# Compila o projeto e gera o arquivo .jar
+COPY . .
+# Compila o projeto e pula os testes para agilizar o deploy
 RUN mvn clean package -DskipTests
 
-# --- ESTÁGIO 2: RUN (A Execução) ---
-
-FROM eclipse-temurin:21-jre-alpine
-
-# Define a pasta de trabalho
+# Etapa 2: Runtime
+# Usando uma imagem leve do Java 17 para rodar
+FROM eclipse-temurin:17-jdk-alpine
 WORKDIR /app
-
-# Copia APENAS o arquivo .jar gerado no estágio anterior
+# Copia apenas o arquivo .jar gerado na etapa anterior
 COPY --from=build /app/target/*.jar app.jar
 
-# Define a porta que o Render espera
+# Expõe a porta 8080 (padrão do Render/Spring)
 EXPOSE 8080
 
-# Comando para iniciar o aplicativo
+# Comando para iniciar a aplicação
 ENTRYPOINT ["java", "-jar", "app.jar"]
