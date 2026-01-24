@@ -13,6 +13,10 @@ public class UserCreateDTO {
     @Size(min = 3, message = "O nome deve ter no mínimo 3 caracteres")
     private String name;
 
+    @NotBlank(message = "O CPF é obrigatório")
+    @Size(min = 14, message = "O cpf possui a quantidade de numeros errados")
+    private String cpf;
+
     @NotBlank(message = "O e-mail é obrigatório")
     @Email(message = "Formato de e-mail inválido")
     private String email;

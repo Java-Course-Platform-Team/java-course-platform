@@ -35,17 +35,17 @@ function showSuccess(message) {
 async function handleLogin(event) {
     event.preventDefault();
 
-    const emailInput = document.getElementById('email');
+    const loginInput = document.getElementById('email'); // O ID permanece o mesmo do HTML, mas agora tratamos como login (email ou cpf)
     const passwordInput = document.getElementById('password');
     const submitBtn = event.target.querySelector('button[type="submit"]');
 
-    const email = emailInput.value.trim();
+    const login = loginInput.value.trim();
     const password = passwordInput.value.trim();
 
     // VALIDAÇÃO FRONTEND
-    if (!email) {
-        showError("Por favor, digite seu e-mail.");
-        emailInput.focus();
+    if (!login) {
+        showError("Por favor, digite seu e-mail ou CPF.");
+        loginInput.focus();
         return;
     }
     if (!password) {
@@ -63,13 +63,15 @@ async function handleLogin(event) {
         const response = await fetch(`${API_BASE_URL}/auth/login`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ email, password })
+            // Alterado de { email, password } para { email: login, password }
+            // para que o backend receba o valor no campo esperado, seja ele e-mail ou CPF
+            body: JSON.stringify({ email: login, password })
         });
 
         if (response.ok) {
             const data = await response.json();
             localStorage.setItem('token', data.token);
-            localStorage.setItem('user', JSON.stringify(data.user)); // Salva dados do usuário
+            localStorage.setItem('user', JSON.stringify(data.user));
 
             showSuccess("Login realizado com sucesso!");
 
@@ -98,14 +100,16 @@ async function handleLogin(event) {
 async function handleRegister(event) {
     event.preventDefault();
 
-    const nameInput = document.getElementById('nome'); // ID ajustado para 'nome'
+    const nameInput = document.getElementById('nome');
     const emailInput = document.getElementById('email');
+    const cpfInput = document.getElementById('cpf'); // NOVO: Captura o campo CPF
     const passwordInput = document.getElementById('password');
     const confirmPasswordInput = document.getElementById('confirmPassword');
     const submitBtn = event.target.querySelector('button[type="submit"]');
 
     const name = nameInput.value.trim();
     const email = emailInput.value.trim();
+    const cpf = cpfInput ? cpfInput.value.trim() : ""; // NOVO: Valor do CPF
     const password = passwordInput.value.trim();
 
     // VALIDAÇÃO FRONTEND ROBUSTA
@@ -119,13 +123,18 @@ async function handleRegister(event) {
         emailInput.focus();
         return;
     }
+    // Validação básica de CPF
+    if (cpf.length < 11) {
+        showError("Por favor, insira um CPF válido.");
+        if(cpfInput) cpfInput.focus();
+        return;
+    }
     if (password.length < 6) {
         showError("A senha deve ter no mínimo 6 caracteres.");
         passwordInput.focus();
         return;
     }
 
-    // Validação de confirmação de senha
     if (confirmPasswordInput) {
         if (password !== confirmPasswordInput.value.trim()) {
             showError("As senhas não coincidem.");
@@ -141,7 +150,8 @@ async function handleRegister(event) {
         const response = await fetch(`${API_BASE_URL}/auth/register`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ name, email, password, role: 'STUDENT' })
+            // NOVO: Adicionado 'cpf' ao corpo da requisição
+            body: JSON.stringify({ name, email, cpf, password, role: 'STUDENT' })
         });
 
         if (response.ok) {
@@ -150,11 +160,9 @@ async function handleRegister(event) {
                 window.location.href = '/auth/login.html';
             }, 1500);
         } else {
-            // Tenta pegar mensagem de erro detalhada do backend
             const errorText = await response.text();
             try {
                 const errorJson = JSON.parse(errorText);
-                // Se for erro de validação (lista de erros)
                 if (errorJson.errors) {
                     const firstError = Object.values(errorJson.errors)[0];
                     showError(firstError || "Dados inválidos.");
@@ -162,7 +170,7 @@ async function handleRegister(event) {
                     showError(errorJson.message || "Erro ao criar conta.");
                 }
             } catch (e) {
-                showError("Erro ao criar conta. O e-mail já pode estar em uso.");
+                showError("Erro ao criar conta. E-mail ou CPF já podem estar em uso.");
             }
             submitBtn.innerText = "Criar Conta";
             submitBtn.disabled = false;
