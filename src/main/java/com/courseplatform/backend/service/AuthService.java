@@ -15,14 +15,15 @@ public class AuthService {
     @Autowired
     private PasswordEncoder passwordEncoder;
 
-    public User authenticate(String email, String password) {
-        User user = userRepository.findByEmail(email)
-                .orElseThrow(() -> new RuntimeException("Usuário não encontrado"));
+    public User authenticate(String login, String password) {
+        // Tenta buscar por e-mail, se não achar, tenta por CPF
+        User user = userRepository.findByEmail(login)
+                .orElseGet(() -> userRepository.findByCpf(login)
+                        .orElseThrow(() -> new RuntimeException("Usuário não encontrado")));
 
         if (!passwordEncoder.matches(password, user.getPassword())) {
             throw new RuntimeException("Senha inválida");
         }
-
         return user;
     }
 }

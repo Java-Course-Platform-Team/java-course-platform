@@ -30,6 +30,7 @@ public class UserService {
 
         User user = new User();
         user.setName(dto.getName());
+        user.setCpf(dto.getCpf());
         user.setEmail(dto.getEmail());
         user.setPassword(passwordEncoder.encode(dto.getPassword()));
 
