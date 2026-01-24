@@ -1,11 +1,10 @@
 package com.courseplatform.backend.controller;
 
-import com.courseplatform.backend.dto.UserCreateDTO; // Certifique-se de que este DTO existe
+import com.courseplatform.backend.dto.UserCreateDTO;
 import com.courseplatform.backend.entity.User;
-import com.courseplatform.backend.repository.UserRepository;
 import com.courseplatform.backend.service.UserService;
-import lombok.RequiredArgsConstructor;
-import org.springframework.http.HttpStatus;
+import jakarta.validation.Valid;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -14,29 +13,20 @@ import java.util.UUID;
 
 @RestController
 @RequestMapping("/users")
-@RequiredArgsConstructor
 public class UserController {
 
-    private final UserService service;
-    private final UserRepository repository;
+    @Autowired
+    private UserService service;
 
-    // MÉTODO QUE ESTAVA EM FALTA: Processa o cadastro do auth.js
     @PostMapping
-    public ResponseEntity<User> createUser(@RequestBody UserCreateDTO dto) {
-        User newUser = service.registerUser(dto);
-        return ResponseEntity.status(HttpStatus.CREATED).body(newUser);
+    public ResponseEntity<User> createUser(@RequestBody @Valid UserCreateDTO dto) {
+        // Ajustado para chamar createUser em vez de registerUser
+        return ResponseEntity.ok(service.createUser(dto));
     }
 
     @GetMapping
-    public ResponseEntity<List<User>> getAllUsers() {
+    public ResponseEntity<List<User>> listAll() {
         return ResponseEntity.ok(service.listAllUsers());
-    }
-
-    @PatchMapping("/{id}/toggle-status")
-    public ResponseEntity<User> toggleUserStatus(@PathVariable UUID id) {
-        User user = repository.findById(id).orElseThrow();
-        user.setIsActive(!Boolean.TRUE.equals(user.getIsActive()));
-        return ResponseEntity.ok(repository.save(user));
     }
 
     @DeleteMapping("/{id}")
@@ -50,7 +40,7 @@ public class UserController {
         return ResponseEntity.ok(service.updateUser(id, user));
     }
 
-    @PatchMapping("/{id}/reset-password")
+    @PostMapping("/{id}/reset-password")
     public ResponseEntity<Void> resetPassword(@PathVariable UUID id) {
         service.resetPassword(id);
         return ResponseEntity.ok().build();

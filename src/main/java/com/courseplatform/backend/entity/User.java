@@ -3,24 +3,23 @@ package com.courseplatform.backend.entity;
 import com.courseplatform.backend.Role;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
-import lombok.Getter;
+import lombok.Builder;
+import lombok.Data;
 import lombok.NoArgsConstructor;
-import lombok.Setter;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
-import java.time.LocalDateTime;
 import java.util.Collection;
 import java.util.List;
 import java.util.UUID;
 
 @Entity
-@Getter
-@Setter
+@Table(name = "tb_users")
+@Data // Mantemos o Lombok
 @NoArgsConstructor
 @AllArgsConstructor
-@Table(name = "tb_users")
+@Builder
 public class User implements UserDetails {
 
     @Id
@@ -32,65 +31,47 @@ public class User implements UserDetails {
     @Column(unique = true)
     private String email;
 
-    @Column(unique = true)
-    private String cpf;
-
-    @Column(name = "password_hash")
-    private String passwordHash;
+    private String password;
 
     @Enumerated(EnumType.STRING)
     private Role role;
 
-    @Column(name = "avatar_url")
-    private String avatarUrl;
+    // Métodos manuais para garantir que funcione mesmo se o Lombok falhar no build
+    public void setName(String name) { this.name = name; }
+    public String getName() { return name; }
 
-    @Column(name = "is_active")
-    private Boolean isActive = true;
+    public void setEmail(String email) { this.email = email; }
+    public String getEmail() { return email; }
 
-    @Column(name = "created_at")
-    private LocalDateTime createdAt;
+    public void setPassword(String password) { this.password = password; }
+    public String getPassword() { return password; }
 
-    @Column(name = "updated_at")
-    private LocalDateTime updatedAt;
+    public void setRole(Role role) { this.role = role; }
+    public Role getRole() { return role; }
 
-    @PrePersist
-    public void prePersist() {
-        createdAt = LocalDateTime.now();
-        if (isActive == null) isActive = true;
-    }
-
-    @PreUpdate
-    public void preUpdate() {
-        updatedAt = LocalDateTime.now();
-    }
-
-    // --- AQUI ESTÁ A MÁGICA ANTIGA QUE FUNCIONA ---
+    // UserDetails implementation
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
         if (this.role == Role.ADMIN) {
-            // Admin tem permissão total
             return List.of(new SimpleGrantedAuthority("ROLE_ADMIN"), new SimpleGrantedAuthority("ROLE_USER"));
-        } else {
-            // Aluno tem permissão básica
-            return List.of(new SimpleGrantedAuthority("ROLE_USER"));
         }
+        return List.of(new SimpleGrantedAuthority("ROLE_USER"));
     }
 
     @Override
-    public String getPassword() { return passwordHash; }
-
-    @Override
-    public String getUsername() { return email; }
+    public String getUsername() {
+        return email;
+    }
 
     @Override
     public boolean isAccountNonExpired() { return true; }
 
     @Override
-    public boolean isAccountNonLocked() { return isActive != null ? isActive : true; }
+    public boolean isAccountNonLocked() { return true; }
 
     @Override
     public boolean isCredentialsNonExpired() { return true; }
 
     @Override
-    public boolean isEnabled() { return isActive != null ? isActive : true; }
+    public boolean isEnabled() { return true; }
 }
