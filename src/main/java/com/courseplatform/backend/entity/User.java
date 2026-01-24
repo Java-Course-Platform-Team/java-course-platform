@@ -28,6 +28,8 @@ public class User implements UserDetails {
 
     private String name;
 
+    private String cpf;
+
     @Column(unique = true)
     private String email;
 
