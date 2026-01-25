@@ -3,6 +3,7 @@ package com.courseplatform.backend.controller;
 import com.courseplatform.backend.dto.LoginDTO;
 import com.courseplatform.backend.dto.LoginResponseDTO;
 import com.courseplatform.backend.dto.UserCreateDTO;
+import com.courseplatform.backend.dto.UserResponseDTO;
 import com.courseplatform.backend.entity.User;
 import com.courseplatform.backend.service.AuthService;
 import com.courseplatform.backend.service.TokenService;
@@ -29,7 +30,7 @@ public class AuthController {
     public ResponseEntity<LoginResponseDTO> login(@RequestBody @Valid LoginDTO loginDTO) {
         User user = authService.authenticate(loginDTO.getEmail(), loginDTO.getPassword());
         String token = tokenService.generateToken(user);
-        return ResponseEntity.ok(new LoginResponseDTO(token, user));
+        return ResponseEntity.ok(new LoginResponseDTO(token, new UserResponseDTO(user)));
     }
 
     @PostMapping("/register")

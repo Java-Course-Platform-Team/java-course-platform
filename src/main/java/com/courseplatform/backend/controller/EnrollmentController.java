@@ -9,6 +9,7 @@ import com.courseplatform.backend.repository.EnrollmentRepository;
 import com.courseplatform.backend.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize; // <--- IMPORT NOVO
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
@@ -39,12 +40,12 @@ public class EnrollmentController {
         List<CourseDTO> courses = enrollments.stream()
                 .map(enrollment -> {
                     Course c = enrollment.getCourse();
-                    // Criando DTO manual ou usando construtor se tiver
                     CourseDTO dto = new CourseDTO();
                     dto.setId(c.getId());
                     dto.setTitle(c.getTitle());
                     dto.setImageUrl(c.getImageUrl());
                     dto.setCategory(c.getCategory());
+                    // Adicione mais campos aqui se precisar (slug, description, etc)
                     return dto;
                 })
                 .collect(Collectors.toList());
@@ -52,29 +53,34 @@ public class EnrollmentController {
         return ResponseEntity.ok(courses);
     }
 
-    // === 2. BOTÃO MÁGICO (Matrícula Manual para Localhost) ===
+    // === 2. BOTÃO MÁGICO (AGORA BLINDADO PARA ADMIN) ===
     @PostMapping("/free-pass/{courseId}")
+    @PreAuthorize("hasRole('ADMIN')") // <--- TRAVA DE SEGURANÇA APLICADA 🔒
     public ResponseEntity<String> forceEnroll(@PathVariable UUID courseId, Authentication authentication) {
 
-        String email = authentication.getName();
+        String email = authentication.getName(); // Quem está fazendo o pedido (O Admin)
+
+        // Aqui você pode mudar a lógica: O Admin libera para SI MESMO ou para OUTRO?
+        // Do jeito que está abaixo, o Admin libera para ele mesmo testar.
+        // Se quiser liberar para outro, teria que receber o email do aluno no @RequestBody.
+
         User user = userRepository.findByEmail(email)
                 .orElseThrow(() -> new RuntimeException("Usuário não encontrado"));
 
         Course course = courseRepository.findById(courseId)
                 .orElseThrow(() -> new RuntimeException("Curso não encontrado"));
 
-        // Evita duplicidade
         if (enrollmentRepository.existsByUserAndCourse(user, course)) {
-            return ResponseEntity.ok("Você já possui este curso! 😅");
+            return ResponseEntity.ok("Este usuário já possui o curso! 😅");
         }
 
         Enrollment enrollment = new Enrollment();
         enrollment.setUser(user);
         enrollment.setCourse(course);
-        enrollment.setDate(LocalDateTime.now());
+        enrollment.setEnrolledAt(LocalDateTime.now()); // Data correta
 
         enrollmentRepository.save(enrollment);
 
-        return ResponseEntity.ok("Sucesso! Curso liberado manualmente. 🚀");
+        return ResponseEntity.ok("Sucesso! Curso liberado manualmente pelo Admin. 🚀");
     }
 }

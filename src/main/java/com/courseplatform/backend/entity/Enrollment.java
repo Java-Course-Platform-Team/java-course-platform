@@ -9,7 +9,10 @@ import java.time.LocalDateTime;
 import java.util.UUID;
 
 @Entity
-@Table(name = "tb_enrollments")
+@Table(name = "tb_enrollments", uniqueConstraints = {
+        // BLINDAGEM: Impede que o mesmo usuário tenha 2 matrículas no mesmo curso
+        @UniqueConstraint(columnNames = {"user_id", "course_id"})
+})
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
@@ -17,7 +20,7 @@ import java.util.UUID;
 public class Enrollment {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.UUID) // CORREÇÃO: Padronizado para UUID (estava AUTO)
+    @GeneratedValue(strategy = GenerationType.UUID)
     private UUID id;
 
     @ManyToOne
@@ -30,5 +33,5 @@ public class Enrollment {
 
     private LocalDateTime enrolledAt;
 
-    private LocalDateTime date; // Mantendo campo legado se houver uso, senão enrolledAt basta
+
 }

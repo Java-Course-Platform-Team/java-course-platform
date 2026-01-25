@@ -6,6 +6,7 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
+import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
@@ -22,6 +23,7 @@ import java.util.List;
 
 @Configuration
 @EnableWebSecurity
+@EnableMethodSecurity
 public class SecurityConfig {
 
     @Autowired
@@ -34,25 +36,30 @@ public class SecurityConfig {
                 .cors(cors -> cors.configurationSource(corsConfigurationSource()))
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(authorize -> authorize
-                        // 1. ARQUIVOS PÚBLICOS
+                        // 1. ARQUIVOS ESTATICOS (CSS, JS, IMAGENS) - LIBERADOS
                         .requestMatchers(
-                                "/", "/index.html", "/error", "/favicon.ico",
-                                "/auth/**", "/aluno/**", "/admin/**",
-                                "/js/**", "/css/**", "/images/**", "/assets/**"
+                                "/js/**", "/css/**", "/images/**", "/assets/**", "/favicon.ico",
+                                "/", "/index.html", "/auth/**", "/components/**"
                         ).permitAll()
 
-                        // 2. API PÚBLICA (LOGIN/CADASTRO/LOJA)
-                        .requestMatchers(HttpMethod.POST, "/auth/login", "/auth/register", "/users").permitAll()
-                        .requestMatchers("/payments/**", "/webhook/**").permitAll()
-                        .requestMatchers(HttpMethod.GET, "/courses", "/courses/**").permitAll()
+                        // 2. ENDPOINTS PÚBLICOS (LOGIN, LOJA)
+                        .requestMatchers(HttpMethod.POST, "/auth/login", "/auth/register").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/courses", "/courses/**").permitAll() // Ver vitrine é livre
+                        .requestMatchers("/payments/**", "/webhook/**").permitAll() // Pagamento é livre
 
-                        // 3. REGRAS DE ADMIN (Essenciais para o botão Salvar funcionar)
-                        // O .hasRole("ADMIN") vai procurar pelo "ROLE_ADMIN" que colocamos no User.java
+                        // 3. BLOQUEIO DE PÁGINAS HTML (SEGURANÇA REAL)
+                        // Apenas ADMIN acessa a pasta /admin/
+                        .requestMatchers("/admin/**").hasRole("ADMIN")
+
+                        // Apenas usuários logados acessam a pasta /aluno/
+                        .requestMatchers("/aluno/**").authenticated()
+
+                        // 4. API DO ADMIN (CRUD DE CURSOS)
                         .requestMatchers(HttpMethod.POST, "/courses/**").hasRole("ADMIN")
                         .requestMatchers(HttpMethod.PUT, "/courses/**").hasRole("ADMIN")
                         .requestMatchers(HttpMethod.DELETE, "/courses/**").hasRole("ADMIN")
 
-                        // 4. TODO O RESTO EXIGE LOGIN
+                        // 5. TODO O RESTO EXIGE LOGIN
                         .anyRequest().authenticated()
                 )
                 .addFilterBefore(securityFilter, UsernamePasswordAuthenticationFilter.class);
@@ -71,6 +78,7 @@ public class SecurityConfig {
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
+        // Em produção, troque "*" pelo domínio real (ex: https://meusite.com)
         configuration.setAllowedOrigins(List.of("*"));
         configuration.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS"));
         configuration.setAllowedHeaders(List.of("*"));

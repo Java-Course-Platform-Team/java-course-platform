@@ -34,11 +34,11 @@ public class UserService {
         user.setEmail(dto.getEmail());
         user.setPassword(passwordEncoder.encode(dto.getPassword()));
 
-        if (dto.getRole() == null) {
-            user.setRole(Role.STUDENT);
-        } else {
-            user.setRole(dto.getRole());
-        }
+        // --- CORREÇÃO DE SEGURANÇA ---
+        // Não perguntamos mais ao DTO qual é a role.
+        // Todo cadastro externo é OBRIGATORIAMENTE um aluno.
+        user.setRole(Role.STUDENT);
+        // -----------------------------
 
         return userRepository.save(user);
     }
@@ -68,12 +68,11 @@ public class UserService {
         return userRepository.save(user);
     }
 
-    // Resetar Senha (define uma senha padrão temporária)
+    // Resetar Senha
     public void resetPassword(UUID id) {
         User user = userRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Usuário não encontrado."));
 
-        // Define senha padrão: "123456" (Em produção, envie por e-mail)
         user.setPassword(passwordEncoder.encode("123456"));
         userRepository.save(user);
     }

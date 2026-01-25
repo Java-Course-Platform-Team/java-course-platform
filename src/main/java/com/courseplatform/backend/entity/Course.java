@@ -5,7 +5,7 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import java.math.BigDecimal;
-import java.util.UUID; // <--- Importante!
+import java.util.UUID;
 
 @Entity
 @Table(name = "tb_courses")
@@ -19,7 +19,11 @@ public class Course {
     private UUID id;
 
     private String title;
+
+    // SEO: Slug deve ser único para não conflitar URL de cursos diferentes
+    @Column(unique = true)
     private String slug;
+
     private BigDecimal price;
     private String category;
 
