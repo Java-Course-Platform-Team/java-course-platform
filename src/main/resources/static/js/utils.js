@@ -1,27 +1,40 @@
-// utils.js - Motor de Interface de Luxo
-const UI = {
+// utils.js - Utilitários Globais (Opcional)
+window.UI = {
     toast: {
-        success: (msg) => UI.showToast(msg, "linear-gradient(to right, #D4AF37, #B38728)"),
-        error: (msg) => UI.showToast(msg, "linear-gradient(to right, #ff5f6d, #ffc371)"),
-        info: (msg) => UI.showToast(msg, "#151515")
+        success: (msg) => showToast(msg, "success"),
+        error: (msg) => showToast(msg, "error"),
+        info: (msg) => showToast(msg, "info")
     },
-    showToast: (text, background) => {
-        if (typeof Toastify !== 'undefined') {
-            Toastify({
-                text, duration: 3000, gravity: "top", position: "right",
-                style: { background, borderRadius: "8px", fontSize: "12px", fontWeight: "bold" }
-            }).showToast();
-        }
-    },
-    buttonLoading: (btn, isLoading, text = "Processando...") => {
+    // Botão de loading simples
+    buttonLoading: (btn, isLoading, text = "Carregando...") => {
         if (!btn) return;
         if (isLoading) {
-            btn.dataset.oldText = btn.innerHTML;
+            btn.dataset.originalText = btn.innerHTML;
             btn.innerHTML = `<i class="fas fa-spinner fa-spin mr-2"></i> ${text}`;
             btn.disabled = true;
         } else {
-            btn.innerHTML = btn.dataset.oldText || "Confirmar";
+            btn.innerHTML = btn.dataset.originalText || "Confirmar";
             btn.disabled = false;
         }
     }
 };
+
+// Helper interno
+function showToast(msg, type) {
+    if (typeof Toastify === 'function') {
+        const colors = {
+            success: "#D4AF37",
+            error: "#ef4444",
+            info: "#151515"
+        };
+        Toastify({
+            text: msg,
+            duration: 3000,
+            gravity: "top",
+            position: "right",
+            style: { background: colors[type] || "#333", color: type === "error" ? "#fff" : "#000" }
+        }).showToast();
+    } else {
+        console.log(`[Toast ${type}]: ${msg}`);
+    }
+}

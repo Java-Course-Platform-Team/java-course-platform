@@ -7,7 +7,9 @@
     <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700&family=Manrope:wght@300;400;600&display=swap" rel="stylesheet">
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+
     <link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/toastify-js/src/toastify.min.css">
+
     <script>
         tailwind.config = { theme: { extend: { colors: { gold: '#D4AF37', dark: '#050505' }, fontFamily: { sans: ['Manrope', 'sans-serif'], serif: ['Playfair Display', 'serif'] } } } }
     </script>
@@ -25,7 +27,7 @@
             </div>
             <h2 class="text-3xl font-serif text-white mb-4">Junte-se à Elite</h2>
             <p class="text-gray-500 text-sm leading-relaxed mb-6">
-                Tenha acesso a conteúdos exclusivos, mentorias de alto nível e uma comunidade selecionada de profissionais.
+                Tenha acesso a conteúdos exclusivos, mentorias de alto nível e uma comunidade selecionada.
             </p>
             <ul class="space-y-3 text-xs text-gray-400">
                 <li class="flex items-center gap-2"><i class="fas fa-check text-gold"></i> Acesso ilimitado 24/7</li>
@@ -44,7 +46,6 @@
         <form id="register-form" class="space-y-5">
             <div class="group">
                 <label class="block text-[10px] uppercase tracking-widest text-gray-500 mb-1 group-focus-within:text-gold transition">Nome Completo</label>
-                <!-- REQUIRED, MINLENGTH E ID NOME -->
                 <input type="text" id="nome" required minlength="3" class="w-full bg-transparent border-b border-gray-800 py-2 text-white focus:border-gold outline-none transition-colors" placeholder="Dr. João Silva">
             </div>
 
@@ -55,19 +56,16 @@
 
             <div class="group">
                 <label class="block text-[10px] uppercase tracking-widest text-gray-500 mb-1 group-focus-within:text-gold transition">E-mail Profissional</label>
-                <!-- REQUIRED -->
                 <input type="email" id="email" required class="w-full bg-transparent border-b border-gray-800 py-2 text-white focus:border-gold outline-none transition-colors" placeholder="joao@clinica.com">
             </div>
 
             <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
                 <div class="group">
                     <label class="block text-[10px] uppercase tracking-widest text-gray-500 mb-1 group-focus-within:text-gold transition">Senha</label>
-                    <!-- REQUIRED E MINLENGTH -->
                     <input type="password" id="password" required minlength="6" class="w-full bg-transparent border-b border-gray-800 py-2 text-white focus:border-gold outline-none transition-colors" placeholder="••••••••">
                 </div>
                 <div class="group">
                     <label class="block text-[10px] uppercase tracking-widest text-gray-500 mb-1 group-focus-within:text-gold transition">Confirmar Senha</label>
-                    <!-- REQUIRED E ID CONFIRMPASSWORD -->
                     <input type="password" id="confirmPassword" required class="w-full bg-transparent border-b border-gray-800 py-2 text-white focus:border-gold outline-none transition-colors" placeholder="••••••••">
                 </div>
             </div>
@@ -86,7 +84,6 @@
 </div>
 
 <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/toastify-js"></script>
-<script src="/js/utils.js"></script>
 <script src="/js/auth.js"></script>
 </body>
 </html>

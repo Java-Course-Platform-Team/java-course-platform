@@ -36,30 +36,40 @@ public class SecurityConfig {
                 .cors(cors -> cors.configurationSource(corsConfigurationSource()))
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(authorize -> authorize
-                        // 1. ARQUIVOS ESTATICOS (CSS, JS, IMAGENS) - LIBERADOS
+                        // 1. RECURSOS VISUAIS (HTML, CSS, JS, IMAGENS) -> LIBERAR TUDO 🟢
+                        // Se não liberar aqui, o navegador toma erro 403 ao tentar abrir a página.
                         .requestMatchers(
                                 "/js/**", "/css/**", "/images/**", "/assets/**", "/favicon.ico",
                                 "/", "/index.html", "/auth/**", "/components/**"
                         ).permitAll()
 
-                        // 2. ENDPOINTS PÚBLICOS (LOGIN, LOJA)
+                        // LIBERA AS PASTAS DE PÁGINAS (O HTML é público, o DADO dentro dele é privado)
+                        .requestMatchers("/admin/**").permitAll()
+                        .requestMatchers("/aluno/**").permitAll()
+
+                        // 2. ENDPOINTS PÚBLICOS (DADOS) 🟢
                         .requestMatchers(HttpMethod.POST, "/auth/login", "/auth/register").permitAll()
-                        .requestMatchers(HttpMethod.GET, "/courses", "/courses/**").permitAll() // Ver vitrine é livre
-                        .requestMatchers("/payments/**", "/webhook/**").permitAll() // Pagamento é livre
+                        .requestMatchers(HttpMethod.GET, "/courses", "/courses/**").permitAll() // Vitrine
+                        .requestMatchers("/payments/**", "/webhook/**").permitAll()
 
-                        // 3. BLOQUEIO DE PÁGINAS HTML (SEGURANÇA REAL)
-                        // Apenas ADMIN acessa a pasta /admin/
-                        .requestMatchers("/admin/**").hasRole("ADMIN")
+                        // 3. SEGURANÇA FORTE (AQUI PROTEGEMOS OS DADOS) 🔒🔴
 
-                        // Apenas usuários logados acessam a pasta /aluno/
-                        .requestMatchers("/aluno/**").authenticated()
+                        // API do Dashboard Admin (Só Admin vê os números)
+                        .requestMatchers("/admin/dashboard/**").hasRole("ADMIN")
 
-                        // 4. API DO ADMIN (CRUD DE CURSOS)
+                        // Operações de Cursos (Criar/Editar/Deletar) -> Só Admin
                         .requestMatchers(HttpMethod.POST, "/courses/**").hasRole("ADMIN")
                         .requestMatchers(HttpMethod.PUT, "/courses/**").hasRole("ADMIN")
                         .requestMatchers(HttpMethod.DELETE, "/courses/**").hasRole("ADMIN")
 
-                        // 5. TODO O RESTO EXIGE LOGIN
+                        // "Botão Mágico" de liberar curso -> Só Admin
+                        .requestMatchers("/enrollments/free-pass/**").hasRole("ADMIN")
+
+                        // Dados do Aluno (Meus Cursos) -> Precisa estar logado
+                        .requestMatchers("/enrollments/**").authenticated()
+                        .requestMatchers("/users/**").authenticated()
+
+                        // 4. TODO O RESTO -> BLOQUEAR SE NÃO TIVER TOKEN
                         .anyRequest().authenticated()
                 )
                 .addFilterBefore(securityFilter, UsernamePasswordAuthenticationFilter.class);
@@ -78,7 +88,6 @@ public class SecurityConfig {
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
-        // Em produção, troque "*" pelo domínio real (ex: https://meusite.com)
         configuration.setAllowedOrigins(List.of("*"));
         configuration.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS"));
         configuration.setAllowedHeaders(List.of("*"));

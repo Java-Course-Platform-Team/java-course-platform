@@ -1,19 +1,14 @@
-// admin-course-form.js - Integração Real com o Backend OdontoPro
-//  CONFIGURAÇÃO AUTOMÁTICA DE AMBIENTE
+// admin-course-form.js - Criação e Edição de Cursos
 const API_URL = window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1"
-    ? "http://localhost:8081"                  // Se estou no PC, uso IntelliJ Local
-    : "https://odonto-backend-j9oy.onrender.com"; // Se estou na Web, uso a Nuvem
-const token = localStorage.getItem("token");
+    ? "http://localhost:8081"
+    : "https://odonto-backend-j9oy.onrender.com";
 
-// Identifica se estamos em modo de edição
+const token = localStorage.getItem("token");
 const urlParams = new URLSearchParams(window.location.search);
-const editId = urlParams.get('edit');
+const editId = urlParams.get('edit'); // Se tiver ID, é edição. Se não, é criação.
 
 document.addEventListener("DOMContentLoaded", () => {
-    if (!token) {
-        window.location.href = "/auth/login.html";
-        return;
-    }
+    if (!token) { window.location.href = "/auth/login.html"; return; }
 
     if (editId) {
         prepareEditMode();
@@ -22,35 +17,37 @@ document.addEventListener("DOMContentLoaded", () => {
     setupFormSubmission();
 });
 
-// 1. PREPARA O FORMULÁRIO PARA EDIÇÃO
+// 1. PREPARA O FORMULÁRIO PARA EDIÇÃO (Busca dados antigos)
 async function prepareEditMode() {
-    // Altera o título visual da página
     const pageTitle = document.getElementById("page-title");
-    const subTitle = pageTitle.nextElementSibling;
     if (pageTitle) pageTitle.textContent = "Editar Curso";
-    if (subTitle) subTitle.textContent = "Atualizar Informações no Catálogo";
 
     try {
         const response = await fetch(`${API_URL}/courses/${editId}`, {
             headers: { "Authorization": `Bearer ${token}` }
         });
 
+        if (response.status === 401 || response.status === 403) {
+            window.location.href = "/auth/login.html";
+            return;
+        }
+
         if (response.ok) {
             const course = await response.json();
-            // Preenche os campos do formulário com os dados do banco
-            document.getElementById("title").value = course.title || "";
-            document.getElementById("slug").value = course.slug || "";
-            document.getElementById("price").value = course.price || "";
-            document.getElementById("category").value = course.category || "";
-            document.getElementById("imageUrl").value = course.imageUrl || "";
-            document.getElementById("description").value = course.description || "";
+            // Preenche os inputs (garante que os IDs no HTML estejam corretos)
+            if(document.getElementById("title")) document.getElementById("title").value = course.title || "";
+            if(document.getElementById("slug")) document.getElementById("slug").value = course.slug || "";
+            if(document.getElementById("price")) document.getElementById("price").value = course.price || "";
+            if(document.getElementById("category")) document.getElementById("category").value = course.category || "";
+            if(document.getElementById("imageUrl")) document.getElementById("imageUrl").value = course.imageUrl || "";
+            if(document.getElementById("description")) document.getElementById("description").value = course.description || "";
         }
     } catch (error) {
-        console.error("Erro ao carregar dados do curso para edição.");
+        console.error("Erro ao carregar curso:", error);
     }
 }
 
-// 2. GESTÃO DO ENVIO DO FORMULÁRIO
+// 2. ENVIO DO FORMULÁRIO (Salvar)
 function setupFormSubmission() {
     const form = document.getElementById("course-form");
     if (!form) return;
@@ -59,13 +56,11 @@ function setupFormSubmission() {
         e.preventDefault();
 
         const submitBtn = form.querySelector("button[type='submit']");
-        const originalBtnText = submitBtn.innerHTML;
-        
-        // Feedback visual de carregamento
-        submitBtn.disabled = true;
-        submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i> Processando...';
+        const originalText = submitBtn.innerHTML;
 
-        // Coleta os dados seguindo a entidade Course.java
+        submitBtn.disabled = true;
+        submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Salvando...';
+
         const courseData = {
             title: document.getElementById("title").value.trim(),
             slug: document.getElementById("slug").value.trim(),
@@ -75,6 +70,7 @@ function setupFormSubmission() {
             description: document.getElementById("description").value.trim()
         };
 
+        // Decide se é POST (Novo) ou PUT (Atualizar)
         const method = editId ? "PUT" : "POST";
         const url = editId ? `${API_URL}/courses/${editId}` : `${API_URL}/courses`;
 
@@ -89,29 +85,29 @@ function setupFormSubmission() {
             });
 
             if (response.ok) {
-                // Notificação de sucesso usando a biblioteca Toastify
                 if (typeof Toastify !== 'undefined') {
                     Toastify({
-                        text: editId ? "Curso atualizado com sucesso!" : "Novo curso publicado!",
-                        duration: 3000,
-                        gravity: "top",
-                        position: "right",
+                        text: editId ? "Curso atualizado!" : "Curso criado!",
+                        duration: 2000,
                         style: { background: "#D4AF37", color: "#000" }
                     }).showToast();
+                } else {
+                    alert("Sucesso!");
                 }
-                
-                // Redireciona após um curto intervalo
+
                 setTimeout(() => {
                     window.location.href = "gerenciar-cursos.html";
                 }, 1500);
             } else {
-                throw new Error("Erro na resposta do servidor");
+                const errorData = await response.json().catch(() => ({}));
+                alert(errorData.message || "Erro ao salvar curso.");
             }
         } catch (error) {
-            alert("Ocorreu um erro ao salvar o curso. Verifique a conexão com o servidor.");
+            console.error(error);
+            alert("Erro de conexão.");
         } finally {
             submitBtn.disabled = false;
-            submitBtn.innerHTML = originalBtnText;
+            submitBtn.innerHTML = originalText;
         }
     });
 }

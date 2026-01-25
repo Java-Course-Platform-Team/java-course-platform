@@ -26,15 +26,9 @@
 </a>
 
 <script>
-    // Pega o nome do curso da URL para mostrar na tela
     const params = new URLSearchParams(window.location.search);
     const courseName = params.get('course');
     if(courseName) document.getElementById('course-name').textContent = decodeURIComponent(courseName);
-
-    // Mock de liberação visual
-    setTimeout(() => {
-        console.log("Acesso liberado.");
-    }, 1000);
 </script>
 </body>
 </html>

@@ -1,14 +1,21 @@
-// admin-content.js - Persistência Real no Banco
-//  CONFIGURAÇÃO AUTOMÁTICA DE AMBIENTE
+// admin-content.js - Gerenciamento de Módulos e Aulas
 const API_URL = window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1"
-    ? "http://localhost:8081"                  // Se estou no PC, uso IntelliJ Local
-    : "https://odonto-backend-j9oy.onrender.com"; // Se estou na Web, uso a Nuvem
+    ? "http://localhost:8081"
+    : "https://odonto-backend-j9oy.onrender.com";
+
 const token = localStorage.getItem("token");
 const urlParams = new URLSearchParams(window.location.search);
 const courseId = urlParams.get('id');
+const courseTitle = urlParams.get('title');
 
 document.addEventListener("DOMContentLoaded", () => {
+    if (!token) { window.location.href = "/auth/login.html"; return; }
     if (!courseId) { window.location.href = "gerenciar-cursos.html"; return; }
+
+    // Mostra o título do curso no topo, se houver elemento para isso
+    const titleEl = document.getElementById('course-title-display');
+    if (titleEl && courseTitle) titleEl.textContent = decodeURIComponent(courseTitle);
+
     loadContentFromBackend();
 });
 
@@ -17,39 +24,115 @@ async function loadContentFromBackend() {
         const res = await fetch(`${API_URL}/courses/${courseId}/modules`, {
             headers: { "Authorization": `Bearer ${token}` }
         });
+
+        if (res.status === 401 || res.status === 403) {
+            localStorage.clear();
+            window.location.href = "/auth/login.html";
+            return;
+        }
+
         const modules = await res.json();
         renderModules(modules);
-    } catch (e) { UI.toast.error("Erro ao sincronizar com o banco."); }
+    } catch (e) {
+        showToast("Erro ao carregar conteúdo.", "error");
+    }
 }
 
 async function addModule() {
-    const title = prompt("Título do Módulo:");
+    const title = prompt("Título do Novo Módulo:");
     if (!title) return;
 
     try {
         const res = await fetch(`${API_URL}/courses/modules`, {
             method: "POST",
             headers: { "Authorization": `Bearer ${token}`, "Content-Type": "application/json" },
-            // CORREÇÃO AQUI: Removido parseInt() pois courseId agora é UUID (String)
-            body: JSON.stringify({ title, courseId: courseId })
+            body: JSON.stringify({ title: title, courseId: courseId }) // courseId é String (UUID)
         });
+
         if (res.ok) {
-            UI.toast.success("Módulo salvo!");
+            showToast("Módulo criado com sucesso!");
             loadContentFromBackend();
+        } else {
+            showToast("Erro ao criar módulo.", "error");
         }
-    } catch (e) { UI.toast.error("Erro na gravação."); }
+    } catch (e) { showToast("Erro de conexão.", "error"); }
 }
 
-async function saveLesson(moduleId, lessonData) {
+async function addLesson(moduleId) {
+    const title = prompt("Título da Aula:");
+    const videoUrl = prompt("Link do Vídeo (Youtube/Vimeo):");
+    if (!title || !videoUrl) return;
+
     try {
         const res = await fetch(`${API_URL}/courses/lessons`, {
             method: "POST",
             headers: { "Authorization": `Bearer ${token}`, "Content-Type": "application/json" },
-            body: JSON.stringify({ ...lessonData, moduleId })
+            body: JSON.stringify({
+                title: title,
+                videoUrl: videoUrl,
+                moduleId: moduleId
+            })
         });
+
         if (res.ok) {
-            UI.toast.success("Aula publicada!");
+            showToast("Aula adicionada!");
             loadContentFromBackend();
+        } else {
+            showToast("Erro ao salvar aula.", "error");
         }
-    } catch (e) { UI.toast.error("Erro ao publicar aula."); }
+    } catch (e) { showToast("Erro de conexão.", "error"); }
+}
+
+// --- FUNÇÃO DE RENDERIZAÇÃO (ESTAVA FALTANDO) ---
+function renderModules(modules) {
+    const container = document.getElementById("modules-container"); // Certifique-se que existe uma div com esse ID no HTML
+    if (!container) return;
+    container.innerHTML = "";
+
+    if (modules.length === 0) {
+        container.innerHTML = '<p class="text-gray-500 italic">Nenhum módulo criado ainda.</p>';
+        return;
+    }
+
+    modules.forEach(mod => {
+        const lessonsHtml = mod.lessons && mod.lessons.length > 0
+            ? mod.lessons.map(lesson => `
+                <div class="flex items-center justify-between bg-black/30 p-3 rounded border border-white/5 ml-4 mt-2">
+                    <div class="flex items-center gap-3">
+                        <i class="fas fa-play-circle text-gray-400"></i>
+                        <span class="text-sm text-gray-300">${lesson.title}</span>
+                    </div>
+                    <a href="${lesson.videoUrl}" target="_blank" class="text-xs text-gold hover:underline">Ver vídeo</a>
+                </div>
+              `).join('')
+            : '<p class="text-xs text-gray-600 ml-4 mt-2 italic">Nenhuma aula neste módulo.</p>';
+
+        const moduleHtml = `
+            <div class="bg-panel border border-white/10 rounded mb-6 overflow-hidden">
+                <div class="bg-white/5 p-4 flex justify-between items-center">
+                    <h3 class="font-bold text-white uppercase tracking-wider text-sm">${mod.title}</h3>
+                    <button onclick="addLesson('${mod.id}')" class="text-[10px] bg-gold text-black px-3 py-1 font-bold uppercase rounded hover:bg-white transition">
+                        + Nova Aula
+                    </button>
+                </div>
+                <div class="p-4">
+                    ${lessonsHtml}
+                </div>
+            </div>
+        `;
+        container.innerHTML += moduleHtml;
+    });
+}
+
+// Helper para Toastify
+function showToast(msg, type = "success") {
+    if (typeof Toastify === 'function') {
+        Toastify({
+            text: msg,
+            duration: 3000,
+            style: { background: type === "error" ? "#ef4444" : "#D4AF37", color: type === "error" ? "#fff" : "#000" }
+        }).showToast();
+    } else {
+        alert(msg);
+    }
 }
