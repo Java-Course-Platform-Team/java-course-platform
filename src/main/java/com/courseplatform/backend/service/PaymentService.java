@@ -25,6 +25,11 @@ public class PaymentService {
     @Value("${mercadopago.access_token}")
     private String accessToken;
 
+    // URL do Frontend (Pode vir do application.properties no futuro)
+    // Se estiver testando local: http://localhost:8081
+    // Se estiver na nuvem: https://seu-frontend.onrender.com
+    private final String FRONTEND_URL = "http://localhost:8081"; // <--- Ajuste isso quando subir pra nuvem!
+
     // Método para pagamentos via PIX (Retorna QR Code e Hash)
     public PaymentDTO createPayment(User user, BigDecimal amount, String description) {
         try {
@@ -77,20 +82,21 @@ public class PaymentService {
                     .name(user.getName())
                     .build();
 
+            // --- CORREÇÃO DE REDIRECIONAMENTO ---
+            // Apontando para páginas que existem no seu projeto (pasta /aluno ou /static)
             PreferenceRequest request = PreferenceRequest.builder()
                     .items(Collections.singletonList(item))
                     .payer(payer)
                     .backUrls(com.mercadopago.client.preference.PreferenceBackUrlsRequest.builder()
-                            .success("https://seusite.com/sucesso")
-                            .failure("https://seusite.com/falha")
-                            .pending("https://seusite.com/pendente")
+                            .success(FRONTEND_URL + "/aluno/pagamento-sucesso.html") // Página de obrigado
+                            .failure(FRONTEND_URL + "/index.html?error=payment_failed")
+                            .pending(FRONTEND_URL + "/index.html?warning=payment_pending")
                             .build())
                     .autoReturn("approved")
                     .build();
 
             Preference preference = client.create(request);
 
-            // Retorna o link para redirecionamento
             return preference.getInitPoint();
 
         } catch (Exception e) {
@@ -99,7 +105,6 @@ public class PaymentService {
         }
     }
 
-    // Método para processar Webhooks (Notificações)
     public void processPaymentNotification(Long paymentId) {
         try {
             MercadoPagoConfig.setAccessToken(accessToken);
@@ -108,8 +113,6 @@ public class PaymentService {
 
             System.out.println("Processando notificação para o pagamento: " + paymentId);
             System.out.println("Status atual: " + payment.getStatus());
-
-            // Lógica de atualização de matrícula pode ser adicionada aqui
 
         } catch (Exception e) {
             e.printStackTrace();

@@ -16,7 +16,7 @@ import java.util.UUID;
 
 @Entity
 @Table(name = "tb_users")
-@Data // Mantemos o Lombok
+@Data
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
@@ -28,6 +28,7 @@ public class User implements UserDetails {
 
     private String name;
 
+    @Column(unique = true)
     private String cpf;
 
     @Column(unique = true)
@@ -37,19 +38,6 @@ public class User implements UserDetails {
 
     @Enumerated(EnumType.STRING)
     private Role role;
-
-    // Métodos manuais para garantir que funcione mesmo se o Lombok falhar no build
-    public void setName(String name) { this.name = name; }
-    public String getName() { return name; }
-
-    public void setEmail(String email) { this.email = email; }
-    public String getEmail() { return email; }
-
-    public void setPassword(String password) { this.password = password; }
-    public String getPassword() { return password; }
-
-    public void setRole(Role role) { this.role = role; }
-    public Role getRole() { return role; }
 
     // UserDetails implementation
     @Override
@@ -67,13 +55,10 @@ public class User implements UserDetails {
 
     @Override
     public boolean isAccountNonExpired() { return true; }
-
     @Override
     public boolean isAccountNonLocked() { return true; }
-
     @Override
     public boolean isCredentialsNonExpired() { return true; }
-
     @Override
     public boolean isEnabled() { return true; }
 }

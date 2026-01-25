@@ -1,6 +1,5 @@
 package com.courseplatform.backend.dto;
 
-import com.courseplatform.backend.Role;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
@@ -14,7 +13,8 @@ public class UserCreateDTO {
     private String name;
 
     @NotBlank(message = "O CPF é obrigatório")
-    @Size(min = 14, message = "O cpf possui a quantidade de numeros errados")
+    // Dica: Se o front mandar sem pontuação, mude min para 11. Se mandar com, mantenha 14.
+    @Size(min = 11, message = "O CPF deve ser válido")
     private String cpf;
 
     @NotBlank(message = "O e-mail é obrigatório")
@@ -25,5 +25,5 @@ public class UserCreateDTO {
     @Size(min = 6, message = "A senha deve ter no mínimo 6 caracteres")
     private String password;
 
-    private Role role;
+    // REMOVIDO: private Role role; -> Segurança: Ninguém se cadastra como ADMIN sozinho.
 }

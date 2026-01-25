@@ -1,13 +1,20 @@
 package com.courseplatform.backend.entity;
 
 import jakarta.persistence.*;
-import lombok.Data;
-import java.util.UUID;
-import java.time.LocalDateTime;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 
-@Data
+import java.time.LocalDateTime;
+import java.util.UUID;
+
 @Entity
 @Table(name = "tb_lessons")
+@Getter
+@Setter
+@NoArgsConstructor
+@AllArgsConstructor
 public class Lesson {
 
     @Id
@@ -18,19 +25,18 @@ public class Lesson {
     private String title;
 
     @Column(nullable = false)
-    private String videoUrl; // Link do vídeo (YouTube/Vimeo)
+    private String videoUrl;
 
     @Column(columnDefinition = "TEXT")
     private String description;
 
-    private Integer durationSeconds; // Duração em segundos
+    private Integer durationSeconds;
 
     @Column(name = "\"order\"")
     private Integer order;
 
-    private Boolean isFree = false; // Se é aula grátis de demonstração
+    private Boolean isFree = false;
 
-    // A Mágica: Muitas Aulas -> Um Módulo
     @ManyToOne
     @JoinColumn(name = "module_id", nullable = false)
     private Module module;
