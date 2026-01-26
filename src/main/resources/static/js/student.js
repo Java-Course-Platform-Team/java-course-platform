@@ -1,51 +1,159 @@
-// student.js - Dashboard do Aluno (Nuvem)
-//  CONFIGURAÇÃO AUTOMÁTICA DE AMBIENTE
+// admin-students.js - GESTÃO DE ALUNOS (COM DEBUG)
 const API_URL = window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1"
-    ? "http://localhost:8081"                  // Se estou no PC, uso IntelliJ Local
-    : "https://odonto-backend-j9oy.onrender.com"; // Se estou na Web, uso a Nuvem
+    ? "http://localhost:8081"
+    : "https://odonto-backend-j9oy.onrender.com";
+
+const token = localStorage.getItem("token");
 
 document.addEventListener("DOMContentLoaded", () => {
-    updateUserInfo();
-    fetchMyLibrary();
+    if (!token) { window.location.href = "/auth/login.html"; return; }
+    fetchStudents();
 });
 
-function updateUserInfo() {
-    const user = JSON.parse(localStorage.getItem("user") || "{}");
-    const name = user.name || "Doutor";
-    const firstName = name.split(" ")[0];
-
-    const hour = new Date().getHours();
-    let greeting = hour < 12 ? "Bom dia" : hour < 18 ? "Boa tarde" : "Boa noite";
-
-    if(document.getElementById("user-greeting")) document.getElementById("user-greeting").textContent = greeting;
-    if(document.getElementById("user-name-display")) document.getElementById("user-name-display").textContent = `Dr(a). ${firstName}`;
-}
-
-async function fetchMyLibrary() {
-    const token = localStorage.getItem("token");
-    const container = document.getElementById("my-courses-grid");
-    if (!container || !token) return;
-
+async function fetchStudents() {
     try {
-        const res = await fetch(`${API_URL}/enrollments/my-courses`, {
+        const res = await fetch(`${API_URL}/users`, {
             headers: { "Authorization": `Bearer ${token}` }
         });
-        const courses = await res.json();
 
-        if (courses.length === 0) {
-            container.innerHTML = `<p class="col-span-full text-center text-gray-500 py-20 italic">Você ainda não possui cursos em sua biblioteca.</p>`;
+        if (res.status === 401 || res.status === 403) {
+            localStorage.clear();
+            window.location.href = "/auth/login.html";
             return;
         }
 
-        container.innerHTML = courses.map(c => `
-            <a href="/aluno/player.html?id=${c.id}&title=${encodeURIComponent(c.title)}" class="group relative bg-black border border-white/5 overflow-hidden">
-                <div class="aspect-video bg-neutral-900">
-                    <img src="${c.imageUrl || ''}" class="w-full h-full object-cover opacity-50 group-hover:opacity-100 transition duration-700">
-                </div>
-                <div class="p-6">
-                    <p class="text-gold text-[9px] uppercase tracking-widest mb-1">Elite Member</p>
-                    <h3 class="text-white font-serif italic text-lg">${c.title}</h3>
-                </div>
-            </a>`).join("");
-    } catch (e) { console.error("Erro na biblioteca"); }
+        const students = await res.json();
+
+        // 🚨 O ESPIÃO: Isso vai mostrar no console o nome real dos campos
+        console.log("🔍 DADOS VINDOS DO JAVA:", students);
+
+        renderTable(students);
+    } catch (e) {
+        showToast("Erro ao carregar lista de alunos.", "error");
+        console.error(e);
+    }
+}
+
+function renderTable(list) {
+    const tbody = document.getElementById("students-table-body");
+    if (!tbody) return;
+
+    if (!list || list.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="5" class="px-8 py-4 text-center text-gray-500">Nenhum aluno encontrado.</td></tr>`;
+        return;
+    }
+
+    tbody.innerHTML = list.map(s => {
+        // Tenta achar o status. Se não achar nada, assume FALSE (Banido) para não mentir.
+        // Verifique no console (F12) qual é o nome correto!
+        let statusReal = false;
+
+        if (s.active !== undefined) statusReal = s.active;
+        else if (s.isActive !== undefined) statusReal = s.isActive;
+        else if (s.enabled !== undefined) statusReal = s.enabled;
+        else if (s.ativo !== undefined) statusReal = s.ativo;
+
+        // Se encontrou algum status, usa ele.
+        // Se statusReal for false, mostra Vermelho.
+
+        return `
+        <tr class="hover:bg-white/5 transition border-b border-white/5">
+            <td class="px-8 py-4 text-white font-bold">${s.name}</td>
+            <td class="px-8 py-4 text-sm text-gray-400">${s.email}</td>
+            <td class="px-8 py-4 text-sm text-gray-500">${s.cpf || '---'}</td>
+            <td class="px-8 py-4">
+                <span class="px-3 py-1 rounded-full text-[10px] font-bold uppercase ${statusReal ? 'bg-green-500/10 text-green-500' : 'bg-red-500/10 text-red-500'}">
+                    ${statusReal ? 'Ativo' : 'Banido'}
+                </span>
+            </td>
+            <td class="px-8 py-4 text-right space-x-2">
+                <button onclick="editStudent('${s.id}', '${s.name}', '${s.email}', '${s.cpf || ''}')" class="text-gray-400 hover:text-blue-400 transition" title="Editar"><i class="fas fa-edit"></i></button>
+                <button onclick="toggleStatus('${s.id}')" class="text-gray-400 hover:text-gold transition" title="Banir/Ativar"><i class="fas fa-ban"></i></button>
+                <button onclick="resetPassword('${s.id}')" class="text-gray-400 hover:text-green-400 transition" title="Resetar Senha"><i class="fas fa-key"></i></button>
+                <button onclick="deleteUser('${s.id}')" class="text-gray-400 hover:text-red-500 transition" title="Excluir"><i class="fas fa-trash"></i></button>
+            </td>
+        </tr>
+    `}).join("");
+}
+
+// ... (Resto das funções toggleStatus, resetPassword, deleteUser, editStudent, showToast IGUAIS AO ANTERIOR) ...
+// Copie as funções do código anterior ou mantenha se já estiverem lá.
+// Vou colocar aqui embaixo pra garantir que não falte nada:
+
+async function toggleStatus(id) {
+    try {
+        const res = await fetch(`${API_URL}/users/${id}/toggle-status`, {
+            method: 'PATCH',
+            headers: { "Authorization": `Bearer ${token}` }
+        });
+        if(res.ok) {
+            showToast("Status alterado.");
+            fetchStudents();
+        } else {
+            showToast("Erro ao alterar status.", "error");
+        }
+    } catch(e) { showToast("Erro de conexão.", "error"); }
+}
+
+async function resetPassword(id) {
+    if(confirm("Deseja resetar a senha deste aluno para 'odonto123'?")) {
+        try {
+            const res = await fetch(`${API_URL}/users/${id}/reset-password`, {
+                method: 'PATCH',
+                headers: { "Authorization": `Bearer ${token}` }
+            });
+            if (res.ok) {
+                showToast("Senha resetada para 'odonto123'.");
+            } else {
+                showToast("Erro ao resetar senha.", "error");
+            }
+        } catch(e) { showToast("Erro de conexão.", "error"); }
+    }
+}
+
+async function deleteUser(id) {
+    if(confirm("AVISO CRÍTICO: Excluir permanentemente?")) {
+        try {
+            const res = await fetch(`${API_URL}/users/${id}`, {
+                method: 'DELETE',
+                headers: { "Authorization": `Bearer ${token}` }
+            });
+            if(res.ok) {
+                showToast("Usuário removido.");
+                fetchStudents();
+            } else {
+                showToast("Erro ao excluir.", "error");
+            }
+        } catch(e) { showToast("Erro de conexão.", "error"); }
+    }
+}
+
+async function editStudent(id, name, email, cpf) {
+    const newName = prompt("Novo Nome:", name);
+    if(newName === null) return;
+    const newEmail = prompt("Novo Email:", email);
+    if(newEmail === null) return;
+    const newCpf = prompt("Novo CPF:", cpf);
+    if(newCpf === null) return;
+
+    if (newName && newEmail) {
+        try {
+            const res = await fetch(`${API_URL}/users/${id}`, {
+                method: 'PUT',
+                headers: { "Authorization": `Bearer ${token}`, "Content-Type": "application/json" },
+                body: JSON.stringify({ name: newName, email: newEmail, cpf: newCpf })
+            });
+            if (res.ok) { showToast("Atualizado!"); fetchStudents(); }
+            else { showToast("Erro ao atualizar.", "error"); }
+        } catch (e) { showToast("Erro de conexão.", "error"); }
+    }
+}
+
+function showToast(msg, type = "success") {
+    if (typeof Toastify === 'function') {
+        Toastify({
+            text: msg, duration: 3000, gravity: "top", position: "right",
+            style: { background: type === "error" ? "#ef4444" : "#D4AF37", color: type === "error" ? "#fff" : "#000" }
+        }).showToast();
+    } else { alert(msg); }
 }

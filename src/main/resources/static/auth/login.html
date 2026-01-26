@@ -7,7 +7,9 @@
     <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700&family=Manrope:wght@300;400;600&display=swap" rel="stylesheet">
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+
     <link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/toastify-js/src/toastify.min.css">
+
     <script>
         tailwind.config = { theme: { extend: { colors: { gold: '#D4AF37', dark: '#050505' }, fontFamily: { sans: ['Manrope', 'sans-serif'], serif: ['Playfair Display', 'serif'] } } } }
     </script>
@@ -53,7 +55,6 @@
                 <label class="block text-[10px] uppercase tracking-widest text-gray-500 mb-2 group-focus-within:text-gold transition">E-mail Profissional</label>
                 <div class="relative">
                     <i class="fas fa-envelope absolute left-0 bottom-3 text-gray-600 group-focus-within:text-gold transition"></i>
-
                     <input type="email" id="email" required class="w-full bg-transparent border-b border-gray-800 py-2 pl-8 text-white focus:border-gold outline-none transition-colors" placeholder="dr.exemplo@email.com">
                 </div>
             </div>
@@ -62,7 +63,6 @@
                 <label class="block text-[10px] uppercase tracking-widest text-gray-500 mb-2 group-focus-within:text-gold transition">Senha</label>
                 <div class="relative">
                     <i class="fas fa-lock absolute left-0 bottom-3 text-gray-600 group-focus-within:text-gold transition"></i>
-
                     <input type="password" id="password" required class="w-full bg-transparent border-b border-gray-800 py-2 pl-8 text-white focus:border-gold outline-none transition-colors" placeholder="••••••••">
                 </div>
             </div>
@@ -87,7 +87,6 @@
 </div>
 
 <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/toastify-js"></script>
-<script src="/js/utils.js"></script>
 <script src="/js/auth.js"></script>
 <script>
     document.addEventListener("DOMContentLoaded", () => {

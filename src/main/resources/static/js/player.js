@@ -1,22 +1,16 @@
-// CONTROLE DO PLAYER E PROGRESSO - ODONTOPRO (Nuvem)
-//  CONFIGURAÇÃO AUTOMÁTICA DE AMBIENTE
+// player.js - CONTROLE DO PLAYER
 const API_URL = window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1"
-    ? "http://localhost:8081"                  // Se estou no PC, uso IntelliJ Local
-    : "https://odonto-backend-j9oy.onrender.com"; // Se estou na Web, uso a Nuvem
+    ? "http://localhost:8081"
+    : "https://odonto-backend-j9oy.onrender.com";
+
+const token = localStorage.getItem("token");
 
 document.addEventListener("DOMContentLoaded", () => {
-    checkAuth();
-    updateUserInfo(); // Garante o nome do usuário na Navbar
+    if (!token) { window.location.href = "/auth/login.html"; return; }
     loadCourseContent();
-    setupLogout();
 });
 
-function checkAuth() {
-    const token = localStorage.getItem("token");
-    if (!token) window.location.href = "/auth/login.html";
-}
-
-// 1. CARREGAMENTO DINÂMICO DE CONTEÚDO
+// 1. CARREGAMENTO DO CURSO
 async function loadCourseContent() {
     const params = new URLSearchParams(window.location.search);
     const courseId = params.get("id");
@@ -31,26 +25,29 @@ async function loadCourseContent() {
     if(titleEl && courseTitle) titleEl.textContent = decodeURIComponent(courseTitle);
 
     try {
-        const token = localStorage.getItem("token");
         const response = await fetch(`${API_URL}/courses/${courseId}/modules`, {
             headers: { "Authorization": `Bearer ${token}` }
         });
 
-        if (!response.ok) throw new Error("Erro ao carregar conteúdo");
+        if (response.status === 401 || response.status === 403) {
+            localStorage.clear();
+            window.location.href = "/auth/login.html";
+            return;
+        }
 
         const modules = await response.json();
         renderSidebar(modules);
 
-        // Auto-play da primeira aula disponível
+        // Toca a primeira aula automaticamente
         if (modules.length > 0 && modules[0].lessons && modules[0].lessons.length > 0) {
             playLesson(modules[0].lessons[0]);
         }
     } catch (error) {
-        if (typeof UI !== 'undefined') UI.toast.error("Erro ao sincronizar módulos.");
+        showToast("Erro ao carregar aulas.", "error");
     }
 }
 
-// 2. RENDERIZAÇÃO DA SIDEBAR LUXURY
+// 2. RENDERIZA SIDEBAR
 function renderSidebar(modules) {
     const container = document.getElementById("modules-container");
     if (!container) return;
@@ -58,17 +55,21 @@ function renderSidebar(modules) {
 
     modules.forEach((mod, index) => {
         let lessonsHtml = mod.lessons && mod.lessons.length > 0
-            ? mod.lessons.map(lesson => `
+            ? mod.lessons.map(lesson => {
+                // Truque para escapar aspas no JSON
+                const safeLesson = JSON.stringify(lesson).replace(/'/g, "&apos;").replace(/"/g, "&quot;");
+                return `
                 <li class="lesson-item cursor-pointer p-4 flex items-center gap-4 hover:bg-white/5 transition border-l-2 border-transparent hover:border-gold group"
-                    data-lesson-info='${JSON.stringify(lesson).replace(/'/g, "&apos;")}'>
+                    onclick='playLesson(${safeLesson})'>
                     <div class="w-8 h-8 rounded-full bg-dark-900 border border-white/10 flex items-center justify-center text-[10px] text-gray-500 group-hover:border-gold group-hover:text-gold transition">
                         <i class="fas fa-play"></i>
                     </div>
                     <div>
                         <p class="text-[11px] font-medium text-gray-400 group-hover:text-white transition">${lesson.title}</p>
                     </div>
-                </li>`).join("")
-            : "<li class='p-4 text-[10px] text-gray-600 italic tracking-widest'>Conteúdo em breve...</li>";
+                </li>`;
+            }).join("")
+            : "<li class='p-4 text-[10px] text-gray-600 italic tracking-widest'>Em breve...</li>";
 
         container.innerHTML += `
             <div class="border-b border-white/5">
@@ -82,17 +83,9 @@ function renderSidebar(modules) {
                 <ul id="mod-${index}" class="hidden bg-dark-950/50">${lessonsHtml}</ul>
             </div>`;
     });
-
-    // Eventos de clique nas aulas
-    document.querySelectorAll('.lesson-item').forEach(item => {
-        item.addEventListener('click', () => {
-            const lessonData = JSON.parse(item.getAttribute('data-lesson-info'));
-            playLesson(lessonData);
-        });
-    });
 }
 
-// 3. CONTROLE DO PLAYER
+// 3. TOCA O VÍDEO
 window.playLesson = function(lesson) {
     const iframe = document.getElementById("video-player");
     const titleDisplay = document.getElementById("current-lesson-title");
@@ -101,21 +94,27 @@ window.playLesson = function(lesson) {
     if (iframe) iframe.src = getEmbedUrl(lesson.videoUrl);
     if (titleDisplay) titleDisplay.textContent = lesson.title;
 
-    // Atualiza o gatilho de conclusão para a aula atual
     if (btnComplete) {
-        // CORREÇÃO: Passando o ID (UUID) corretamente
+        // Reseta o botão para o estado original
+        btnComplete.innerHTML = 'Concluir Aula <i class="fas fa-check ml-2"></i>';
+        btnComplete.classList.remove("opacity-50", "cursor-not-allowed");
+        btnComplete.disabled = false;
+
+        // Define a nova ação
         btnComplete.onclick = function() { markAsCompleted(this, lesson.id); };
     }
 
-    window.scrollTo({ top: 0, behavior: 'smooth' });
+    // Rola para o topo suavemente em mobile
+    if (window.innerWidth < 768) {
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
 };
 
-// 4. CONCLUSÃO DE AULA (CONEXÃO REAL BACKEND)
+// 4. CONCLUIR AULA
 async function markAsCompleted(btn, lessonId) {
-    const token = localStorage.getItem("token");
-
-    // UX: Feedback de carregamento
-    if (typeof UI !== 'undefined') UI.buttonLoading(btn, true, "Registrando...");
+    const originalText = btn.innerHTML;
+    btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Salvando...';
+    btn.disabled = true;
 
     try {
         const res = await fetch(`${API_URL}/progress/${lessonId}`, {
@@ -124,53 +123,54 @@ async function markAsCompleted(btn, lessonId) {
         });
 
         if (res.ok) {
-            if (typeof UI !== 'undefined') UI.toast.success("Aula concluída com sucesso! 🎓");
+            showToast("Aula concluída! 🎓");
             btn.innerHTML = '<i class="fas fa-check mr-2"></i> Concluída';
             btn.classList.add("opacity-50", "cursor-not-allowed");
-            btn.onclick = null;
         } else {
-            throw new Error();
+            showToast("Erro ao salvar progresso.", "error");
+            btn.innerHTML = originalText;
+            btn.disabled = false;
         }
     } catch (e) {
-        if (typeof UI !== 'undefined') UI.toast.error("Erro ao salvar progresso.");
-    } finally {
-        if (typeof UI !== 'undefined') UI.buttonLoading(btn, false, "Concluir Aula");
+        showToast("Erro de conexão.", "error");
+        btn.innerHTML = originalText;
+        btn.disabled = false;
     }
 }
 
 // 5. UTILITÁRIOS
 function getEmbedUrl(url) {
     if (!url) return "";
-    if (url.includes("/embed/")) return url + "?autoplay=1&rel=0";
-
-    let videoId = "";
-    if (url.includes("v=")) {
-        videoId = url.split("v=")[1].split("&")[0];
-    } else if (url.includes("youtu.be/")) {
-        videoId = url.split("youtu.be/")[1].split("?")[0];
-    }
-
-    return videoId ? `https://www.youtube.com/embed/${videoId}?autoplay=1&rel=0` : url;
+    try {
+        let videoId = "";
+        if (url.includes("v=")) {
+            videoId = url.split("v=")[1].split("&")[0];
+        } else if (url.includes("youtu.be/")) {
+            videoId = url.split("youtu.be/")[1].split("?")[0];
+        } else if (url.includes("/embed/")) {
+            return url; // Já é embed
+        }
+        return videoId ? `https://www.youtube.com/embed/${videoId}?autoplay=1&rel=0` : url;
+    } catch (e) { return url; }
 }
 
-function toggleModule(id) {
+window.toggleModule = function(id) {
     const el = document.getElementById(id);
     const icon = document.getElementById(`icon-${id}`);
     if (el) {
         el.classList.toggle("hidden");
         if(icon) icon.classList.toggle("rotate-180");
     }
-}
+};
 
-function updateUserInfo() {
-    const user = JSON.parse(localStorage.getItem("user") || "{}"); // Sincronizado com auth.js
-    const el = document.getElementById("user-name-display");
-    if (el && user.name) el.textContent = user.name;
-}
-
-function setupLogout() {
-    document.getElementById("btn-logout")?.addEventListener("click", () => {
-        localStorage.clear();
-        window.location.href = "/auth/login.html";
-    });
+function showToast(msg, type = "success") {
+    if (typeof Toastify === 'function') {
+        Toastify({
+            text: msg,
+            duration: 3000,
+            style: { background: type === "error" ? "#ef4444" : "#D4AF37", color: type === "error" ? "#fff" : "#000" }
+        }).showToast();
+    } else {
+        alert(msg);
+    }
 }

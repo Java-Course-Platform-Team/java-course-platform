@@ -4,9 +4,13 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Sala de Aula | OdontoPro</title>
+
+    <script src="/js/auth-guard.js"></script>
+
     <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700&family=Manrope:wght@300;400;600;700&display=swap" rel="stylesheet">
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+
     <link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/toastify-js/src/toastify.min.css">
 
     <script>
@@ -21,20 +25,13 @@
     </script>
     <style>
         body { background-color: #050505; color: #eee; }
-        /* Scrollbar fina */
         ::-webkit-scrollbar { width: 6px; }
         ::-webkit-scrollbar-track { background: #121212; }
         ::-webkit-scrollbar-thumb { background: #333; }
         ::-webkit-scrollbar-thumb:hover { background: #D4AF37; }
-
-        .active-lesson {
-            background: linear-gradient(90deg, rgba(212,175,55,0.1) 0%, transparent 100%);
-            border-left: 3px solid #D4AF37;
-        }
     </style>
 </head>
 <body class="h-screen flex flex-col overflow-hidden bg-black">
-
 
 <header class="h-16 bg-sidebar border-b border-white/5 flex items-center justify-between px-4 md:px-6 shrink-0 z-20">
     <div class="flex items-center gap-3 md:gap-4 overflow-hidden">
@@ -45,7 +42,6 @@
         <h1 id="course-title-display" class="text-white font-serif text-sm md:text-lg tracking-wide truncate">Carregando...</h1>
     </div>
 
-
     <div class="flex items-center gap-2 md:gap-3 flex-shrink-0 ml-2">
         <span class="text-[10px] md:text-xs text-gray-500 uppercase tracking-widest hidden sm:block">Progresso</span>
         <div class="w-16 md:w-32 h-1 bg-gray-800 rounded-full overflow-hidden">
@@ -55,15 +51,10 @@
     </div>
 </header>
 
-
 <div class="flex flex-col lg:flex-row flex-1 overflow-hidden">
 
-
     <main class="flex-1 bg-black relative flex flex-col w-full order-1 lg:order-1">
-
         <div class="flex-1 flex items-center justify-center bg-black relative w-full h-full lg:h-auto min-h-[250px] lg:min-h-0">
-            <div class="absolute inset-0 bg-gold/5 blur-3xl opacity-20 pointer-events-none"></div>
-
             <div class="w-full h-full lg:max-h-[80vh] lg:aspect-video relative z-10 shadow-2xl bg-black">
                 <iframe id="video-player" class="w-full h-full"
                         src=""
@@ -72,7 +63,6 @@
                         allowfullscreen></iframe>
             </div>
         </div>
-
 
         <div class="bg-dark border-t border-white/5 flex flex-col md:flex-row items-center justify-between px-4 md:px-8 py-3 md:py-0 md:h-16 gap-3 md:gap-0 shrink-0">
             <h2 id="current-lesson-title" class="text-white font-bold text-sm md:text-lg truncate w-full md:w-auto text-center md:text-left">Selecione uma aula</h2>
@@ -86,24 +76,17 @@
     <aside class="w-full lg:w-96 bg-sidebar border-t lg:border-t-0 lg:border-l border-white/5 flex flex-col shrink-0 overflow-y-auto z-10 order-2 lg:order-2 h-64 lg:h-auto">
         <div class="p-4 md:p-6 border-b border-white/5 sticky top-0 bg-sidebar z-20">
             <h3 class="text-gold font-bold uppercase text-xs tracking-widest mb-1">Conteúdo do Curso</h3>
-            <p class="text-gray-500 text-xs flex items-center gap-2">
-                <i class="fas fa-list-ul"></i> Navegue pelos módulos abaixo
-            </p>
         </div>
 
-
         <div id="modules-container" class="pb-10">
-
             <div class="p-8 text-center opacity-50 animate-pulse">
                 <div class="h-4 bg-gray-800 rounded w-3/4 mx-auto mb-3"></div>
-                <div class="h-4 bg-gray-800 rounded w-1/2 mx-auto"></div>
             </div>
         </div>
     </aside>
 </div>
 
 <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/toastify-js"></script>
-<script src="/js/utils.js"></script>
 <script src="/js/player.js"></script>
 </body>
 </html>
