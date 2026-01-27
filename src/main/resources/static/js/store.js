@@ -170,3 +170,28 @@ function showToast(msg, type = "success") {
         alert(msg);
     }
 }
+
+document.addEventListener('DOMContentLoaded', () => {
+    const btnOpen = document.getElementById('mobile-menu-btn');
+    const btnClose = document.getElementById('close-menu-btn');
+    const menu = document.getElementById('mobile-menu');
+    const overlay = document.getElementById('menu-overlay');
+
+    function toggleMenu() {
+        const isOpen = !menu.classList.contains('translate-x-full');
+
+        if (isOpen) {
+            menu.classList.add('translate-x-full');
+            overlay.classList.add('hidden');
+            document.body.style.overflow = ''; // Habilita scroll
+        } else {
+            menu.classList.remove('translate-x-full');
+            overlay.classList.remove('hidden');
+            document.body.style.overflow = 'hidden'; // Trava scroll do fundo
+        }
+    }
+
+    btnOpen.addEventListener('click', toggleMenu);
+    btnClose.addEventListener('click', toggleMenu);
+    overlay.addEventListener('click', toggleMenu); // Fecha ao clicar fora
+});

@@ -25,20 +25,48 @@
 </head>
 <body class="luxury-bg min-h-screen text-gray-200">
 
-<nav class="sticky top-0 z-50 bg-dark-900/90 backdrop-blur-md border-b border-white/10">
-    <div class="max-w-7xl mx-auto px-6 h-20 flex justify-between items-center">
-        <div class="flex items-center gap-3">
-            <i class="fas fa-tooth text-gold text-2xl"></i>
-            <span class="font-serif text-xl text-white tracking-widest">ODONTO<span class="text-gold">PRO</span></span>
+<nav class="sticky top-0 z-50 glass-header">
+    <div class="max-w-7xl mx-auto px-4 md:px-6 h-16 md:h-20 flex justify-between items-center">
+        <div class="flex items-center gap-2 md:gap-3">
+            <i class="fas fa-tooth text-gold text-lg md:text-xl"></i>
+            <span class="font-serif text-base md:text-lg text-white tracking-widest font-bold">ODONTO<span class="text-gold">PRO</span></span>
         </div>
-        <div class="hidden md:flex gap-8 text-xs font-bold uppercase tracking-widest">
-            <a href="/aluno/catalogo.html" class="text-gold border-b-2 border-gold pb-1">Loja de Cursos</a>
+
+        <div class="hidden md:flex items-center gap-8 text-[10px] font-bold uppercase tracking-widest">
             <a href="/aluno/area-aluno.html" class="text-gray-400 hover:text-white transition">Minha Área</a>
+            <a href="/aluno/catalogo.html" class="text-white border-b border-gold pb-1">Catálogo</a>
+            <button onclick="localStorage.clear(); window.location.href='/auth/login.html'" class="text-gray-400 hover:text-red-500 transition">Sair</button>
         </div>
-        <div class="flex items-center gap-4">
-            <span id="user-name-display" class="text-sm font-bold hidden sm:block">...</span>
-            <button onclick="localStorage.clear(); window.location.href='/auth/login.html'" class="text-gray-500 hover:text-red-500"><i class="fas fa-power-off"></i></button>
+
+        <button id="mobile-menu-btn" class="md:hidden text-gold text-xl p-2 focus:outline-none">
+            <i class="fas fa-bars"></i>
+        </button>
+    </div>
+
+    <div id="mobile-menu" class="fixed inset-y-0 right-0 w-64 bg-dark-900 border-l border-white/5 z-[60] transform translate-x-full transition-transform duration-300 ease-in-out md:hidden">
+        <div class="flex flex-col h-full p-8">
+            <button id="close-menu-btn" class="self-end text-gold text-2xl mb-12">
+                <i class="fas fa-times"></i>
+            </button>
+
+            <div class="flex flex-col gap-8 text-[11px] font-bold uppercase tracking-[0.2em]">
+                <a href="/aluno/area-aluno.html" class="text-gray-400 hover:text-gold transition flex items-center gap-3">
+                    <i class="fas fa-th-large"></i> Minha Área
+                </a>
+                <a href="/aluno/catalogo.html" class="text-white flex items-center gap-3">
+                    <i class="fas fa-shopping-cart text-gold"></i> Catálogo Oficial
+                </a>
+
+                <div class="mt-auto border-t border-white/5 pt-8">
+                    <button onclick="localStorage.clear(); window.location.href='/auth/login.html'" class="text-red-500 flex items-center gap-3">
+                        <i class="fas fa-power-off"></i> Sair da Conta
+                    </button>
+                </div>
+            </div>
         </div>
+    </div>
+
+    <div id="menu-overlay" class="fixed inset-0 bg-black/60 z-[55] hidden md:hidden"></div>
     </div>
 </nav>
 
