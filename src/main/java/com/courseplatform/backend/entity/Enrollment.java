@@ -33,5 +33,6 @@ public class Enrollment {
 
     private LocalDateTime enrolledAt;
 
-
+    @Builder.Default
+    private Double progress = 0.0;
 }

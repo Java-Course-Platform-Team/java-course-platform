@@ -2,7 +2,11 @@ package com.courseplatform.backend.service;
 
 import com.courseplatform.backend.dto.PaymentDTO;
 import com.courseplatform.backend.entity.Course;
+import com.courseplatform.backend.entity.Enrollment;
 import com.courseplatform.backend.entity.User;
+import com.courseplatform.backend.repository.CourseRepository;
+import com.courseplatform.backend.repository.EnrollmentRepository;
+import com.courseplatform.backend.repository.UserRepository;
 import com.mercadopago.MercadoPagoConfig;
 import com.mercadopago.client.payment.PaymentClient;
 import com.mercadopago.client.payment.PaymentCreateRequest;
@@ -14,18 +18,27 @@ import com.mercadopago.client.preference.PreferencePayerRequest;
 import com.mercadopago.client.preference.PreferenceRequest;
 import com.mercadopago.resources.payment.Payment;
 import com.mercadopago.resources.preference.Preference;
-import com.mercadopago.exceptions.MPApiException;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
+import java.time.LocalDateTime;
 import java.util.Collections;
+import java.util.UUID; // <--- Importante para converter os IDs
 
 @Service
 public class PaymentService {
 
     @Value("${mercadopago.access_token}")
     private String accessToken;
+
+    // URL DO SEU SITE NA NUVEM
+    private final String BACKEND_URL = "https://odonto-backend-j9oy.onrender.com";
+
+    @Autowired private EnrollmentRepository enrollmentRepository;
+    @Autowired private UserRepository userRepository;
+    @Autowired private CourseRepository courseRepository;
 
     // 1. Pagamento via PIX
     public PaymentDTO createPayment(User user, BigDecimal amount, String description) {
@@ -59,8 +72,7 @@ public class PaymentService {
         }
     }
 
-    // 2. Link de Pagamento (Checkout Pro) - VERSÃO BLINDADA
-    // Método para criar Link de Pagamento (Preference / Checkout Pro)
+    // 2. Link de Pagamento (Checkout Pro)
     public String createPaymentLink(Course course, User user) {
         try {
             MercadoPagoConfig.setAccessToken(accessToken);
@@ -83,32 +95,31 @@ public class PaymentService {
 
             // URLs de Retorno
             PreferenceBackUrlsRequest backUrls = PreferenceBackUrlsRequest.builder()
-                    .success("http://localhost:8081/aluno/pagamento-sucesso.html")
-                    .failure("http://localhost:8081/index.html?error=payment_failed")
-                    .pending("http://localhost:8081/index.html?warning=payment_pending")
+                    .success(BACKEND_URL + "/aluno/area-aluno.html")
+                    .failure(BACKEND_URL + "/aluno/catalogo.html")
+                    .pending(BACKEND_URL + "/aluno/area-aluno.html")
                     .build();
 
-            // Request
+            // External Reference: "ID_USER__ID_CURSO"
+            String customId = user.getId() + "__" + course.getId();
+
             PreferenceRequest request = PreferenceRequest.builder()
                     .items(Collections.singletonList(item))
                     .payer(payer)
                     .backUrls(backUrls)
-                    // 👇 AQUI ESTÁ A MUDANÇA: Comentamos o autoReturn para o MP parar de reclamar
-                    // .autoReturn("approved")
+                    .autoReturn("approved")
+                    .externalReference(customId)
+                    .notificationUrl(BACKEND_URL + "/webhook/mercadopago")
                     .build();
 
             Preference preference = client.create(request);
 
-            System.out.println("✅ Link gerado com sucesso: " + preference.getInitPoint());
+            System.out.println("✅ Link Render gerado: " + preference.getInitPoint());
             return preference.getInitPoint();
 
-        } catch (MPApiException e) {
-            System.err.println("❌ ERRO MP API: " + e.getApiResponse().getStatusCode());
-            System.err.println("📄 PAYLOAD: " + e.getApiResponse().getContent());
-            throw new RuntimeException("Erro MP: " + e.getApiResponse().getContent());
         } catch (Exception e) {
             e.printStackTrace();
-            throw new RuntimeException("Erro genérico: " + e.getMessage());
+            throw new RuntimeException("Erro ao gerar link MP: " + e.getMessage());
         }
     }
 
@@ -117,10 +128,57 @@ public class PaymentService {
         try {
             MercadoPagoConfig.setAccessToken(accessToken);
             PaymentClient client = new PaymentClient();
+
             Payment payment = client.get(paymentId);
-            System.out.println("🔔 Webhook: " + payment.getStatus());
+            System.out.println("🔔 Webhook Status: " + payment.getStatus());
+
+            if ("approved".equals(payment.getStatus())) {
+                String reference = payment.getExternalReference();
+
+                if (reference != null && reference.contains("__")) {
+                    String[] parts = reference.split("__");
+                    String userIdStr = parts[0];
+                    String courseIdStr = parts[1];
+
+                    liberarCursoNoBanco(userIdStr, courseIdStr);
+                }
+            }
         } catch (Exception e) {
-            System.err.println("Erro Webhook: " + e.getMessage());
+            System.err.println("❌ Erro no Webhook: " + e.getMessage());
+        }
+    }
+
+    // Método auxiliar CORRIGIDO
+    private void liberarCursoNoBanco(String userIdStr, String courseIdStr) {
+        try {
+            // Converte String para UUID (Essencial se seu banco usa UUID)
+            UUID userId = UUID.fromString(userIdStr);
+            UUID courseId = UUID.fromString(courseIdStr);
+
+            User user = userRepository.findById(userId).orElse(null);
+            Course course = courseRepository.findById(courseId).orElse(null);
+
+            if (user != null && course != null) {
+                boolean jaTem = enrollmentRepository.existsByUserAndCourse(user, course);
+
+                if (!jaTem) {
+                    // Builder com os nomes corretos da Entidade
+                    Enrollment enrollment = Enrollment.builder()
+                            .user(user)
+                            .course(course)
+                            .enrolledAt(LocalDateTime.now())
+                            .progress(0.0)
+                            .build();
+
+                    enrollmentRepository.save(enrollment);
+                    System.out.println("🎉 SUCESSO! Curso " + course.getTitle() + " liberado para " + user.getName());
+                } else {
+                    System.out.println("⚠️ Usuário já tinha esse curso.");
+                }
+            }
+        } catch (Exception e) {
+            System.err.println("❌ Erro ao salvar matrícula: " + e.getMessage());
+            e.printStackTrace();
         }
     }
 }
