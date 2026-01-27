@@ -36,42 +36,35 @@ public class SecurityConfig {
                 .cors(cors -> cors.configurationSource(corsConfigurationSource()))
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(authorize -> authorize
-                        // 1. RECURSOS VISUAIS (Liberar tudo)
+                        // 1. RECURSOS VISUAIS E ESTÁTICOS (Liberar tudo)
                         .requestMatchers(
                                 "/js/**", "/css/**", "/images/**", "/assets/**", "/favicon.ico",
                                 "/", "/index.html", "/auth/**", "/components/**"
                         ).permitAll()
 
-                        // LIBERA AS PÁGINAS HTML
+                        // LIBERA AS PÁGINAS DO FRONTEND
                         .requestMatchers("/admin/**", "/aluno/**").permitAll()
 
-                        // 2. ENDPOINTS PÚBLICOS (Rotas que não exigem login)
-                        .requestMatchers(HttpMethod.POST, "/auth/login", "/auth/register").permitAll()
-                        .requestMatchers(HttpMethod.GET, "/courses", "/courses/**").permitAll() // A loja pública
+                        // 2. OBRIGATÓRIO: WEBHOOK DO MERCADO PAGO
+                        // 👇 O SEGREDO ESTÁ AQUI: TEM QUE TER O /** NO FINAL
+                        .requestMatchers(HttpMethod.POST, "/webhook/**").permitAll()
+                        .requestMatchers(HttpMethod.POST, "/api/webhook/**").permitAll()
 
-                        // ⚠️ ATENÇÃO: O Webhook do Mercado Pago bate AQUI
-                        .requestMatchers("/api/webhook", "/webhook").permitAll()
+                        // 3. ENDPOINTS PÚBLICOS
+                        .requestMatchers(HttpMethod.GET, "/courses", "/courses/**").permitAll()
 
-                        // 3. ENDPOINTS PROTEGIDOS (Exigem Login)
-                        // Note que adicionamos o "/api/" para casar com seu JavaScript
-
-                        // Pagamento (Checkout)
-                        .requestMatchers("/api/payments/**", "/payments/**").authenticated()
-
-                        // Matrículas (Meus Cursos)
-                        .requestMatchers("/api/enrollments/**", "/enrollments/**").authenticated()
-
-                        // Usuários
+                        // 4. ENDPOINTS PROTEGIDOS (Aluno Logado - resolve o erro "Meus Cursos")
+                        .requestMatchers("/enrollments/**", "/api/enrollments/**").authenticated()
+                        .requestMatchers("/payments/**", "/api/payments/**").authenticated()
                         .requestMatchers("/users/**").authenticated()
 
-                        // 4. ÁREA ADMINISTRATIVA (Só Admin)
+                        // 5. ÁREA ADMINISTRATIVA (Só Admin)
                         .requestMatchers("/admin/dashboard/**").hasRole("ADMIN")
                         .requestMatchers(HttpMethod.POST, "/courses/**").hasRole("ADMIN")
                         .requestMatchers(HttpMethod.PUT, "/courses/**").hasRole("ADMIN")
                         .requestMatchers(HttpMethod.DELETE, "/courses/**").hasRole("ADMIN")
-                        .requestMatchers("/enrollments/free-pass/**").hasRole("ADMIN")
 
-                        // 5. RESTO BLOQUEADO
+                        // 6. BLOQUEIA O RESTO
                         .anyRequest().authenticated()
                 )
                 .addFilterBefore(securityFilter, UsernamePasswordAuthenticationFilter.class)
@@ -93,6 +86,7 @@ public class SecurityConfig {
         configuration.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS"));
         configuration.setAllowedHeaders(List.of("*"));
         configuration.setAllowCredentials(false);
+
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
         source.registerCorsConfiguration("/**", configuration);
         return source;
