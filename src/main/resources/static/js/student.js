@@ -1,4 +1,6 @@
-// js/student.js - VERSÃO ALINHADA COM SEU JAVA ATUAL
+// js/student.js - VERSÃO BLINDADA (Compatível com Guilherme e seu HTML)
+
+// 1. URL DINÂMICA (Funciona em Localhost e na Nuvem)
 const API_URL = window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1"
     ? "http://localhost:8081"
     : "https://odonto-backend-j9oy.onrender.com";
@@ -6,7 +8,11 @@ const API_URL = window.location.hostname === "localhost" || window.location.host
 const token = localStorage.getItem("token");
 
 document.addEventListener("DOMContentLoaded", () => {
-    if (!token) { window.location.href = "/auth/login.html"; return; }
+    // Se não tem token, chuta pro login
+    if (!token) {
+        window.location.href = "/auth/login.html";
+        return;
+    }
 
     loadUserName();
     fetchMyCourses();
@@ -15,78 +21,106 @@ document.addEventListener("DOMContentLoaded", () => {
 function loadUserName() {
     const userName = localStorage.getItem("userName") || "Doutor(a)";
     const display = document.getElementById("user-name-display");
-    if(display) display.innerText = userName;
+    if (display) display.innerText = userName;
 }
 
 async function fetchMyCourses() {
+    const grid = document.getElementById("my-courses-grid");
+    const emptyMsg = document.getElementById("welcome-empty");
+    const heroSection = document.getElementById("hero-section") || document.getElementById("continue-watching-area"); // Tenta os dois nomes
+
     try {
-        // CORREÇÃO 1: A rota exata do seu Controller Java
-        console.log("Buscando em:", `${API_URL}/enrollments/my-courses`);
+        console.log("🔍 Buscando cursos em:", `${API_URL}/enrollments/my-courses`);
 
         const res = await fetch(`${API_URL}/enrollments/my-courses`, {
             headers: { "Authorization": `Bearer ${token}` }
         });
 
+        // Se o token venceu ou é inválido
         if (res.status === 403 || res.status === 401) {
+            console.warn("⛔ Token expirado ou inválido. Redirecionando...");
             localStorage.clear();
             window.location.href = "/auth/login.html";
             return;
         }
 
         const courses = await res.json();
-        console.log("MEUS CURSOS (Java):", courses);
+        console.log("📦 RESPOSTA DO JAVA:", courses);
 
+        // CENÁRIO 1: LISTA VAZIA (Mostra mensagem de boas-vindas)
         if (!courses || courses.length === 0) {
-            document.getElementById("welcome-empty").classList.remove("hidden");
-            document.getElementById("my-courses-grid").innerHTML = "";
-        } else {
-            document.getElementById("welcome-empty").classList.add("hidden");
-            // Passamos o primeiro curso para o destaque
-            renderHero(courses[0]);
-            renderLibrary(courses);
+            if (emptyMsg) emptyMsg.classList.remove("hidden");
+            if (heroSection) heroSection.style.display = "none";
+            if (grid) grid.innerHTML = "";
+            return;
         }
 
+        // CENÁRIO 2: TEM CURSOS (Esconde mensagem vazia e mostra cursos)
+        if (emptyMsg) emptyMsg.classList.add("hidden");
+        
+        // Renderiza o destaque (Hero) - Pega o primeiro curso ou o último assistido
+        renderHero(courses[0]); 
+        
+        // Renderiza a grade de cursos
+        renderLibrary(courses);
+
     } catch (e) {
-        console.error(e);
-        const grid = document.getElementById("my-courses-grid");
-        if(grid) grid.innerHTML = `<p class="text-red-500 col-span-full text-center">Erro ao carregar cursos.</p>`;
+        console.error("❌ ERRO CRÍTICO NO JS:", e);
+        // Só mostra o erro na tela se o elemento grid existir
+        if (grid) {
+            grid.innerHTML = `
+                <div class="col-span-full text-center py-10">
+                    <p class="text-red-500 font-bold">Erro ao sincronizar biblioteca.</p>
+                    <p class="text-gray-500 text-sm mt-2">${e.message}</p>
+                </div>`;
+        }
     }
 }
 
 function renderHero(course) {
-    // CORREÇÃO 2: Seu Java devolve o curso direto, não precisa de .course
-    const heroArea = document.getElementById("continue-watching-area");
+    // Tenta achar a seção com o ID novo ou o antigo
+    const heroArea = document.getElementById("hero-section") || document.getElementById("continue-watching-area");
 
-    if(heroArea && course) {
+    if (heroArea && course) {
+        heroArea.style.display = "block"; // Garante que aparece
         heroArea.classList.remove("hidden");
 
-        document.getElementById("hero-title").innerText = course.title;
-        document.getElementById("hero-category").innerText = course.category || "Curso Premium";
+        // Mapeamento seguro dos elementos (com ? para não quebrar se faltar)
+        const titleEl = document.getElementById("hero-title");
+        const catEl = document.getElementById("hero-category");
+        const imgEl = document.getElementById("hero-img");
+        const linkEl = document.getElementById("hero-link"); // Botão "Continuar Assistindo"
+        const btnEl = document.getElementById("hero-play-btn"); // Botão Play redondo (se tiver)
 
-        const img = course.imageUrl || "https://images.unsplash.com/photo-1628177142898-93e48732b86a?q=80&w=1000";
-        document.getElementById("hero-img").src = img;
+        // Preenche os dados
+        if(titleEl) titleEl.innerText = course.title;
+        if(catEl) catEl.innerText = course.category || "Curso Premium";
+        
+        const imageUrl = course.imageUrl || "https://images.unsplash.com/photo-1628177142898-93e48732b86a?q=80&w=1000";
+        if(imgEl) imgEl.src = imageUrl;
 
-        const link = `/assistir.html?id=${course.id}`;
-        document.getElementById("hero-link").href = link;
-        document.getElementById("hero-play-btn").href = link;
+        // Links
+        const link = `/aluno/assistir.html?id=${course.id}`;
+        if(linkEl) linkEl.href = link;
+        if(btnEl) btnEl.href = link;
     }
 }
 
 function renderLibrary(list) {
     const grid = document.getElementById("my-courses-grid");
-    if (!grid) return;
+    if (!grid) return; // Se não tem grid, não faz nada (não quebra)
 
     grid.innerHTML = list.map(course => {
-        // CORREÇÃO 3: Acessamos as propriedades direto (course.title), pois o Java já converteu
-        const img = course.imageUrl || "https://images.unsplash.com/photo-1628177142898-93e48732b86a?q=80&w=1000";
+        const imageUrl = course.imageUrl || "https://images.unsplash.com/photo-1628177142898-93e48732b86a?q=80&w=1000";
+        const progress = course.progress || 0;
 
         return `
         <div class="group bg-[#1a1a1a] border border-white/5 hover:border-gold/30 rounded-sm overflow-hidden transition duration-300 flex flex-col">
             <div class="relative h-40 overflow-hidden">
-                <img src="${img}" class="w-full h-full object-cover group-hover:scale-105 transition duration-700 opacity-80 group-hover:opacity-100">
+                <img src="${imageUrl}" class="w-full h-full object-cover group-hover:scale-105 transition duration-700 opacity-80 group-hover:opacity-100">
                 <div class="absolute inset-0 bg-black/50 group-hover:bg-transparent transition"></div>
 
-                <a href="/assistir.html?id=${course.id}" class="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition duration-300">
+                <a href="/aluno/assistir.html?id=${course.id}" class="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition duration-300">
                     <div class="w-10 h-10 rounded-full bg-gold text-black flex items-center justify-center shadow-lg transform scale-50 group-hover:scale-100 transition">
                         <i class="fas fa-play text-xs"></i>
                     </div>
@@ -95,12 +129,18 @@ function renderLibrary(list) {
 
             <div class="p-5 flex flex-col flex-grow">
                 <span class="text-[9px] text-gold uppercase tracking-widest mb-2">${course.category || 'MÓDULO'}</span>
-                <h4 class="text-white font-serif text-lg leading-tight mb-2 group-hover:text-gold transition">${course.title}</h4>
+                <h4 class="text-white font-serif text-lg leading-tight mb-2 group-hover:text-gold transition">
+                    ${course.title}
+                </h4>
+                
                 <div class="w-full bg-gray-800 h-1 mt-auto rounded-full overflow-hidden">
-                    <div class="bg-gold w-[0%] h-full"></div>
+                    <div class="bg-gold h-full shadow-[0_0_10px_#D4AF37]" style="width: ${progress}%"></div>
                 </div>
             </div>
         </div>
         `;
     }).join("");
+    
+    // Garante as classes de grid
+    grid.className = "grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-6";
 }
