@@ -1,4 +1,4 @@
-// js/student.js - VERSÃO FINAL E CORRETA
+// js/student.js - VERSÃO ALINHADA COM SEU JAVA ATUAL
 const API_URL = window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1"
     ? "http://localhost:8081"
     : "https://odonto-backend-j9oy.onrender.com";
@@ -20,7 +20,7 @@ function loadUserName() {
 
 async function fetchMyCourses() {
     try {
-        // Rota alinhada com seu EnrollmentController
+        // CORREÇÃO 1: A rota exata do seu Controller Java
         console.log("Buscando em:", `${API_URL}/enrollments/my-courses`);
 
         const res = await fetch(`${API_URL}/enrollments/my-courses`, {
@@ -37,35 +37,29 @@ async function fetchMyCourses() {
         console.log("MEUS CURSOS (Java):", courses);
 
         if (!courses || courses.length === 0) {
-            // Se não tem cursos, mostra a tela de boas-vindas vazia
             document.getElementById("welcome-empty").classList.remove("hidden");
             document.getElementById("my-courses-grid").innerHTML = "";
-            document.getElementById("continue-watching-area").classList.add("hidden");
         } else {
-            // Se tem cursos, esconde o vazio e desenha a grade
             document.getElementById("welcome-empty").classList.add("hidden");
-
-            // Renderiza o destaque (Hero) com o primeiro curso da lista
+            // Passamos o primeiro curso para o destaque
             renderHero(courses[0]);
-
-            // Renderiza a grade com todos os cursos
             renderLibrary(courses);
         }
 
     } catch (e) {
         console.error(e);
         const grid = document.getElementById("my-courses-grid");
-        if(grid) grid.innerHTML = `<p class="text-red-500 col-span-full text-center">Erro ao carregar cursos. Tente recarregar.</p>`;
+        if(grid) grid.innerHTML = `<p class="text-red-500 col-span-full text-center">Erro ao carregar cursos.</p>`;
     }
 }
 
 function renderHero(course) {
+    // CORREÇÃO 2: Seu Java devolve o curso direto, não precisa de .course
     const heroArea = document.getElementById("continue-watching-area");
 
     if(heroArea && course) {
         heroArea.classList.remove("hidden");
 
-        // Preenche os dados do Banner Principal
         document.getElementById("hero-title").innerText = course.title;
         document.getElementById("hero-category").innerText = course.category || "Curso Premium";
 
@@ -83,6 +77,7 @@ function renderLibrary(list) {
     if (!grid) return;
 
     grid.innerHTML = list.map(course => {
+        // CORREÇÃO 3: Acessamos as propriedades direto (course.title), pois o Java já converteu
         const img = course.imageUrl || "https://images.unsplash.com/photo-1628177142898-93e48732b86a?q=80&w=1000";
 
         return `
@@ -107,3 +102,5 @@ function renderLibrary(list) {
             </div>
         </div>
         `;
+    }).join("");
+}
