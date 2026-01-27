@@ -31,50 +31,51 @@ public class SecurityConfig {
 
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
-        http
+        return http
                 .csrf(AbstractHttpConfigurer::disable)
                 .cors(cors -> cors.configurationSource(corsConfigurationSource()))
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(authorize -> authorize
-                        // 1. RECURSOS VISUAIS (HTML, CSS, JS, IMAGENS) -> LIBERAR TUDO 🟢
-                        // Se não liberar aqui, o navegador toma erro 403 ao tentar abrir a página.
+                        // 1. RECURSOS VISUAIS (Liberar tudo)
                         .requestMatchers(
                                 "/js/**", "/css/**", "/images/**", "/assets/**", "/favicon.ico",
                                 "/", "/index.html", "/auth/**", "/components/**"
                         ).permitAll()
 
-                        // LIBERA AS PASTAS DE PÁGINAS (O HTML é público, o DADO dentro dele é privado)
-                        .requestMatchers("/admin/**").permitAll()
-                        .requestMatchers("/aluno/**").permitAll()
+                        // LIBERA AS PÁGINAS HTML
+                        .requestMatchers("/admin/**", "/aluno/**").permitAll()
 
-                        // 2. ENDPOINTS PÚBLICOS (DADOS) 🟢
+                        // 2. ENDPOINTS PÚBLICOS (Rotas que não exigem login)
                         .requestMatchers(HttpMethod.POST, "/auth/login", "/auth/register").permitAll()
-                        .requestMatchers(HttpMethod.GET, "/courses", "/courses/**").permitAll() // Vitrine
-                        .requestMatchers("/payments/**", "/webhook/**").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/courses", "/courses/**").permitAll() // A loja pública
 
-                        // 3. SEGURANÇA FORTE (AQUI PROTEGEMOS OS DADOS) 🔒🔴
+                        // ⚠️ ATENÇÃO: O Webhook do Mercado Pago bate AQUI
+                        .requestMatchers("/api/webhook", "/webhook").permitAll()
 
-                        // API do Dashboard Admin (Só Admin vê os números)
+                        // 3. ENDPOINTS PROTEGIDOS (Exigem Login)
+                        // Note que adicionamos o "/api/" para casar com seu JavaScript
+
+                        // Pagamento (Checkout)
+                        .requestMatchers("/api/payments/**", "/payments/**").authenticated()
+
+                        // Matrículas (Meus Cursos)
+                        .requestMatchers("/api/enrollments/**", "/enrollments/**").authenticated()
+
+                        // Usuários
+                        .requestMatchers("/users/**").authenticated()
+
+                        // 4. ÁREA ADMINISTRATIVA (Só Admin)
                         .requestMatchers("/admin/dashboard/**").hasRole("ADMIN")
-
-                        // Operações de Cursos (Criar/Editar/Deletar) -> Só Admin
                         .requestMatchers(HttpMethod.POST, "/courses/**").hasRole("ADMIN")
                         .requestMatchers(HttpMethod.PUT, "/courses/**").hasRole("ADMIN")
                         .requestMatchers(HttpMethod.DELETE, "/courses/**").hasRole("ADMIN")
-
-                        // "Botão Mágico" de liberar curso -> Só Admin
                         .requestMatchers("/enrollments/free-pass/**").hasRole("ADMIN")
 
-                        // Dados do Aluno (Meus Cursos) -> Precisa estar logado
-                        .requestMatchers("/enrollments/**").authenticated()
-                        .requestMatchers("/users/**").authenticated()
-
-                        // 4. TODO O RESTO -> BLOQUEAR SE NÃO TIVER TOKEN
+                        // 5. RESTO BLOQUEADO
                         .anyRequest().authenticated()
                 )
-                .addFilterBefore(securityFilter, UsernamePasswordAuthenticationFilter.class);
-
-        return http.build();
+                .addFilterBefore(securityFilter, UsernamePasswordAuthenticationFilter.class)
+                .build();
     }
 
     @Bean
