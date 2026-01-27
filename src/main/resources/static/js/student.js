@@ -1,4 +1,4 @@
-// admin-students.js - GESTÃO DE ALUNOS (COM DEBUG)
+// js/student.js - VERSÃO FINAL E CORRETA
 const API_URL = window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1"
     ? "http://localhost:8081"
     : "https://odonto-backend-j9oy.onrender.com";
@@ -7,153 +7,103 @@ const token = localStorage.getItem("token");
 
 document.addEventListener("DOMContentLoaded", () => {
     if (!token) { window.location.href = "/auth/login.html"; return; }
-    fetchStudents();
+
+    loadUserName();
+    fetchMyCourses();
 });
 
-async function fetchStudents() {
+function loadUserName() {
+    const userName = localStorage.getItem("userName") || "Doutor(a)";
+    const display = document.getElementById("user-name-display");
+    if(display) display.innerText = userName;
+}
+
+async function fetchMyCourses() {
     try {
-        const res = await fetch(`${API_URL}/users`, {
+        // Rota alinhada com seu EnrollmentController
+        console.log("Buscando em:", `${API_URL}/enrollments/my-courses`);
+
+        const res = await fetch(`${API_URL}/enrollments/my-courses`, {
             headers: { "Authorization": `Bearer ${token}` }
         });
 
-        if (res.status === 401 || res.status === 403) {
+        if (res.status === 403 || res.status === 401) {
             localStorage.clear();
             window.location.href = "/auth/login.html";
             return;
         }
 
-        const students = await res.json();
+        const courses = await res.json();
+        console.log("MEUS CURSOS (Java):", courses);
 
-        // 🚨 O ESPIÃO: Isso vai mostrar no console o nome real dos campos
-        console.log("🔍 DADOS VINDOS DO JAVA:", students);
+        if (!courses || courses.length === 0) {
+            // Se não tem cursos, mostra a tela de boas-vindas vazia
+            document.getElementById("welcome-empty").classList.remove("hidden");
+            document.getElementById("my-courses-grid").innerHTML = "";
+            document.getElementById("continue-watching-area").classList.add("hidden");
+        } else {
+            // Se tem cursos, esconde o vazio e desenha a grade
+            document.getElementById("welcome-empty").classList.add("hidden");
 
-        renderTable(students);
+            // Renderiza o destaque (Hero) com o primeiro curso da lista
+            renderHero(courses[0]);
+
+            // Renderiza a grade com todos os cursos
+            renderLibrary(courses);
+        }
+
     } catch (e) {
-        showToast("Erro ao carregar lista de alunos.", "error");
         console.error(e);
+        const grid = document.getElementById("my-courses-grid");
+        if(grid) grid.innerHTML = `<p class="text-red-500 col-span-full text-center">Erro ao carregar cursos. Tente recarregar.</p>`;
     }
 }
 
-function renderTable(list) {
-    const tbody = document.getElementById("students-table-body");
-    if (!tbody) return;
+function renderHero(course) {
+    const heroArea = document.getElementById("continue-watching-area");
 
-    if (!list || list.length === 0) {
-        tbody.innerHTML = `<tr><td colspan="5" class="px-8 py-4 text-center text-gray-500">Nenhum aluno encontrado.</td></tr>`;
-        return;
+    if(heroArea && course) {
+        heroArea.classList.remove("hidden");
+
+        // Preenche os dados do Banner Principal
+        document.getElementById("hero-title").innerText = course.title;
+        document.getElementById("hero-category").innerText = course.category || "Curso Premium";
+
+        const img = course.imageUrl || "https://images.unsplash.com/photo-1628177142898-93e48732b86a?q=80&w=1000";
+        document.getElementById("hero-img").src = img;
+
+        const link = `/assistir.html?id=${course.id}`;
+        document.getElementById("hero-link").href = link;
+        document.getElementById("hero-play-btn").href = link;
     }
+}
 
-    tbody.innerHTML = list.map(s => {
-        // Tenta achar o status. Se não achar nada, assume FALSE (Banido) para não mentir.
-        // Verifique no console (F12) qual é o nome correto!
-        let statusReal = false;
+function renderLibrary(list) {
+    const grid = document.getElementById("my-courses-grid");
+    if (!grid) return;
 
-        if (s.active !== undefined) statusReal = s.active;
-        else if (s.isActive !== undefined) statusReal = s.isActive;
-        else if (s.enabled !== undefined) statusReal = s.enabled;
-        else if (s.ativo !== undefined) statusReal = s.ativo;
-
-        // Se encontrou algum status, usa ele.
-        // Se statusReal for false, mostra Vermelho.
+    grid.innerHTML = list.map(course => {
+        const img = course.imageUrl || "https://images.unsplash.com/photo-1628177142898-93e48732b86a?q=80&w=1000";
 
         return `
-        <tr class="hover:bg-white/5 transition border-b border-white/5">
-            <td class="px-8 py-4 text-white font-bold">${s.name}</td>
-            <td class="px-8 py-4 text-sm text-gray-400">${s.email}</td>
-            <td class="px-8 py-4 text-sm text-gray-500">${s.cpf || '---'}</td>
-            <td class="px-8 py-4">
-                <span class="px-3 py-1 rounded-full text-[10px] font-bold uppercase ${statusReal ? 'bg-green-500/10 text-green-500' : 'bg-red-500/10 text-red-500'}">
-                    ${statusReal ? 'Ativo' : 'Banido'}
-                </span>
-            </td>
-            <td class="px-8 py-4 text-right space-x-2">
-                <button onclick="editStudent('${s.id}', '${s.name}', '${s.email}', '${s.cpf || ''}')" class="text-gray-400 hover:text-blue-400 transition" title="Editar"><i class="fas fa-edit"></i></button>
-                <button onclick="toggleStatus('${s.id}')" class="text-gray-400 hover:text-gold transition" title="Banir/Ativar"><i class="fas fa-ban"></i></button>
-                <button onclick="resetPassword('${s.id}')" class="text-gray-400 hover:text-green-400 transition" title="Resetar Senha"><i class="fas fa-key"></i></button>
-                <button onclick="deleteUser('${s.id}')" class="text-gray-400 hover:text-red-500 transition" title="Excluir"><i class="fas fa-trash"></i></button>
-            </td>
-        </tr>
-    `}).join("");
-}
+        <div class="group bg-[#1a1a1a] border border-white/5 hover:border-gold/30 rounded-sm overflow-hidden transition duration-300 flex flex-col">
+            <div class="relative h-40 overflow-hidden">
+                <img src="${img}" class="w-full h-full object-cover group-hover:scale-105 transition duration-700 opacity-80 group-hover:opacity-100">
+                <div class="absolute inset-0 bg-black/50 group-hover:bg-transparent transition"></div>
 
-// ... (Resto das funções toggleStatus, resetPassword, deleteUser, editStudent, showToast IGUAIS AO ANTERIOR) ...
-// Copie as funções do código anterior ou mantenha se já estiverem lá.
-// Vou colocar aqui embaixo pra garantir que não falte nada:
+                <a href="/assistir.html?id=${course.id}" class="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition duration-300">
+                    <div class="w-10 h-10 rounded-full bg-gold text-black flex items-center justify-center shadow-lg transform scale-50 group-hover:scale-100 transition">
+                        <i class="fas fa-play text-xs"></i>
+                    </div>
+                </a>
+            </div>
 
-async function toggleStatus(id) {
-    try {
-        const res = await fetch(`${API_URL}/users/${id}/toggle-status`, {
-            method: 'PATCH',
-            headers: { "Authorization": `Bearer ${token}` }
-        });
-        if(res.ok) {
-            showToast("Status alterado.");
-            fetchStudents();
-        } else {
-            showToast("Erro ao alterar status.", "error");
-        }
-    } catch(e) { showToast("Erro de conexão.", "error"); }
-}
-
-async function resetPassword(id) {
-    if(confirm("Deseja resetar a senha deste aluno para 'odonto123'?")) {
-        try {
-            const res = await fetch(`${API_URL}/users/${id}/reset-password`, {
-                method: 'PATCH',
-                headers: { "Authorization": `Bearer ${token}` }
-            });
-            if (res.ok) {
-                showToast("Senha resetada para 'odonto123'.");
-            } else {
-                showToast("Erro ao resetar senha.", "error");
-            }
-        } catch(e) { showToast("Erro de conexão.", "error"); }
-    }
-}
-
-async function deleteUser(id) {
-    if(confirm("AVISO CRÍTICO: Excluir permanentemente?")) {
-        try {
-            const res = await fetch(`${API_URL}/users/${id}`, {
-                method: 'DELETE',
-                headers: { "Authorization": `Bearer ${token}` }
-            });
-            if(res.ok) {
-                showToast("Usuário removido.");
-                fetchStudents();
-            } else {
-                showToast("Erro ao excluir.", "error");
-            }
-        } catch(e) { showToast("Erro de conexão.", "error"); }
-    }
-}
-
-async function editStudent(id, name, email, cpf) {
-    const newName = prompt("Novo Nome:", name);
-    if(newName === null) return;
-    const newEmail = prompt("Novo Email:", email);
-    if(newEmail === null) return;
-    const newCpf = prompt("Novo CPF:", cpf);
-    if(newCpf === null) return;
-
-    if (newName && newEmail) {
-        try {
-            const res = await fetch(`${API_URL}/users/${id}`, {
-                method: 'PUT',
-                headers: { "Authorization": `Bearer ${token}`, "Content-Type": "application/json" },
-                body: JSON.stringify({ name: newName, email: newEmail, cpf: newCpf })
-            });
-            if (res.ok) { showToast("Atualizado!"); fetchStudents(); }
-            else { showToast("Erro ao atualizar.", "error"); }
-        } catch (e) { showToast("Erro de conexão.", "error"); }
-    }
-}
-
-function showToast(msg, type = "success") {
-    if (typeof Toastify === 'function') {
-        Toastify({
-            text: msg, duration: 3000, gravity: "top", position: "right",
-            style: { background: type === "error" ? "#ef4444" : "#D4AF37", color: type === "error" ? "#fff" : "#000" }
-        }).showToast();
-    } else { alert(msg); }
-}
+            <div class="p-5 flex flex-col flex-grow">
+                <span class="text-[9px] text-gold uppercase tracking-widest mb-2">${course.category || 'MÓDULO'}</span>
+                <h4 class="text-white font-serif text-lg leading-tight mb-2 group-hover:text-gold transition">${course.title}</h4>
+                <div class="w-full bg-gray-800 h-1 mt-auto rounded-full overflow-hidden">
+                    <div class="bg-gold w-[0%] h-full"></div>
+                </div>
+            </div>
+        </div>
+        `;
