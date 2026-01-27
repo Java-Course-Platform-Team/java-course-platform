@@ -124,6 +124,7 @@ async function markAsCompleted(btn, lessonId) {
 
         if (res.ok) {
             showToast("Aula concluída! 🎓");
+            localStorage.setItem("refreshProgress", "true");
             btn.innerHTML = '<i class="fas fa-check mr-2"></i> Concluída';
             btn.classList.add("opacity-50", "cursor-not-allowed");
         } else {

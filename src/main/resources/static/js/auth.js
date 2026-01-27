@@ -214,4 +214,33 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const registerForm = document.getElementById('register-form');
     if (registerForm) registerForm.addEventListener('submit', handleRegister);
+
+    document.addEventListener('DOMContentLoaded', () => {
+        const inputCpf = document.getElementById('cpf');
+        const inputNome = document.getElementById('nome');
+
+        // MÁSCARA DE CPF: 123.456.789-10
+        inputCpf.addEventListener('input', (e) => {
+            let v = e.target.value.replace(/\D/g, ""); // Remove tudo que não é dígito
+
+            if (v.length > 11) v = v.slice(0, 11); // Garante no máximo 11 números
+
+            // Aplica a formatação conforme a quantidade de números digitados
+            if (v.length >= 10) {
+                v = v.replace(/^(\={0,3})(\d{3})(\d{3})(\d{3})(\d{2}).*/, "$2.$3.$4-$5");
+            } else if (v.length >= 7) {
+                v = v.replace(/^(\={0,3})(\d{3})(\d{3})(\d{1,3}).*/, "$2.$3.$4");
+            } else if (v.length >= 4) {
+                v = v.replace(/^(\={0,3})(\d{3})(\d{1,3}).*/, "$2.$3");
+            }
+
+            e.target.value = v;
+        });
+
+        // LIMPEZA DE NOME: Impede números e símbolos no momento da digitação
+        inputNome.addEventListener('input', (e) => {
+            // Remove números e a maioria dos caracteres especiais, mantendo acentos
+            e.target.value = e.target.value.replace(/[0-9!@#$%¨&*()_+=§¬¢£¹²³₢\[\]{};:.,<>/?\\|]/g, "");
+        });
+    });
 });
