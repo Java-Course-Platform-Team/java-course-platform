@@ -44,25 +44,21 @@ async function fetchMyCourses() {
             return;
         }
 
-        const courses = await res.json();
-        console.log("📦 RESPOSTA DO JAVA:", courses);
+       const courses = await res.json();
+               console.log("📦 RESPOSTA DO JAVA:", courses);
 
-        // CENÁRIO 1: LISTA VAZIA (Mostra mensagem de boas-vindas)
-        if (!courses || courses.length === 0) {
-            if (emptyMsg) emptyMsg.classList.remove("hidden");
-            if (heroSection) heroSection.style.display = "none";
-            if (grid) grid.innerHTML = "";
-            return;
-        }
+               if (!courses || courses.length === 0) {
+                   // CENÁRIO 1: LISTA VAZIA (Mostra botão centralizado e esconde o topo)
+                   renderEmptyState(grid);
+               } else {
+                   // CENÁRIO 2: TEM CURSOS (Mostra o topo e renderiza a biblioteca)
+                   const hero = document.getElementById("hero-section");
+                   if (hero) hero.style.display = "block";
 
-        // CENÁRIO 2: TEM CURSOS (Esconde mensagem vazia e mostra cursos)
-        if (emptyMsg) emptyMsg.classList.add("hidden");
-        
-        // Renderiza o destaque (Hero) - Pega o primeiro curso ou o último assistido
-        renderHero(courses[0]); 
-        
-        // Renderiza a grade de cursos
-        renderLibrary(courses);
+                   renderHero(courses[0]);
+                   renderLibrary(courses);
+               }
+               // REMOVA qualquer código que estiver abaixo desta linha dentro da função
 
     } catch (e) {
         console.error("❌ ERRO CRÍTICO NO JS:", e);
@@ -134,7 +130,7 @@ function renderLibrary(list) {
                 </h4>
                 
                 <div class="w-full bg-gray-800 h-1 mt-auto rounded-full overflow-hidden">
-                    <div class="bg-gold h-full shadow-[0_0_10px_#D4AF37]" style="width: ${progress}%"></div>
+                   <div class="bg-gold h-full shadow-[0_0_10px_#D4AF37]" style="width: ${course.progressPercentage || 0}%"></div>
                 </div>
             </div>
         </div>
@@ -144,3 +140,17 @@ function renderLibrary(list) {
     // Garante as classes de grid
     grid.className = "grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-6";
 }
+    function renderEmptyState(container) {
+        const hero = document.getElementById("hero-section");
+        if (hero) hero.style.display = "none";
+
+        container.innerHTML = "";
+        container.className = "flex flex-col items-center justify-center py-20 text-center w-full col-span-full";
+        container.innerHTML = `
+            <div class="animate-fade-in-down max-w-lg">
+                <i class="fas fa-gem text-gold text-7xl mb-8 opacity-20"></i>
+                <h2 class="text-3xl font-serif text-white mb-4 italic">Sua Vitrine de Especialidades</h2>
+                <p class="text-gray-500 text-sm mb-12 px-6">Você ainda não possui protocolos ativos. Explore nossa coleção exclusiva.</p>
+                <a href="/aluno/catalogo.html" class="inline-block px-14 py-5 bg-gold text-black font-black uppercase tracking-[0.3em] text-[10px] rounded-full shadow-[0_20px_50px_rgba(212,175,55,0.2)]">Acessar Coleção 2026</a>
+            </div>`;
+    }
