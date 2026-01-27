@@ -30,9 +30,8 @@ async function fetchMyCourses() {
         }
 
         const courses = await res.json();
-
         if (!courses || courses.length === 0) {
-            renderEmptyState(grid); // Mostra o botão da loja se não houver cursos
+            renderEmptyState(grid); // Isso centraliza o botão da loja
             return;
         }
 
