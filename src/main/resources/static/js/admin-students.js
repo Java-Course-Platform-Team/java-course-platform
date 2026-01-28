@@ -1,4 +1,4 @@
-// admin-students.js - GESTÃO DE ALUNOS (VERSÃO CORRIGIDA)
+// admin-students.js - GESTÃO DE ALUNOS (VERSÃO FINAL CORRIGIDA)
 const API_URL = window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1"
     ? "http://localhost:8081"
     : "https://odonto-backend-j9oy.onrender.com";
@@ -6,7 +6,6 @@ const API_URL = window.location.hostname === "localhost" || window.location.host
 const token = localStorage.getItem("token");
 
 document.addEventListener("DOMContentLoaded", () => {
-    // Se não tiver token, chuta pro login
     if (!token) { window.location.href = "/auth/login.html"; return; }
     fetchStudents();
 });
@@ -17,7 +16,6 @@ async function fetchStudents() {
             headers: { "Authorization": `Bearer ${token}` }
         });
 
-        // Se o token venceu (401/403), desloga
         if (res.status === 401 || res.status === 403) {
             localStorage.clear();
             window.location.href = "/auth/login.html";
@@ -31,49 +29,47 @@ async function fetchStudents() {
     }
 }
 
+// CORREÇÃO: Toda a lógica do map deve estar dentro da função renderTable
 function renderTable(list) {
     const tbody = document.getElementById("students-table-body");
     if (!tbody) return;
 
-    // Limpa o spinner de carregamento antes de renderizar
     tbody.innerHTML = "";
 
     if (!list || list.length === 0) {
         tbody.innerHTML = `<tr><td colspan="5" class="px-8 py-10 text-center text-gray-500 italic">Nenhum aluno encontrado.</td></tr>`;
         return;
     }
-    // ... restante do seu mapeamento (map) ...
-}
 
+    // O código abaixo agora está devidamente aninhado
     tbody.innerHTML = list.map(s => {
-            // --- CORREÇÃO DO STATUS ---
-            let statusReal = true;
-            if (s.active !== undefined) statusReal = s.active;
-            else if (s.isActive !== undefined) statusReal = s.isActive;
-            else if (s.enabled !== undefined) statusReal = s.enabled;
+        let statusReal = true;
+        if (s.active !== undefined) statusReal = s.active;
+        else if (s.isActive !== undefined) statusReal = s.isActive;
+        else if (s.enabled !== undefined) statusReal = s.enabled;
 
-            return `
-                <tr class="hover:bg-white/5 transition border-b border-white/5">
-                    <td class="px-8 py-4 text-white font-bold">${s.name}</td>
-                    <td class="px-8 py-4 text-sm text-gray-400">${s.email}</td>
-                    <td class="px-8 py-4 text-sm text-gray-500">${s.cpf || '---'}</td>
-                    <td class="px-8 py-4">
-                        <span class="px-3 py-1 rounded-full text-[10px] font-bold uppercase ${statusReal ? 'bg-green-500/10 text-green-500' : 'bg-red-500/10 text-red-500'}">
-                            ${statusReal ? 'Ativo' : 'Banido'}
-                        </span>
-                    </td>
-                    <td class="px-8 py-4 text-right space-x-2">
-                        <button onclick="editStudent('${s.id}', '${s.name}', '${s.email}', '${s.cpf || ''}')" class="text-gray-400 hover:text-blue-400 transition"><i class="fas fa-edit"></i></button>
-                        <button onclick="toggleStatus('${s.id}')" class="text-gray-400 hover:text-gold transition" title="Banir/Ativar"><i class="fas fa-ban"></i></button>
-                        <button onclick="resetPassword('${s.id}')" class="text-gray-400 hover:text-green-400 transition" title="Resetar Senha"><i class="fas fa-key"></i></button>
-                        <button onclick="deleteUser('${s.id}')" class="text-gray-400 hover:text-red-500 transition" title="Excluir"><i class="fas fa-trash"></i></button>
-                    </td>
-                </tr>
-            `;
-        }).join(""); // O .join fecha o map
-    } // ESTA CHAVE na linha 76 deve ser a única que fecha a função renderAlunosList
+        return `
+            <tr class="hover:bg-white/5 transition border-b border-white/5">
+                <td class="px-8 py-4 text-white font-bold">${s.name}</td>
+                <td class="px-8 py-4 text-sm text-gray-400">${s.email}</td>
+                <td class="px-8 py-4 text-sm text-gray-500">${s.cpf || '---'}</td>
+                <td class="px-8 py-4">
+                    <span class="px-3 py-1 rounded-full text-[10px] font-bold uppercase ${statusReal ? 'bg-green-500/10 text-green-500' : 'bg-red-500/10 text-red-500'}">
+                        ${statusReal ? 'Ativo' : 'Banido'}
+                    </span>
+                </td>
+                <td class="px-8 py-4 text-right space-x-2">
+                    <button onclick="editStudent('${s.id}', '${s.name}', '${s.email}', '${s.cpf || ''}')" class="text-gray-400 hover:text-blue-400 transition"><i class="fas fa-edit"></i></button>
+                    <button onclick="toggleStatus('${s.id}')" class="text-gray-400 hover:text-gold transition" title="Banir/Ativar"><i class="fas fa-ban"></i></button>
+                    <button onclick="resetPassword('${s.id}')" class="text-gray-400 hover:text-green-400 transition" title="Resetar Senha"><i class="fas fa-key"></i></button>
+                    <button onclick="deleteUser('${s.id}')" class="text-gray-400 hover:text-red-500 transition" title="Excluir"><i class="fas fa-trash"></i></button>
+                </td>
+            </tr>
+        `;
+    }).join("");
+} // CHAVE QUE FECHA A FUNÇÃO RENDER TABLE
 
-    async function toggleStatus(id) {
+async function toggleStatus(id) {
     try {
         const res = await fetch(`${API_URL}/users/${id}/toggle-status`, {
             method: 'PATCH',
@@ -81,7 +77,7 @@ function renderTable(list) {
         });
         if(res.ok) {
             showToast("Status do aluno alterado.");
-            fetchStudents(); // Recarrega a tabela
+            fetchStudents();
         } else {
             showToast("Erro ao alterar status.", "error");
         }
@@ -154,7 +150,6 @@ async function editStudent(id, name, email, cpf) {
     }
 }
 
-// --- UTILITÁRIO DE TOAST INTERNO (Para não depender de arquivos externos) ---
 function showToast(msg, type = "success") {
     if (typeof Toastify === 'function') {
         Toastify({
