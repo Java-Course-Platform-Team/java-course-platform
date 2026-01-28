@@ -73,33 +73,51 @@ async function fetchMyCourses() {
     }
 }
 
-function renderHero(course) {
-    // Tenta achar a seção com o ID novo ou o antigo
-    const heroArea = document.getElementById("hero-section") || document.getElementById("continue-watching-area");
+function renderHero(data) {
+    const container = document.getElementById("continue-watching-area");
+    const section = document.getElementById("hero-section");
 
-    if (heroArea && course) {
-        heroArea.style.display = "block"; // Garante que aparece
-        heroArea.classList.remove("hidden");
+    if (!container || !data) return;
 
-        // Mapeamento seguro dos elementos (com ? para não quebrar se faltar)
-        const titleEl = document.getElementById("hero-title");
-        const catEl = document.getElementById("hero-category");
-        const imgEl = document.getElementById("hero-img");
-        const linkEl = document.getElementById("hero-link"); // Botão "Continuar Assistindo"
-        const btnEl = document.getElementById("hero-play-btn"); // Botão Play redondo (se tiver)
+    // Lógica de Compatibilidade do seu Java
+    const course = data.course ? data.course : data;
+    const progress = data.progressPercentage || 0;
 
-        // Preenche os dados
-        if(titleEl) titleEl.innerText = course.title;
-        if(catEl) catEl.innerText = course.category || "Curso Premium";
-        
-        const imageUrl = course.imageUrl || "https://images.unsplash.com/photo-1628177142898-93e48732b86a?q=80&w=1000";
-        if(imgEl) imgEl.src = imageUrl;
+    // Mostra a seção principal
+    if (section) section.style.display = "block";
 
-        // Links
-        const link = `/aluno/assistir.html?id=${course.id}`;
-        if(linkEl) linkEl.href = link;
-        if(btnEl) btnEl.href = link;
-    }
+    container.innerHTML = `
+        <p class="text-gold text-[9px] md:text-[10px] uppercase tracking-[0.3em] mb-4 flex items-center gap-2">
+            <i class="fas fa-history"></i> CONTINUE DE ONDE PAROU
+        </p>
+
+        <div class="relative bg-[#1a1a1a] rounded overflow-hidden border border-white/5 shadow-2xl flex flex-col md:flex-row h-auto md:h-64 group">
+            <div class="w-full md:w-2/5 relative overflow-hidden h-48 md:h-auto">
+                <img src="${course.imageUrl || 'https://images.unsplash.com/photo-1628177142898-93e48732b86a?q=80&w=1000'}"
+                     class="w-full h-full object-cover opacity-60 group-hover:opacity-100 transition duration-700">
+                <div class="absolute inset-0 bg-gradient-to-t md:bg-gradient-to-r from-black/80 to-transparent"></div>
+                <div class="absolute inset-0 flex items-center justify-center">
+                    <a href="/aluno/assistir.html?id=${course.id}"
+                       class="w-16 h-16 rounded-full bg-gold/20 backdrop-blur border border-gold text-gold flex items-center justify-center hover:bg-gold hover:text-black hover:scale-110 transition shadow-[0_0_30px_rgba(212,175,55,0.3)]">
+                        <i class="fas fa-play text-xl ml-1"></i>
+                    </a>
+                </div>
+            </div>
+            <div class="w-full md:w-3/5 p-8 flex flex-col justify-center">
+                <span class="text-[9px] uppercase tracking-widest text-gold mb-1 font-bold">${course.category || 'PREMIUM'}</span>
+                <h2 class="text-2xl md:text-3xl font-serif text-white mb-4 leading-tight">${course.title}</h2>
+                <div class="w-full bg-gray-800 h-1.5 rounded-full mb-2 overflow-hidden">
+                    <div class="bg-gold h-full shadow-[0_0_15px_#D4AF37] transition-all duration-1000"
+                         style="width: ${progress}%"></div>
+                </div>
+                <p class="text-[10px] text-gray-400 font-bold">Progresso: <span class="text-white">${progress}%</span></p>
+                <a href="/aluno/assistir.html?id=${course.id}"
+                   class="mt-6 inline-block self-start px-8 py-3 bg-white/5 hover:bg-white/10 border border-white/10 text-[10px] font-bold uppercase tracking-widest text-white transition rounded-sm">
+                    Continuar Assistindo
+                </a>
+            </div>
+        </div>
+    `;
 }
 
 function renderLibrary(list) {
