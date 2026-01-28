@@ -1,14 +1,18 @@
-// admin-course-form.js - Criação e Edição de Cursos
+// admin-course-form.js - Versão Profissional Corrigida
 const API_URL = window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1"
     ? "http://localhost:8081"
     : "https://odonto-backend-j9oy.onrender.com";
 
 const token = localStorage.getItem("token");
 const urlParams = new URLSearchParams(window.location.search);
-const editId = urlParams.get('edit'); // Se tiver ID, é edição. Se não, é criação.
+const editId = urlParams.get('edit');
 
 document.addEventListener("DOMContentLoaded", () => {
-    if (!token) { window.location.href = "/auth/login.html"; return; }
+    // CORREÇÃO: Verificação de token robusta
+    if (!token || token === "undefined") {
+        window.location.replace("/auth/login.html");
+        return;
+    }
 
     if (editId) {
         prepareEditMode();
@@ -28,13 +32,14 @@ async function prepareEditMode() {
         });
 
         if (response.status === 401 || response.status === 403) {
+            localStorage.clear();
             window.location.href = "/auth/login.html";
             return;
         }
 
         if (response.ok) {
             const course = await response.json();
-            // Preenche os inputs (garante que os IDs no HTML estejam corretos)
+            // MANTIDO: Preenchimento seguro com verificação de existência
             if(document.getElementById("title")) document.getElementById("title").value = course.title || "";
             if(document.getElementById("slug")) document.getElementById("slug").value = course.slug || "";
             if(document.getElementById("price")) document.getElementById("price").value = course.price || "";
@@ -61,16 +66,17 @@ function setupFormSubmission() {
         submitBtn.disabled = true;
         submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Salvando...';
 
+        // CORREÇÃO: Conversão segura de preço para evitar erro de backend (NaN)
+        const priceValue = document.getElementById("price").value;
         const courseData = {
             title: document.getElementById("title").value.trim(),
             slug: document.getElementById("slug").value.trim(),
-            price: parseFloat(document.getElementById("price").value),
+            price: parseFloat(priceValue) || 0.0,
             category: document.getElementById("category").value.trim(),
             imageUrl: document.getElementById("imageUrl").value.trim(),
             description: document.getElementById("description").value.trim()
         };
 
-        // Decide se é POST (Novo) ou PUT (Atualizar)
         const method = editId ? "PUT" : "POST";
         const url = editId ? `${API_URL}/courses/${editId}` : `${API_URL}/courses`;
 
@@ -87,24 +93,26 @@ function setupFormSubmission() {
             if (response.ok) {
                 if (typeof Toastify !== 'undefined') {
                     Toastify({
-                        text: editId ? "Curso atualizado!" : "Curso criado!",
+                        text: editId ? "Curso atualizado com sucesso!" : "Curso criado com sucesso!",
                         duration: 2000,
                         style: { background: "#D4AF37", color: "#000" }
                     }).showToast();
                 } else {
-                    alert("Sucesso!");
+                    alert(editId ? "Curso atualizado!" : "Curso criado!");
                 }
 
                 setTimeout(() => {
+                    // CORREÇÃO: Redirecionamento limpo
                     window.location.href = "gerenciar-cursos.html";
                 }, 1500);
             } else {
+                // CORREÇÃO: Captura detalhada de erro do backend Java
                 const errorData = await response.json().catch(() => ({}));
-                alert(errorData.message || "Erro ao salvar curso.");
+                alert(errorData.message || "Erro ao salvar curso. Verifique se o Slug já existe.");
             }
         } catch (error) {
             console.error(error);
-            alert("Erro de conexão.");
+            alert("Erro de conexão com o servidor.");
         } finally {
             submitBtn.disabled = false;
             submitBtn.innerHTML = originalText;
