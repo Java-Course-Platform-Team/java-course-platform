@@ -25,77 +25,114 @@
     </script>
 </head>
 
-<body class="bg-black font-sans text-gray-300 min-h-screen py-10 flex justify-center items-start">
+<body class="bg-black text-gray-300 font-sans flex flex-col md:flex-row min-h-screen">
 
-<div class="w-full max-w-4xl bg-panel rounded-none border border-white/10 shadow-[0_0_50px_rgba(0,0,0,0.5)] mx-4 relative">
-    <div class="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-gold to-transparent"></div>
-
-    <div class="border-b border-white/5 px-8 py-6 flex justify-between items-center bg-white/5">
-        <div class="flex items-center gap-4">
-            <div class="w-12 h-12 rounded-full border border-gold/30 flex items-center justify-center bg-dark text-gold shadow-lg">
-                <i class="fas fa-plus"></i>
-            </div>
-            <div>
-                <h2 id="page-title" class="text-2xl font-serif font-bold text-white tracking-wide">Novo Curso</h2>
-                <p class="text-gray-500 text-xs uppercase tracking-widest">Adicionar ao Catálogo</p>
-            </div>
-        </div>
-        <a href="gerenciar-cursos.html" class="text-gray-600 hover:text-red-500 transition-colors duration-300">
-            <i class="fas fa-times text-xl"></i>
-        </a>
+<div class="md:hidden bg-panel border-b border-white/10 p-4 flex justify-between items-center z-50 sticky top-0">
+    <div class="flex items-center gap-2">
+        <i class="fas fa-tooth text-gold text-xl"></i>
+        <span class="font-serif text-white italic tracking-widest text-xs font-bold">ODONTO<span class="text-gold not-italic">PRO</span></span>
     </div>
-
-    <form id="course-form" class="p-10 space-y-10">
-        <div>
-            <h3 class="text-white font-serif text-lg mb-6 flex items-center">
-                <span class="w-1 h-6 bg-gold mr-3"></span>Informações Principais
-            </h3>
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
-                <div class="col-span-2">
-                    <label class="block text-xs font-bold text-gold uppercase tracking-wider mb-2">Título do Curso</label>
-                    <input type="text" id="title" name="title" required placeholder="Ex: Estética Dental Avançada" class="block w-full bg-input border border-gray-800 text-white p-4 focus:border-gold outline-none transition-colors">
-                </div>
-                <div>
-                    <label class="block text-xs font-bold text-gold uppercase tracking-wider mb-2">Slug (URL Amigável)</label>
-                    <input type="text" id="slug" name="slug" placeholder="estetica-dental" class="block w-full bg-input border border-gray-800 text-white p-4 focus:border-gold outline-none">
-                </div>
-                <div>
-                    <label class="block text-xs font-bold text-gold uppercase tracking-wider mb-2">Preço (R$)</label>
-                    <input type="number" id="price" step="0.01" name="price" placeholder="0.00" class="block w-full bg-input border border-gray-800 text-white p-4 focus:border-gold outline-none font-bold text-lg">
-                </div>
-                <div class="col-span-2">
-                    <label class="block text-xs font-bold text-gold uppercase tracking-wider mb-2">Categoria</label>
-                    <input type="text" id="category" name="category" placeholder="Ex: Harmonização Facial" class="block w-full bg-input border border-gray-800 text-white p-4 focus:border-gold outline-none">
-                </div>
-            </div>
-        </div>
-
-        <hr class="border-white/5">
-
-        <div>
-            <h3 class="text-white font-serif text-lg mb-6 flex items-center">
-                <span class="w-1 h-6 bg-white mr-3"></span>Mídia e Conteúdo
-            </h3>
-            <div class="space-y-6">
-                <div>
-                    <label class="block text-xs font-bold text-gray-400 uppercase tracking-wider mb-2">URL da Imagem de Capa</label>
-                    <input type="url" id="imageUrl" name="imageUrl" placeholder="https://..." class="block w-full bg-input border border-gray-800 text-white p-4 focus:border-gold outline-none">
-                </div>
-                <div>
-                    <label class="block text-xs font-bold text-gray-400 uppercase tracking-wider mb-2">Descrição Detalhada</label>
-                    <textarea id="description" rows="5" name="description" placeholder="Descreva o conteúdo..." class="block w-full bg-input border border-gray-800 text-white p-4 focus:border-gold outline-none"></textarea>
-                </div>
-            </div>
-        </div>
-
-        <div class="flex items-center justify-end gap-4 pt-6 border-t border-white/5">
-            <a href="gerenciar-cursos.html" class="px-6 py-3 text-xs font-bold text-gray-500 hover:text-white uppercase tracking-widest transition-colors">Cancelar</a>
-            <button type="submit" class="px-8 py-4 bg-gold hover:bg-yellow-500 text-black font-bold uppercase tracking-widest text-xs shadow-lg transition-all transform hover:-translate-y-1">
-                <i class="fas fa-save mr-2"></i> Salvar Curso
-            </button>
-        </div>
-    </form>
+    <button id="mobile-menu-btn" class="text-gold text-xl p-2">
+        <i class="fas fa-bars"></i>
+    </button>
 </div>
+
+<aside id="sidebar" class="fixed inset-y-0 left-0 z-40 w-64 bg-panel border-r border-white/10 flex flex-col shrink-0 transform -translate-x-full md:translate-x-0 md:relative transition-transform duration-300 ease-in-out">
+    <div class="h-24 flex items-center px-8 border-b border-white/5">
+        <span class="text-xl font-serif font-bold text-white tracking-widest italic uppercase">ODONTO<span class="text-gold not-italic">PRO</span></span>
+    </div>
+    <nav class="flex-1 py-8 space-y-2 px-4">
+        <a href="/admin/dashboard.html" class="flex items-center px-4 py-3 text-gray-500 hover:text-white rounded text-[11px] uppercase tracking-widest transition"><i class="fas fa-chart-line w-6"></i> Dashboard</a>
+        <a href="/admin/alunos.html" class="flex items-center px-4 py-3 text-gray-500 hover:text-white rounded text-[11px] uppercase tracking-widest transition"><i class="fas fa-users w-6"></i> Alunos</a>
+        <a href="/admin/gerenciar-cursos.html" class="flex items-center px-4 py-3 bg-gold text-black rounded shadow-lg font-bold uppercase text-[11px] tracking-widest transition"><i class="fas fa-film w-6"></i> Cursos</a>
+    </nav>
+    <div class="p-6 border-t border-white/5">
+        <button id="btn-logout" onclick="localStorage.clear(); window.location.href='/auth/login.html'" class="w-full py-3 border border-white/10 text-[10px] uppercase font-bold tracking-widest hover:text-red-500 transition-colors">Sair do Sistema</button>
+    </div>
+</aside>
+
+<main class="flex-1 py-10 px-4 flex justify-center items-start overflow-y-auto">
+
+    <div class="w-full max-w-4xl bg-panel rounded-none border border-white/10 shadow-[0_0_50px_rgba(0,0,0,0.5)] relative">
+        <div class="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-gold to-transparent"></div>
+
+        <div class="border-b border-white/5 px-8 py-6 flex justify-between items-center bg-white/5">
+            <div class="flex items-center gap-4">
+                <div class="w-12 h-12 rounded-full border border-gold/30 flex items-center justify-center bg-dark text-gold shadow-lg">
+                    <i class="fas fa-plus"></i>
+                </div>
+                <div>
+                    <h2 id="page-title" class="text-2xl font-serif font-bold text-white tracking-wide">Novo Curso</h2>
+                    <p class="text-gray-500 text-xs uppercase tracking-widest">Adicionar ao Catálogo</p>
+                </div>
+            </div>
+            <a href="gerenciar-cursos.html" class="text-gray-600 hover:text-red-500 transition-colors duration-300">
+                <i class="fas fa-times text-xl"></i>
+            </a>
+        </div>
+
+        <form id="course-form" class="p-10 space-y-10">
+            <div>
+                <h3 class="text-white font-serif text-lg mb-6 flex items-center">
+                    <span class="w-1 h-6 bg-gold mr-3"></span>Informações Principais
+                </h3>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                    <div class="col-span-1 md:col-span-2">
+                        <label class="block text-xs font-bold text-gold uppercase tracking-wider mb-2">Título do Curso</label>
+                        <input type="text" id="title" name="title" required placeholder="Ex: Estética Dental Avançada" class="block w-full bg-input border border-gray-800 text-white p-4 focus:border-gold outline-none transition-colors">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold text-gold uppercase tracking-wider mb-2">Slug (URL Amigável)</label>
+                        <input type="text" id="slug" name="slug" placeholder="estetica-dental" class="block w-full bg-input border border-gray-800 text-white p-4 focus:border-gold outline-none">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold text-gold uppercase tracking-wider mb-2">Preço (R$)</label>
+                        <input type="number" id="price" step="0.01" name="price" placeholder="0.00" class="block w-full bg-input border border-gray-800 text-white p-4 focus:border-gold outline-none font-bold text-lg">
+                    </div>
+                    <div class="col-span-1 md:col-span-2">
+                        <label class="block text-xs font-bold text-gold uppercase tracking-wider mb-2">Categoria</label>
+                        <input type="text" id="category" name="category" placeholder="Ex: Harmonização Facial" class="block w-full bg-input border border-gray-800 text-white p-4 focus:border-gold outline-none">
+                    </div>
+                </div>
+            </div>
+
+            <hr class="border-white/5">
+
+            <div>
+                <h3 class="text-white font-serif text-lg mb-6 flex items-center">
+                    <span class="w-1 h-6 bg-white mr-3"></span>Mídia e Conteúdo
+                </h3>
+                <div class="space-y-6">
+                    <div>
+                        <label class="block text-xs font-bold text-gray-400 uppercase tracking-wider mb-2">URL da Imagem de Capa</label>
+                        <input type="url" id="imageUrl" name="imageUrl" placeholder="https://..." class="block w-full bg-input border border-gray-800 text-white p-4 focus:border-gold outline-none">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold text-gray-400 uppercase tracking-wider mb-2">Descrição Detalhada</label>
+                        <textarea id="description" rows="5" name="description" placeholder="Descreva o conteúdo..." class="block w-full bg-input border border-gray-800 text-white p-4 focus:border-gold outline-none"></textarea>
+                    </div>
+                </div>
+            </div>
+
+            <div class="flex items-center justify-end gap-4 pt-6 border-t border-white/5">
+                <a href="gerenciar-cursos.html" class="px-6 py-3 text-xs font-bold text-gray-500 hover:text-white uppercase tracking-widest transition-colors">Cancelar</a>
+                <button type="submit" class="px-8 py-4 bg-gold hover:bg-yellow-500 text-black font-bold uppercase tracking-widest text-xs shadow-lg transition-all transform hover:-translate-y-1">
+                    <i class="fas fa-save mr-2"></i> Salvar Curso
+                </button>
+            </div>
+        </form>
+    </div>
+</main>
+
+<script>
+    const btn = document.getElementById('mobile-menu-btn');
+    const sidebar = document.getElementById('sidebar');
+    if(btn && sidebar) {
+        btn.onclick = () => {
+            sidebar.classList.toggle('-translate-x-full');
+        };
+    }
+</script>
 
 <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/toastify-js"></script>
 <script src="/js/admin-course-form.js"></script>

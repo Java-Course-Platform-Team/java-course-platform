@@ -35,10 +35,15 @@ function renderTable(list) {
     const tbody = document.getElementById("students-table-body");
     if (!tbody) return;
 
+    // Limpa o spinner de carregamento antes de renderizar
+    tbody.innerHTML = "";
+
     if (!list || list.length === 0) {
-        tbody.innerHTML = `<tr><td colspan="5" class="px-8 py-4 text-center text-gray-500">Nenhum aluno encontrado.</td></tr>`;
+        tbody.innerHTML = `<tr><td colspan="5" class="px-8 py-10 text-center text-gray-500 italic">Nenhum aluno encontrado.</td></tr>`;
         return;
     }
+    // ... restante do seu mapeamento (map) ...
+}
 
     tbody.innerHTML = list.map(s => {
         // --- CORREÇÃO DO STATUS ---

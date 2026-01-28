@@ -96,11 +96,22 @@ function editCourse(id) {
 // 5. SISTEMA DE BUSCA REATIVO
 function setupSearch() {
     const input = document.getElementById("search-courses");
-    input?.addEventListener("input", (e) => {
+    if (!input) return;
+
+    input.addEventListener("input", (e) => {
         const term = e.target.value.toLowerCase();
-        const filtered = Array.from(document.querySelectorAll("#courses-admin-list > div")).forEach(card => {
-            const title = card.querySelector("h3").textContent.toLowerCase();
-            card.style.display = title.includes(term) ? "flex" : "none";
+        // Captura todos os cards de cursos gerados pelo renderCoursesList
+        const cards = document.querySelectorAll("#courses-admin-list > div");
+
+        cards.forEach(card => {
+            const title = card.querySelector("h3")?.textContent.toLowerCase() || "";
+            const category = card.querySelector("span")?.textContent.toLowerCase() || "";
+
+            if (title.includes(term) || category.includes(term)) {
+                card.style.display = "flex"; // Mantém o layout original
+            } else {
+                card.style.display = "none";
+            }
         });
     });
 }

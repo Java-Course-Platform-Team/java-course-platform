@@ -2,6 +2,7 @@
 <html lang="pt-BR">
 <head>
   <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Gestão de Conteúdo | OdontoPro</title>
 
   <script src="/js/auth-guard.js"></script>
@@ -16,25 +17,64 @@
     tailwind.config = { theme: { extend: { colors: { gold: '#D4AF37', dark: '#0a0a0a', panel: '#151515' }, fontFamily: { sans: ['Manrope', 'sans-serif'] } } } }
   </script>
 </head>
-<body class="bg-black text-gray-300 font-sans min-h-screen flex flex-col overflow-hidden">
+<body class="bg-black text-gray-300 font-sans flex flex-col md:flex-row min-h-screen overflow-hidden">
 
-<header class="h-20 border-b border-white/10 flex items-center justify-between px-8 bg-panel shrink-0">
-  <div class="flex items-center gap-4">
-    <a href="/admin/gerenciar-cursos.html" class="text-gray-500 hover:text-gold transition flex items-center gap-2 text-sm font-bold uppercase tracking-widest">
-      <i class="fas fa-arrow-left"></i> Voltar
-    </a>
-    <div class="h-6 w-px bg-white/10"></div>
-    <div>
-      <h1 class="text-lg font-bold text-white">Gerenciar Conteúdo</h1>
-      <p id="course-title-display" class="text-[10px] text-gold uppercase tracking-widest">Carregando...</p>
-    </div>
+<div class="md:hidden bg-panel border-b border-white/10 p-4 flex justify-between items-center z-50">
+  <div class="flex items-center gap-2">
+    <i class="fas fa-tooth text-gold text-xl"></i>
+    <span class="font-bold text-white tracking-widest text-xs">ODONTO<span class="text-gold">PRO</span></span>
   </div>
-</header>
+  <button id="mobile-menu-btn" class="text-gold text-xl p-2">
+    <i class="fas fa-bars"></i>
+  </button>
+</div>
 
-<div class="flex flex-1 overflow-hidden">
+<aside id="sidebar" class="fixed inset-y-0 left-0 z-40 w-64 bg-panel border-r border-white/10 flex flex-col shrink-0 transform -translate-x-full md:translate-x-0 md:relative transition-transform duration-300 ease-in-out">
+  <div class="h-20 flex items-center px-8 border-b border-white/10">
+    <i class="fas fa-tooth text-gold text-2xl mr-3"></i>
+    <span class="font-bold text-white tracking-widest">ODONTO<span class="text-gold">PRO</span></span>
+  </div>
 
-  <main class="flex-1 overflow-y-auto bg-black p-10">
+  <nav class="flex-1 py-8 space-y-2 px-4">
+    <a href="/admin/dashboard.html" class="flex items-center px-4 py-3 text-gray-500 hover:text-white hover:bg-white/5 rounded transition">
+      <i class="fas fa-chart-line w-6"></i>
+      <span class="text-sm font-bold uppercase tracking-wider">Visão Geral</span>
+    </a>
 
+    <a href="/admin/alunos.html" class="flex items-center px-4 py-3 text-gray-500 hover:text-white hover:bg-white/5 rounded transition">
+      <i class="fas fa-users w-6"></i>
+      <span class="text-sm font-bold uppercase tracking-wider">Alunos</span>
+    </a>
+
+    <a href="/admin/gerenciar-cursos.html" class="flex items-center px-4 py-3 bg-white/5 text-white rounded transition">
+      <i class="fas fa-film w-6"></i>
+      <span class="text-sm font-bold uppercase tracking-wider">Cursos</span>
+    </a>
+  </nav>
+
+  <div class="p-4 border-t border-white/10">
+    <button onclick="localStorage.clear(); window.location.href='/auth/login.html'" class="w-full py-2 border border-white/20 text-xs uppercase font-bold hover:bg-white/10 transition text-gray-400 hover:text-white">
+      Sair
+    </button>
+  </div>
+</aside>
+
+<div class="flex-1 flex flex-col overflow-hidden">
+
+  <header class="h-20 border-b border-white/10 flex items-center justify-between px-8 bg-panel shrink-0">
+    <div class="flex items-center gap-4">
+      <a href="/admin/gerenciar-cursos.html" class="text-gray-500 hover:text-gold transition flex items-center gap-2 text-sm font-bold uppercase tracking-widest">
+        <i class="fas fa-arrow-left"></i> Voltar
+      </a>
+      <div class="h-6 w-px bg-white/10"></div>
+      <div>
+        <h1 class="text-lg font-bold text-white">Gerenciar Conteúdo</h1>
+        <p id="course-title-display" class="text-[10px] text-gold uppercase tracking-widest">Carregando...</p>
+      </div>
+    </div>
+  </header>
+
+  <main class="flex-1 overflow-y-auto bg-black p-4 md:p-10">
     <div class="max-w-4xl mx-auto">
       <div class="flex justify-between items-center mb-6">
         <h2 class="text-2xl font-serif text-white">Módulos e Aulas</h2>
@@ -52,6 +92,16 @@
     </div>
   </main>
 </div>
+
+<script>
+  const btn = document.getElementById('mobile-menu-btn');
+  const sidebar = document.getElementById('sidebar');
+  if(btn && sidebar) {
+      btn.onclick = () => {
+          sidebar.classList.toggle('-translate-x-full');
+      };
+  }
+</script>
 
 <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/toastify-js"></script>
 <script src="/js/admin-content.js"></script>
