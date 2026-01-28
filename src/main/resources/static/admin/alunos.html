@@ -2,6 +2,7 @@
 <html lang="pt-BR">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Gerenciar Alunos | OdontoPro</title>
 
     <script src="/js/auth-guard.js"></script>
@@ -23,9 +24,19 @@
         }
     </script>
 </head>
-<body class="bg-black text-gray-300 font-sans flex h-screen overflow-hidden">
+<body class="bg-black text-gray-300 font-sans flex flex-col md:flex-row h-screen overflow-hidden">
 
-<aside class="w-64 bg-panel border-r border-white/10 hidden md:flex flex-col shrink-0">
+<div class="md:hidden bg-panel border-b border-white/10 p-4 flex justify-between items-center z-50">
+    <div class="flex items-center gap-2">
+        <i class="fas fa-tooth text-gold text-xl"></i>
+        <span class="font-bold text-white tracking-widest text-xs">ODONTO<span class="text-gold">PRO</span></span>
+    </div>
+    <button id="mobile-menu-btn" class="text-gold text-xl p-2">
+        <i class="fas fa-bars"></i>
+    </button>
+</div>
+
+<aside id="sidebar" class="fixed inset-y-0 left-0 z-40 w-64 bg-panel border-r border-white/10 flex flex-col shrink-0 transform -translate-x-full md:translate-x-0 md:relative transition-transform duration-300 ease-in-out">
     <div class="h-20 flex items-center px-8 border-b border-white/10">
         <i class="fas fa-tooth text-gold text-2xl mr-3"></i>
         <span class="font-bold text-white tracking-widest">ODONTO<span class="text-gold">PRO</span></span>
@@ -64,10 +75,10 @@
         </div>
     </header>
 
-    <div class="flex-1 overflow-y-auto p-8">
+    <div class="flex-1 overflow-y-auto p-4 md:p-8">
         <div class="bg-panel border border-white/5 rounded overflow-hidden shadow-2xl">
             <div class="overflow-x-auto">
-                <table class="w-full text-left">
+                <table class="w-full text-left min-w-[800px]">
                     <thead class="bg-black/50 text-xs uppercase text-gray-500 font-bold border-b border-white/10">
                     <tr>
                         <th class="px-8 py-4">Nome</th>
@@ -95,6 +106,16 @@
 </main>
 
 <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/toastify-js"></script>
+
+<script>
+    const btn = document.getElementById('mobile-menu-btn');
+    const sidebar = document.getElementById('sidebar');
+    if(btn && sidebar) {
+        btn.onclick = () => {
+            sidebar.classList.toggle('-translate-x-full');
+        };
+    }
+</script>
 
 <script src="/js/admin-students.js"></script>
 </body>

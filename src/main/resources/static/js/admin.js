@@ -151,9 +151,14 @@ function renderCharts(students, enrollments) {
     });
 }
 
+// Adicione/Verifique esta lógica no seu admin.js
 function setupLogout() {
-    document.getElementById("btn-logout")?.addEventListener("click", () => {
-        localStorage.clear();
-        window.location.href = "/auth/login.html";
+    // Captura tanto o botão da sidebar desktop quanto o do mobile se houver
+    const logoutBtns = document.querySelectorAll("#btn-logout, [onclick*='localStorage.clear()']");
+    logoutBtns.forEach(btn => {
+        btn.addEventListener("click", () => {
+            localStorage.clear();
+            window.location.href = "/auth/login.html";
+        });
     });
 }

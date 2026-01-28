@@ -15,9 +15,19 @@
         tailwind.config = { theme: { extend: { colors: { gold: '#D4AF37', dark: '#0a0a0a', panel: '#151515' }, fontFamily: { sans: ['Manrope', 'sans-serif'], serif: ['Playfair Display', 'serif'] } } } }
     </script>
 </head>
-<body class="bg-black text-gray-300 font-sans flex h-screen overflow-hidden">
+<body class="bg-black text-gray-300 font-sans flex flex-col md:flex-row h-screen overflow-hidden">
 
-<aside class="w-64 bg-panel border-r border-white/10 hidden md:flex flex-col shrink-0">
+<div class="md:hidden bg-panel border-b border-white/10 p-4 flex justify-between items-center z-50">
+    <div class="flex items-center gap-2">
+        <i class="fas fa-tooth text-gold text-xl"></i>
+        <span class="font-serif text-white italic tracking-widest text-xs font-bold">ODONTO<span class="text-gold not-italic">PRO</span></span>
+    </div>
+    <button id="mobile-menu-btn" class="text-gold text-xl p-2">
+        <i class="fas fa-bars"></i>
+    </button>
+</div>
+
+<aside id="sidebar" class="fixed inset-y-0 left-0 z-40 w-64 bg-panel border-r border-white/10 flex flex-col shrink-0 transform -translate-x-full md:translate-x-0 md:relative transition-transform duration-300 ease-in-out">
     <div class="h-24 flex items-center px-8 border-b border-white/5">
         <span class="text-xl font-serif font-bold text-white tracking-widest italic">ODONTO<span class="text-gold not-italic">PRO</span></span>
     </div>
@@ -32,13 +42,13 @@
 </aside>
 
 <main class="flex-1 flex flex-col overflow-y-auto">
-    <header class="h-24 border-b border-white/5 flex items-center justify-between px-10 sticky top-0 bg-black/50 backdrop-blur-md z-40">
-        <h2 class="text-2xl font-serif text-white italic">Gestão <span class="text-gold not-italic font-bold">Premium</span></h2>
-        <a href="/admin/form-curso.html" class="bg-gold text-black px-8 py-3 text-[10px] font-bold uppercase tracking-widest hover:scale-105 transition-transform shadow-xl">+ Novo Curso</a>
+    <header class="h-24 border-b border-white/5 flex items-center justify-between px-6 md:px-10 sticky top-0 bg-black/50 backdrop-blur-md z-40">
+        <h2 class="text-xl md:text-2xl font-serif text-white italic">Gestão <span class="text-gold not-italic font-bold">Premium</span></h2>
+        <a href="/admin/form-curso.html" class="bg-gold text-black px-6 md:px-8 py-3 text-[10px] font-bold uppercase tracking-widest hover:scale-105 transition-transform shadow-xl">+ Novo Curso</a>
     </header>
 
-    <div class="p-10 space-y-10">
-        <div class="grid grid-cols-1 md:grid-cols-4 gap-6">
+    <div class="p-4 md:p-10 space-y-10">
+        <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-6">
             <div class="bg-panel p-6 border border-white/5"><p class="text-[10px] uppercase text-gray-500 tracking-widest mb-2">Alunos</p><h3 id="total-students" class="text-3xl font-serif text-white">0</h3></div>
             <div class="bg-panel p-6 border border-white/5"><p class="text-[10px] uppercase text-gray-500 tracking-widest mb-2">Cursos</p><h3 id="total-courses" class="text-3xl font-serif text-white">0</h3></div>
             <div class="bg-panel p-6 border border-white/5"><p class="text-[10px] uppercase text-gray-500 tracking-widest mb-2">Admins</p><h3 id="total-admins" class="text-3xl font-serif text-white">0</h3></div>
@@ -46,7 +56,7 @@
         </div>
 
         <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
-            <div class="bg-panel border border-white/5 p-8 h-[350px]">
+            <div class="bg-panel border border-white/5 p-4 md:p-8 h-[350px]">
                 <h3 class="text-[10px] font-bold text-white uppercase tracking-widest mb-6">Métricas de Usuários</h3>
                 <canvas id="usersChart"></canvas>
             </div>
@@ -58,7 +68,7 @@
         <div class="bg-panel border border-white/5">
             <div class="px-8 py-6 border-b border-white/5"><h3 class="text-[10px] font-bold text-white uppercase tracking-widest italic">Cursos Recentes</h3></div>
             <div class="overflow-x-auto">
-                <table class="w-full text-left">
+                <table class="w-full text-left min-w-[600px]">
                     <thead class="bg-black text-[10px] uppercase tracking-widest text-gray-500">
                     <tr>
                         <th class="px-8 py-4">Título</th>
@@ -74,6 +84,16 @@
         </div>
     </div>
 </main>
+
+<script>
+    const btn = document.getElementById('mobile-menu-btn');
+    const sidebar = document.getElementById('sidebar');
+    if(btn && sidebar) {
+        btn.onclick = () => {
+            sidebar.classList.toggle('-translate-x-full');
+        };
+    }
+</script>
 
 <script src="/js/admin.js"></script>
 </body>
