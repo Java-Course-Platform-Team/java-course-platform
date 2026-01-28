@@ -90,6 +90,11 @@ async function deleteCourse(id) {
 
 // 4. EDIÇÃO (REDIRECIONA PARA O FORMULÁRIO COM O ID)
 function editCourse(id) {
+    // Verifique se o ID existe antes de redirecionar para não quebrar o Auth
+    if (!id || id === "undefined") {
+        console.error("ID inválido para edição");
+        return;
+    }
     window.location.href = `/admin/form-curso.html?edit=${id}`;
 }
 
