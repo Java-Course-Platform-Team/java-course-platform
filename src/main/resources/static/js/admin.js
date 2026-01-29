@@ -7,10 +7,7 @@ const API_URL = window.location.hostname === "localhost" || window.location.host
 console.log(`Ambiente: ${window.location.hostname} | API: ${API_URL}`);
 
 document.addEventListener("DOMContentLoaded", () => {
-    // 1. Segurança: Verifica se é Admin antes de carregar
     checkAdminAuth();
-
-    // 2. Carrega dados
     fetchDashboardStats();
     setupLogout();
 });
@@ -35,9 +32,6 @@ async function fetchDashboardStats() {
     if (!token) return;
 
     try {
-        // --- AQUI ESTAVA O ERRO ---
-        // Antes: /stats (Rota antiga apagada)
-        // Agora: /admin/dashboard/stats (Rota nova do AdminController)
         const [statsRes, coursesRes] = await Promise.all([
             fetch(`${API_URL}/admin/dashboard/stats`, {
                 headers: { "Authorization": `Bearer ${token}` }
@@ -52,16 +46,18 @@ async function fetchDashboardStats() {
         const stats = await statsRes.json();
         const courses = await coursesRes.json();
 
-        // --- MAPEAMENTO COM O NOVO DTO ---
-        // Backend manda: totalStudents, totalCourses, totalEnrollments, totalRevenue
+        // --- ATUALIZAÇÃO DOS CARDS SUPERIORES ---
         animateValue("total-students", 0, stats.totalStudents || 0, 1000);
         animateValue("total-courses", 0, stats.totalCourses || 0, 1000);
 
-        // Ajuste: O HTML tem um card "Admins", mas o DTO manda "Matrículas".
-        // Vamos usar esse card para mostrar Matrículas (Enrollments)
-        const adminLabel = document.querySelector("#total-admins").parentNode.querySelector("p");
+        const adminLabel = document.querySelector("#total-admins")?.parentNode.querySelector("p");
         if(adminLabel) adminLabel.innerText = "MATRÍCULAS";
         animateValue("total-admins", 0, stats.totalEnrollments || 0, 1000);
+
+        // --- ATUALIZAÇÃO DOS NÚMEROS AO LADO DO GRÁFICO (CORREÇÃO AQUI) ---
+        // Usamos os novos IDs que inserimos no HTML para que o valor apareça lá também
+        animateValue("chart-total-students", 0, stats.totalStudents || 0, 1000);
+        animateValue("chart-total-enrolled", 0, stats.totalEnrollments || 0, 1000);
 
         const elRev = document.getElementById("total-revenue");
         if(elRev) {
@@ -87,7 +83,6 @@ function renderCoursesTable(courses) {
         return;
     }
 
-    // Pega só os 5 últimos para não poluir a tela inicial
     const recentCourses = courses.slice(0, 5);
 
     tbody.innerHTML = recentCourses.map(c => `
@@ -151,9 +146,7 @@ function renderCharts(students, enrollments) {
     });
 }
 
-// Adicione/Verifique esta lógica no seu admin.js
 function setupLogout() {
-    // Captura tanto o botão da sidebar desktop quanto o do mobile se houver
     const logoutBtns = document.querySelectorAll("#btn-logout, [onclick*='localStorage.clear()']");
     logoutBtns.forEach(btn => {
         btn.addEventListener("click", () => {
