@@ -97,7 +97,7 @@ function renderHero(data) {
                      class="w-full h-full object-cover opacity-60 group-hover:opacity-100 transition duration-700">
                 <div class="absolute inset-0 bg-gradient-to-t md:bg-gradient-to-r from-black/80 to-transparent"></div>
                 <div class="absolute inset-0 flex items-center justify-center">
-                    <a href="/aluno/assistir.html?id=${course.id}"
+                    <a href="/aluno/player.html?id=${course.id}"
                        class="w-16 h-16 rounded-full bg-gold/20 backdrop-blur border border-gold text-gold flex items-center justify-center hover:bg-gold hover:text-black hover:scale-110 transition shadow-[0_0_30px_rgba(212,175,55,0.3)]">
                         <i class="fas fa-play text-xl ml-1"></i>
                     </a>
@@ -111,7 +111,7 @@ function renderHero(data) {
                          style="width: ${progress}%"></div>
                 </div>
                 <p class="text-[10px] text-gray-400 font-bold">Progresso: <span class="text-white">${progress}%</span></p>
-                <a href="/aluno/assistir.html?id=${course.id}"
+                <a href="/aluno/player.html?id=${course.id}"
                    class="mt-6 inline-block self-start px-8 py-3 bg-white/5 hover:bg-white/10 border border-white/10 text-[10px] font-bold uppercase tracking-widest text-white transition rounded-sm">
                     Continuar Assistindo
                 </a>
@@ -134,7 +134,7 @@ function renderLibrary(list) {
                 <img src="${imageUrl}" class="w-full h-full object-cover group-hover:scale-105 transition duration-700 opacity-80 group-hover:opacity-100">
                 <div class="absolute inset-0 bg-black/50 group-hover:bg-transparent transition"></div>
 
-                <a href="/aluno/assistir.html?id=${course.id}" class="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition duration-300">
+                <a href="/aluno/player.html?id=${course.id}" class="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition duration-300">
                     <div class="w-10 h-10 rounded-full bg-gold text-black flex items-center justify-center shadow-lg transform scale-50 group-hover:scale-100 transition">
                         <i class="fas fa-play text-xs"></i>
                     </div>
