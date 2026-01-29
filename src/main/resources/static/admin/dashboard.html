@@ -56,9 +56,23 @@
         </div>
 
         <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
-            <div class="bg-panel border border-white/5 p-4 md:p-8 h-[350px]">
-                <h3 class="text-[10px] font-bold text-white uppercase tracking-widest mb-6">Métricas de Usuários</h3>
-                <canvas id="usersChart"></canvas>
+            <div class="bg-panel border border-white/5 p-4 md:p-8 h-[350px] flex flex-col">
+                <h3 class="text-[10px] font-bold text-white uppercase tracking-widest mb-2">Métricas de Usuários</h3>
+                <div class="flex-1 flex items-center justify-between gap-4 min-h-0">
+                    <div class="flex-1 h-full flex items-center justify-center">
+                        <canvas id="usersChart"></canvas>
+                    </div>
+                    <div class="flex flex-col gap-4 pr-4">
+                        <div class="flex flex-col">
+                            <span class="text-[10px] text-gray-500 uppercase tracking-widest">Alunos</span>
+                            <span id="chart-total-students" class="text-2xl font-serif text-white font-bold">0</span>
+                        </div>
+                        <div class="flex flex-col">
+                            <span class="text-[10px] text-gray-500 uppercase tracking-widest">Matriculados</span>
+                            <span id="chart-total-enrolled" class="text-2xl font-serif text-gold font-bold">0</span>
+                        </div>
+                    </div>
+                </div>
             </div>
             <div class="bg-panel border border-white/5 p-8 h-[350px] flex items-center justify-center text-gray-600 italic text-xs">
                 Gráfico de receita disponível em breve
