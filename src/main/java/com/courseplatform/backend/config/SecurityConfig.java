@@ -42,29 +42,29 @@ public class SecurityConfig {
                                 "/", "/index.html", "/auth/**", "/components/**"
                         ).permitAll()
 
-                        // LIBERA AS PÁGINAS DO FRONTEND
-                        .requestMatchers("/admin/**", "/aluno/**").permitAll()
-
                         // 2. OBRIGATÓRIO: WEBHOOK DO MERCADO PAGO
-                        // 👇 O SEGREDO ESTÁ AQUI: TEM QUE TER O /** NO FINAL
                         .requestMatchers(HttpMethod.POST, "/webhook/**").permitAll()
                         .requestMatchers(HttpMethod.POST, "/api/webhook/**").permitAll()
 
                         // 3. ENDPOINTS PÚBLICOS
                         .requestMatchers(HttpMethod.GET, "/courses", "/courses/**").permitAll()
 
-                        // 4. ENDPOINTS PROTEGIDOS (Aluno Logado - resolve o erro "Meus Cursos")
-                        .requestMatchers("/enrollments/**", "/api/enrollments/**").authenticated()
-                        .requestMatchers("/payments/**", "/api/payments/**").authenticated()
-                        .requestMatchers("/users/**").authenticated()
-
-                        // 5. ÁREA ADMINISTRATIVA (Só Admin)
+                        // 4. ÁREA ADMINISTRATIVA DA API (Só Admin) - PROTEÇÃO DEVE VIR ANTES
                         .requestMatchers("/admin/dashboard/**").hasRole("ADMIN")
                         .requestMatchers(HttpMethod.POST, "/courses/**").hasRole("ADMIN")
                         .requestMatchers(HttpMethod.PUT, "/courses/**").hasRole("ADMIN")
                         .requestMatchers(HttpMethod.DELETE, "/courses/**").hasRole("ADMIN")
 
-                        // 6. BLOQUEIA O RESTO
+                        // 5. ENDPOINTS PROTEGIDOS (Aluno Logado)
+                        .requestMatchers("/enrollments/**", "/api/enrollments/**").authenticated()
+                        .requestMatchers("/payments/**", "/api/payments/**").authenticated()
+                        .requestMatchers("/users/**").authenticated()
+
+                        // 6. LIBERA AS PÁGINAS HTML DO FRONTEND 
+                        // (Vem no final para não sobrescrever a proteção da API)
+                        .requestMatchers("/admin/**", "/aluno/**").permitAll()
+
+                        // 7. BLOQUEIA O RESTO
                         .anyRequest().authenticated()
                 )
                 .addFilterBefore(securityFilter, UsernamePasswordAuthenticationFilter.class)

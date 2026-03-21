@@ -11,5 +11,20 @@ services:
     volumes:
       - postgres_data:/var/lib/postgresql/data
 
+  backend:
+    build: . # Diz ao Docker para usar o seu Dockerfile que está na mesma pasta
+    container_name: backend-course-platform
+    ports:
+      - "8081:8081" # Mapeia a porta da sua API
+    depends_on:
+      - postgres # Garante que o banco de dados inicia antes da aplicação Java
+    environment:
+      - SPRING_PROFILES_ACTIVE=dev
+      # IMPORTANTE: Dentro da rede do Docker, os contentores não usam "localhost" para comunicarem entre si.
+      # Usamos o nome do serviço ("postgres") e a porta interna padrão do banco (5432).
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://postgres:5432/odonto_db
+      - SPRING_DATASOURCE_USERNAME=postgres
+      - SPRING_DATASOURCE_PASSWORD=admin
+
 volumes:
   postgres_data:
