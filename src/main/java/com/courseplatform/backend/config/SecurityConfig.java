@@ -36,35 +36,21 @@ public class SecurityConfig {
                 .cors(cors -> cors.configurationSource(corsConfigurationSource()))
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(authorize -> authorize
-                        // 1. RECURSOS VISUAIS E ESTÁTICOS (Liberar tudo)
                         .requestMatchers(
                                 "/js/**", "/css/**", "/images/**", "/assets/**", "/favicon.ico",
                                 "/", "/index.html", "/auth/**", "/components/**"
                         ).permitAll()
-
-                        // 2. OBRIGATÓRIO: WEBHOOK DO MERCADO PAGO
                         .requestMatchers(HttpMethod.POST, "/webhook/**").permitAll()
                         .requestMatchers(HttpMethod.POST, "/api/webhook/**").permitAll()
-
-                        // 3. ENDPOINTS PÚBLICOS
                         .requestMatchers(HttpMethod.GET, "/courses", "/courses/**").permitAll()
-
-                        // 4. ÁREA ADMINISTRATIVA DA API (Só Admin) - PROTEÇÃO DEVE VIR ANTES
                         .requestMatchers("/admin/dashboard/**").hasRole("ADMIN")
                         .requestMatchers(HttpMethod.POST, "/courses/**").hasRole("ADMIN")
                         .requestMatchers(HttpMethod.PUT, "/courses/**").hasRole("ADMIN")
                         .requestMatchers(HttpMethod.DELETE, "/courses/**").hasRole("ADMIN")
-
-                        // 5. ENDPOINTS PROTEGIDOS (Aluno Logado)
                         .requestMatchers("/enrollments/**", "/api/enrollments/**").authenticated()
                         .requestMatchers("/payments/**", "/api/payments/**").authenticated()
                         .requestMatchers("/users/**").authenticated()
-
-                        // 6. LIBERA AS PÁGINAS HTML DO FRONTEND 
-                        // (Vem no final para não sobrescrever a proteção da API)
                         .requestMatchers("/admin/**", "/aluno/**").permitAll()
-
-                        // 7. BLOQUEIA O RESTO
                         .anyRequest().authenticated()
                 )
                 .addFilterBefore(securityFilter, UsernamePasswordAuthenticationFilter.class)
@@ -72,7 +58,9 @@ public class SecurityConfig {
     }
 
     @Bean
-    public PasswordEncoder passwordEncoder() { return new BCryptPasswordEncoder(); }
+    public PasswordEncoder passwordEncoder() { 
+        return new BCryptPasswordEncoder(); 
+    }
 
     @Bean
     public AuthenticationManager authenticationManager(AuthenticationConfiguration authenticationConfiguration) throws Exception {

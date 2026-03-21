@@ -4,7 +4,7 @@ FROM maven:3.9-eclipse-temurin-21 AS build
 WORKDIR /app
 COPY . .
 # Compila o projeto e pula os testes para agilizar o deploy
-RUN mvn clean package -DskipTests
+RUN mvn clean package -DskipTests -Dfile.encoding=UTF-8 -Dproject.build.sourceEncoding=UTF-8
 
 # Etapa 2: Runtime
 # Usando a versão estável do Java 21 para rodar
