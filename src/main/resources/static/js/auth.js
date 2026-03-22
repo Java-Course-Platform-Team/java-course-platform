@@ -3,7 +3,7 @@
 // URL dinâmica (Local vs Produção)
 const API_BASE_URL = window.location.hostname === "localhost"
     ? "http://localhost:8081"
-    : "https://odonto-backend-j9oy.onrender.com";
+    : "";
 
 // --- UTILITÁRIOS ---
 
